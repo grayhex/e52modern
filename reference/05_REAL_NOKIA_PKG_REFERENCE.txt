@@ -1,0 +1,13 @@
+REAL REFERENCE FILE VERIFIED (Nokia Corporation, 2009, EPL-1.0)
+
+Source: https://github.com/SymbianSource/oss.FCL.sftools.depl.swconfigmdw/blob/d2feb88baf0e94da760738fc3b436c3d5d1ff35f/configurationengine/source/plugins/symbian/ConeThemePlugin/themeplugin/tests/e75/test_pkg/themepackage.pkg
+
+File name: themepackage.pkg
+Producer comment: SkinCompiler v0.0.82
+Compatible platform UID: 0x101f7961 (Series60v3.0)
+Scalable Skin Support UID: 0x10207113
+Compiled resource file names: themepackage.mbm, themepackage.mif, themepackage.skn
+Installation paths: \resource\skins\<theme id> for MBM/MIF under conditional S60 stub, otherwise \private\10207114\import\<theme id>; SKN under \private\10207114\import\<theme id>
+Optional matching .ini path is declared for uninstall cleanup.
+
+This is a published Nokia package manifest demonstrating the real file structure. It is NOT an E52 theme binary and NOT evidence that the suggested color resources have been compiled and verified.
