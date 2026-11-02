@@ -1,0 +1,144 @@
+{
+  "light": {
+    "palette": {
+      "bg": "#F7F8F7",
+      "bg_glow": "#E6ECF4",
+      "panel": "#FFFFFF",
+      "text": "#212B35",
+      "text_second": "#566472",
+      "text_disabled": "#9AA6B2",
+      "accent": "#4384CC",
+      "accent_dark": "#2F6AAE",
+      "hl_fill_top": "#DCE9F7",
+      "hl_fill_bot": "#C8DCF2",
+      "hl_text": "#10263D",
+      "line": "#CCD6E2",
+      "status": "#EEF2F7",
+      "softkey": "#E4EAF2",
+      "softkey_text": "#212B35",
+      "tab_active": "#FFFFFF",
+      "tab_inactive": "#E9EEF4"
+    },
+    "contrast": [
+      {
+        "role": "Основной текст на фоне",
+        "fg": "#212B35",
+        "bg": "#F7F8F7",
+        "contrast": 13.5
+      },
+      {
+        "role": "Текст списка на поле списка",
+        "fg": "#212B35",
+        "bg": "#FFFFFF",
+        "contrast": 14.37
+      },
+      {
+        "role": "Вторичный текст на поле списка",
+        "fg": "#566472",
+        "bg": "#FFFFFF",
+        "contrast": 6.07
+      },
+      {
+        "role": "Текст выделенной строки",
+        "fg": "#10263D",
+        "bg": "#C8DCF2",
+        "contrast": 10.96
+      },
+      {
+        "role": "Текст выделенной строки (верх градиента)",
+        "fg": "#10263D",
+        "bg": "#DCE9F7",
+        "contrast": 12.47
+      },
+      {
+        "role": "Текст софт-клавиш на control pane",
+        "fg": "#212B35",
+        "bg": "#E4EAF2",
+        "contrast": 11.87
+      },
+      {
+        "role": "Текст статус-панели",
+        "fg": "#212B35",
+        "bg": "#EEF2F7",
+        "contrast": 12.78
+      },
+      {
+        "role": "Текст popup",
+        "fg": "#212B35",
+        "bg": "#FFFFFF",
+        "contrast": 14.37
+      }
+    ]
+  },
+  "dark": {
+    "palette": {
+      "bg": "#171B23",
+      "bg_glow": "#26303F",
+      "panel": "#202733",
+      "text": "#DAE4ED",
+      "text_second": "#9AA9BA",
+      "text_disabled": "#667385",
+      "accent": "#2161A0",
+      "accent_dark": "#17497D",
+      "hl_fill_top": "#2D70B5",
+      "hl_fill_bot": "#2161A0",
+      "hl_text": "#FFFFFF",
+      "line": "#505E6F",
+      "status": "#1B212B",
+      "softkey": "#12161C",
+      "softkey_text": "#DAE4ED",
+      "tab_active": "#2A3342",
+      "tab_inactive": "#1C222C"
+    },
+    "contrast": [
+      {
+        "role": "Основной текст на фоне",
+        "fg": "#DAE4ED",
+        "bg": "#171B23",
+        "contrast": 13.39
+      },
+      {
+        "role": "Текст списка на поле списка",
+        "fg": "#DAE4ED",
+        "bg": "#202733",
+        "contrast": 11.65
+      },
+      {
+        "role": "Вторичный текст на поле списка",
+        "fg": "#9AA9BA",
+        "bg": "#202733",
+        "contrast": 6.26
+      },
+      {
+        "role": "Текст выделенной строки",
+        "fg": "#FFFFFF",
+        "bg": "#2161A0",
+        "contrast": 6.4
+      },
+      {
+        "role": "Текст выделенной строки (верх градиента)",
+        "fg": "#FFFFFF",
+        "bg": "#2D70B5",
+        "contrast": 5.13
+      },
+      {
+        "role": "Текст софт-клавиш на control pane",
+        "fg": "#DAE4ED",
+        "bg": "#12161C",
+        "contrast": 14.09
+      },
+      {
+        "role": "Текст статус-панели",
+        "fg": "#DAE4ED",
+        "bg": "#1B212B",
+        "contrast": 12.55
+      },
+      {
+        "role": "Текст popup",
+        "fg": "#DAE4ED",
+        "bg": "#202733",
+        "contrast": 11.65
+      }
+    ]
+  }
+}
