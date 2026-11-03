@@ -104,8 +104,9 @@ Use **Connection → Request access** with the portable
 connection to this Workbench; inbound Windows ports and an SSH sidecar are not
 needed. The default loopback-bound deployment works through the existing browser
 SSH forward; the Windows agent must be able to reach that same localhost origin.
-Use a distinct local forwarding port if another local service occupies 8765; the
-agent itself listens on 24652.
+If 8765 is occupied, configure `SYMPORT_HTTP_PORT` and use that same port for the
+Workbench, Docker mapping and browser SSH forward so Host validation still matches.
+The Windows agent itself listens on a separate port, 24652.
 
 For an HTTPS reverse proxy, explicitly set `SYMPORT_PUBLIC_ORIGIN` to its exact
 origin, preserve/forward that Host and Origin, require authentication for the

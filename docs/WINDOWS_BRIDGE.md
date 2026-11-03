@@ -98,8 +98,9 @@ this adapter because it cannot preserve the accompanying JAR in that same folder
 choose a JAR-only package or a mounted card. The catalog uses the same restriction.
 
 The agent uses port **24652**, distinct from the Workbench default 8765. For the
-legacy SSH route with this packaged agent, forward to Windows 24652 and set
-`SYMPORT_BRIDGE_AGENT_PORT=24652` on the backend; the existing Linux bridge keeps
+legacy SSH route with this packaged agent, set
+`SYMPORT_BRIDGE_AGENT_PORT=24652` in the Compose environment: the SSH sidecar forwards
+to Windows 24652 and the backend pins that same Host port; the existing Linux bridge keeps
 its default 8765. No port change is needed for browser pairing/outbound access.
 
 Tray exit waits for an already confirmed write to finish. Revocation stops new

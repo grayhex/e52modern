@@ -29,7 +29,7 @@ services:
       - -i
       - /ssh/key
       - -L
-      - 127.0.0.1:18765:127.0.0.1:8765
+      - 127.0.0.1:18765:127.0.0.1:${SYMPORT_BRIDGE_AGENT_PORT:-8765}
       - ${SYMPORT_SSH_TARGET:?Set the SSH user@host of the PC running the local Bridge}
     volumes:
       - type: bind
