@@ -1,3 +1,8 @@
 tools/s60/bin/
 tools/s60/.build/
 __pycache__/
+*.egg-info/
+build/
+.pytest_cache/
+.ruff_cache/
+symport.toml

@@ -1,0 +1,14 @@
+{
+  "light": {
+    "mbm_bitmaps": 71,
+    "mif_icons": 46,
+    "uid": "0xe0e52c01",
+    "pkg_files": 4
+  },
+  "dark": {
+    "mbm_bitmaps": 71,
+    "mif_icons": 46,
+    "uid": "0xe0e52c02",
+    "pkg_files": 4
+  }
+}

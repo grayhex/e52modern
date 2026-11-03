@@ -1,0 +1,48 @@
+# Device profile: Nokia E52.
+# Every fact is { value, status, source }. status: documented | stated | inferred | unknown.
+# Nothing here has been verified on a physical phone. Unknown fields stay unknown.
+schema = 1
+id = "nokia-e52"
+
+[device]
+manufacturer = { value = "Nokia", status = "documented", source = "reference/README_FOR_AGENT.md; official Nokia E52 User Guide issue 5.1" }
+model = { value = "E52", status = "documented", source = "reference/README_FOR_AGENT.md; reference/00_original_user_240x320.png" }
+product_code = { value = "", status = "unknown", source = "RM code of the tested unit not recorded" }
+
+[firmware]
+version = { value = "", status = "unknown", source = "firmware of the tested unit not recorded; read it on the phone (*#0000#)" }
+rom_dlls = { value = [], status = "unknown", source = "needs a user-supplied firmware profile (see docs/firmware-profile.md)" }
+
+[platform]
+symbian_version = { value = "9.3", status = "documented", source = "reference/README_FOR_AGENT.md (target section)" }
+s60_version = { value = "3rd Edition, Feature Pack 2", status = "documented", source = "reference/README_FOR_AGENT.md (target section)" }
+kernel = { value = "eka2", status = "inferred", source = "Symbian OS 9.x runs on EKA2 only (public Symbian documentation); not verified on the device" }
+installer_format = { value = "sis9", status = "inferred", source = "SIS 9.x/SISX is used from Symbian OS 9.1 (public documentation)" }
+
+[cpu]
+target_abi = { value = "armv5", status = "stated", source = "project requirements (task statement): ARMv5T binaries for E52" }
+core = { value = "", status = "unknown", source = "physical CPU core not verified in this project" }
+reference_firmware_fixtures = { value = "E71/RM-346 and 6120c/RM-243 (ARMv5T older EKA2) in symbian-platform docs", status = "documented", source = "https://github.com/hpnkv/symbian-platform doc/docs/capabilities/firmware.md; these are different phones, not E52" }
+
+[display]
+resolution = { value = [240, 320], status = "documented", source = "reference/README_FOR_AGENT.md; reference/00_original_user_240x320.png" }
+orientation = { value = "portrait", status = "documented", source = "reference/README_FOR_AGENT.md" }
+
+[input]
+method = { value = "hardware-keys", status = "stated", source = "project requirements (task statement); reference photo shows a keypad" }
+touch = { value = false, status = "stated", source = "project requirements (task statement)" }
+
+[ui]
+main_menu_grid = { value = "3x4", status = "documented", source = "reference/README_FOR_AGENT.md (Nokia E52 User Guide p.24)" }
+fixed_geometry = { value = "Status pane, clock, Active Standby, menu layout, shortcut count and key assignments are set by firmware; a theme cannot change them", status = "documented", source = "reference/README_FOR_AGENT.md ('What is impossible in a standard theme')" }
+
+[memory]
+ram = { value = "", status = "unknown", source = "not verified" }
+app_heap_limits = { value = "", status = "unknown", source = "not verified" }
+
+[packaging]
+platform_dependency = { value = "0x101f7961", status = "documented", source = "reference/05_REAL_NOKIA_PKG_REFERENCE.txt (Series60v3.0 compatibility UID)" }
+skin_support_dependencies = { value = ["0xA00000EB", "0x10207113"], status = "documented", source = "output of Nokia Skin Data Compiler (theme/dist/*/*.pkg); reference/05_REAL_NOKIA_PKG_REFERENCE.txt" }
+theme_install_dirs = { value = ["!:\\resource\\skins\\<uid>", "!:\\private\\10207114\\import\\<uid>"], status = "documented", source = "reference/05_REAL_NOKIA_PKG_REFERENCE.txt" }
+test_uid_range = { value = [0xE0000000, 0xEFFFFFFF], status = "documented", source = "Symbian experimental UID range as used by https://github.com/hpnkv/symbian-platform doc/docs/guides/packaging.md" }
+signing_policy = { value = "", status = "unknown", source = "install policy for unsigned/self-signed SIS on the tested E52 not verified" }

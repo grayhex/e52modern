@@ -48,9 +48,17 @@
 ```bash
 tools/s60/build.sh            # один раз: собрать skc и bmconv (нужен g++)
 python3 tools/build_theme.py  # обе темы; результат — theme/dist/
+# то же через SymPort, с проверками:
+symport theme build && symport theme inspect
 ```
 
+Подробнее: [`docs/THEME.md`](../docs/THEME.md), [`docs/PACKAGING.md`](../docs/PACKAGING.md), чек-лист проверки на телефоне — [`docs/DEVICE_TEST.md`](../docs/DEVICE_TEST.md).
+
 ## Сборка `.sis`
+
+Через SymPort: `symport theme package --variant light` (официальный `makesis`/`signsis`; без них команда честно сообщает
+«unsupported») или `--backend native` — экспериментальный неподписанный писатель без зависимостей, не проверенный
+MakeSIS и телефоном. Подробности — [`docs/PACKAGING.md`](../docs/PACKAGING.md). Ручной вариант:
 
 Из каталога `theme/dist/<variant>/` на машине с Symbian SDK / Carbide:
 

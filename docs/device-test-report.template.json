@@ -1,0 +1,19 @@
+{
+  "schema": "symport.device-test/1",
+  "artifact": {"path": "", "sha256": ""},
+  "device": {"model": "Nokia E52-1", "rm_code": "", "firmware_version": "", "language": ""},
+  "tester": "",
+  "date": "",
+  "software_installation_setting": "",
+  "install": {"result": "not-tested", "message": "", "certificate_warning": ""},
+  "theme": {"applied": "not-tested", "boots_after_restart": "not-tested", "notes": ""},
+  "ui": {"background": "not-tested", "list_highlight": "not-tested", "main_menu_grid": "not-tested",
+         "options_popup": "not-tested", "input_field": "not-tested", "softkeys": "not-tested",
+         "indicators": "not-tested", "notes_calendar_calculator": "not-tested",
+         "incoming_call": "not-tested", "daylight_readability": "not-tested",
+         "geometry_matches_reference": "not-tested"},
+  "application": {"launches": "not-tested", "keys_and_softkeys": "not-tested", "closes_cleanly": "not-tested"},
+  "uninstall": {"result": "not-tested", "default_theme_restored": "not-tested"},
+  "summary": "",
+  "evidence": []
+}
