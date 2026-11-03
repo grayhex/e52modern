@@ -1,6 +1,6 @@
 "use strict";
 const token = document.querySelector('meta[name="symport-token"]').content;
-const pages = {manager:"Телефон и файлы",media:"Музыка и видео",contacts:"Контакты",messages:"Сообщения",backups:"Резервные копии",installed:"Приложения телефона",overview:"Обзор",themes:"Темы E52 CLEAR",apps:"Разработка",device:"Телефон и тесты",activity:"История операций"};
+const pages = {manager:"Телефон и файлы",media:"Музыка и видео",contacts:"Контакты",calendar:"Календарь",messages:"Сообщения",backups:"Резервные копии",installed:"Приложения телефона",overview:"Обзор",themes:"Темы E52 CLEAR",apps:"Разработка",device:"Телефон и тесты",activity:"История операций"};
 const checklistLabels = {
   identify:"Модель, RM-код и версия прошивки",
   backup:"Резервная копия и возврат к штатной теме",
@@ -99,6 +99,7 @@ async function refresh(){
     state=await request("GET","/api/state");
     render();
     if(typeof renderLibrary === "function")renderLibrary(state);
+    if(typeof renderBackups === "function")renderBackups(state);
   }catch(err){notify("Не удалось обновить данные: "+err.message)}
 }
 function downloadButton(item){

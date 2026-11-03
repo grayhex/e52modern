@@ -11,6 +11,7 @@ import json
 import os
 import re
 import secrets
+import shutil
 import subprocess
 import sys
 import threading
@@ -23,6 +24,7 @@ from urllib.parse import parse_qs, urlsplit
 from symport.config import find_repo_root
 from symport.library import ThemeLibrary
 from symport.phone import DeviceManager
+from symport.phone.backups import BackupStore, BackupStoreError, default_root
 from symport.phone.contacts import parse_export, vcards
 from symport.phone.contracts import LIMIT
 
@@ -34,6 +36,8 @@ BACKENDS = ("auto", "makesis", "native")
 STEPS = ("identify", "backup", "transfer", "install", "activate", "standby",
          "menus", "dialogs", "apps", "restart", "uninstall")
 STEP_STATUS = ("pending", "pass", "fail", "not-applicable")
+REL_PATH = re.compile(r"^[^\x00-\x1f\\:]{1,200}$")
+BACKUP_TIMEOUT = 6 * 3600
 
 
 def utcnow() -> str:
@@ -164,33 +168,96 @@ class Workbench:
         self.lock = threading.Lock()
         self.jobs: list[dict] = []
         self.last_run: dict | None = None
+        self.backups = BackupStore(default_root(repo))
 
     def snapshot(self) -> dict:
         with self.lock:
             jobs = [dict(j) for j in reversed(self.jobs)]
+        for job in jobs:
+            if job.get("status") == "running" and job.get("progress_id"):
+                job["progress"] = self.backups.progress(job["progress_id"])
+        probe = self.backups.root if self.backups.root.exists() else self.backups.root.parent
+        try:
+            free = shutil.disk_usage(probe if probe.exists() else self.repo).free
+        except OSError:
+            free = None
         return {"schema": "symport.web/1", "jobs": jobs,
                 "projects": projects(self.repo), "packages": packages(self.repo),
-                "library": self.library.list(), "device_report": self.read_report()}
+                "library": self.library.list(), "device_report": self.read_report(),
+                "backups": self.backups.list(), "backup_free": free}
+
+    def _volume_root(self, device: object) -> Path:
+        files = getattr(self.devices.transport, "files", None)
+        roots = getattr(files, "roots", None)
+        if roots is None:
+            raise ValueError("Копия делается только с накопителя, смонтированного на этом сервере (не через PC Bridge)")
+        if not isinstance(device, str) or device not in roots:
+            raise ValueError("Выберите подключённый накопитель")
+        root = roots[device]
+        if not root.is_dir() or root.is_symlink():
+            raise ValueError("Накопитель отключён")
+        return root
+
+    def _phone_command(self, data: dict) -> tuple[list[str], int, str, str | None]:
+        """Allow-listed phone jobs. Paths are derived on the server; the browser sends ids only."""
+        action = data.get("action")
+        try:
+            if action == "phone.backup.create":
+                root = self._volume_root(data.get("device"))
+                bid = self.backups.new_id(data["device"])
+                args = ["phone", "backup", "create", "--volume", str(root), "--dest", str(self.backups.path(bid)),
+                        "--label", data["device"], "--progress", str(self.backups.progress_path(bid))]
+                return args, BACKUP_TIMEOUT, f"phone backup create {data['device']} → {bid}", bid
+            if action == "phone.backup.verify":
+                directory = self.backups.existing(data.get("id"))
+                return (["phone", "backup", "verify", str(directory)], BACKUP_TIMEOUT,
+                        f"phone backup verify {directory.name}", None)
+            if action == "phone.backup.restore":
+                directory = self.backups.existing(data.get("id"))
+                root = self._volume_root(data.get("device"))
+                args = ["phone", "backup", "restore", str(directory), "--volume", str(root)]
+                apply = data.get("apply") is True
+                if apply and data.get("confirm") is not True:
+                    raise ValueError("Подтвердите восстановление")
+                only = data.get("only")
+                if only:
+                    if not isinstance(only, str) or not REL_PATH.fullmatch(only) or ".." in only.split("/") \
+                            or only.startswith("/"):
+                        raise ValueError("Некорректный путь для частичного восстановления")
+                    args += ["--only", only]
+                if apply:
+                    args.append("--apply")
+                return (args, BACKUP_TIMEOUT,
+                        f"phone backup restore {directory.name} → {data['device']}" + (" (запись)" if apply else " (план)"),
+                        None)
+        except BackupStoreError as exc:
+            raise ValueError(str(exc)) from exc
+        raise ValueError("Неизвестная операция")
 
     def launch(self, data: dict) -> dict:
-        args = command(self.repo, data)
+        display, progress_id = None, None
+        if isinstance(data.get("action"), str) and data["action"].startswith("phone."):
+            args, timeout, display, progress_id = self._phone_command(data)
+        else:
+            args, timeout = command(self.repo, data), 900
         with self.lock:
             if any(job["status"] == "running" for job in self.jobs):
                 raise RuntimeError("Другая операция ещё выполняется")
             job = {"id": secrets.token_hex(6), "action": data["action"],
-                   "command": "symport " + " ".join(args), "status": "running",
+                   "command": "symport " + (display or " ".join(args)), "status": "running",
+                   "progress_id": progress_id,
                    "started": utcnow(), "finished": None,
                    "exit_code": None, "report": None, "output": ""}
             self.jobs.append(job)
             self.jobs = self.jobs[-30:]
-        threading.Thread(target=self._execute, args=(job, args), daemon=True).start()
+        threading.Thread(target=self._execute, args=(job, args, timeout), daemon=True).start()
         return {"id": job["id"], "status": "running"}
 
-    def _execute(self, job: dict, args: list[str]) -> None:
+    def _execute(self, job: dict, args: list[str], timeout: int = 900) -> None:
         try:
             result = subprocess.run(
                 [sys.executable, "-m", "symport", *args, "--repo", str(self.repo),
-                 "--json"], cwd=self.repo, timeout=900, capture_output=True,
+                 "--json"], cwd=self.repo, timeout=timeout, capture_output=True,
                 text=True, encoding="utf-8", errors="replace", check=False,
             )
             try:
@@ -214,6 +281,8 @@ class Workbench:
         finally:
             with self.lock:
                 job["finished"] = utcnow()
+            if job.get("progress_id"):
+                self.backups.progress_path(job["progress_id"]).unlink(missing_ok=True)
 
     def read_report(self) -> dict:
         path = self.repo / "build" / "symport" / "device-test-report.json"
@@ -299,13 +368,19 @@ def make_handler(state: Workbench):
                 "/manager.js": ("manager.js", "text/javascript; charset=utf-8"),
                 "/library.js": ("library.js", "text/javascript; charset=utf-8"),
                 "/suite.js": ("suite.js", "text/javascript; charset=utf-8"),
+                "/compact.css": ("compact.css", "text/css; charset=utf-8"),
+                "/backups.js": ("backups.js", "text/javascript; charset=utf-8"),
+                "/calendar.js": ("calendar.js", "text/javascript; charset=utf-8"),
             }
             font = url.path.removeprefix('/fonts/')
             if url.path.startswith('/fonts/') and font in {'DMSans.ttf', 'FiraCode.ttf', 'PlusJakartaSans.ttf'}:
                 return self._send((ASSETS / 'fonts' / font).read_bytes(), 'font/ttf')
             if url.path in static:
                 file, mime = static[url.path]
-                body = (ASSETS / file).read_bytes()
+                try:
+                    body = (ASSETS / file).read_bytes()
+                except OSError:
+                    return self._json({"error": "Not found"}, 404)
                 if file == "index.html":
                     body = body.replace(b"__SESSION_TOKEN__", state.token.encode())
                 return self._send(body, mime)
@@ -396,6 +471,16 @@ def make_handler(state: Workbench):
                     raise ValueError('Unknown library operation')
                 if self.path in ("/api/manager", "/api/bridge"):
                     return self._json(state.devices.execute(body))
+                if self.path == "/api/backups":
+                    if body.get("action") != "delete":
+                        raise ValueError("Неизвестная операция с копиями")
+                    with state.lock:
+                        if any(j["status"] == "running" for j in state.jobs):
+                            raise RuntimeError("Другая операция ещё выполняется")
+                    try:
+                        return self._json(state.backups.delete(body.get("id"), body.get("confirm")))
+                    except BackupStoreError as exc:
+                        raise ValueError(str(exc)) from exc
                 if self.path == "/api/run":
                     result = state.launch(body)
                     return self._json(result, 202)

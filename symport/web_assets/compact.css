@@ -1,0 +1,99 @@
+/* SymPort compact layout: denser spacing, multi-column cards, inner scrolling for long lists.
+   Loaded after app.css; only overrides sizes and adds helpers (no inline styles: CSP style-src 'self'). */
+body{font-size:14px;line-height:1.5}
+h1{font-size:24px}h2{font-size:17px}h3{font-size:15px}
+.sidebar{width:204px;padding:14px 10px 10px}
+.brand{margin:0 8px 14px}.brand-mark{width:30px;height:30px;font-size:18px}.brand-title{font-size:17px}.brand-title small{display:none}
+.nav-label{margin:10px 10px 5px}.sidebar nav{gap:1px}.nav-link{padding:6px 10px;gap:10px;font-size:13px}
+.sidebar-bottom{padding:10px 10px 0}.sidebar-bottom p{display:none}
+.topbar{height:42px;padding:0 24px}
+.content{max-width:1480px;padding:14px 24px 28px}
+.page-heading{margin:0 0 10px;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px}
+.page-heading .eyebrow{display:none}
+.page-heading h1{margin:0;font-size:21px;line-height:1.3}
+.page-heading p{margin:0;font-size:13px;line-height:1.45;max-width:none;flex:1 1 340px}
+.card{padding:12px 14px;margin-top:10px}
+.card-head{margin-bottom:8px;gap:10px}.card-head h2,.card-head h3{font-size:15px}
+.card>h3{margin:0 0 4px}.card p{font-size:12.5px;margin:6px 0;line-height:1.5}
+.card summary{font-size:13px}
+.form-row{gap:8px;margin:8px 0}
+.note,.disclaimer{padding:7px 11px;margin:8px 0;line-height:1.5;font-size:12px}
+.btn{padding:6px 12px;border-radius:6px;gap:6px}
+input,select,textarea{margin-top:4px;padding:5px 10px;min-height:32px}
+input[type=file]{padding:4px 8px}
+.section-heading h2{font-size:15px}.section-heading{margin-top:10px}
+.steps{margin:8px 0;gap:14px}.steps span{gap:6px}
+.two-column{gap:10px}
+.upload-zone{padding:8px;gap:6px;margin:8px 0}.upload-zone .upload-prompt{padding:7px 10px}
+.suite-grid,.quick-grid,.themes-grid{gap:10px}
+.quick-card{padding:12px 14px}
+.theme-card{display:grid;grid-template-columns:132px minmax(0,1fr)}
+.theme-preview{height:auto;min-height:170px}.theme-preview img{width:90px;height:120px;border-width:3px;border-radius:7px}
+.theme-info{padding:10px 14px}.theme-info h3{font-size:16px;margin:0 0 2px}.theme-info p{margin:0 0 2px}.theme-buttons{margin:8px 0;gap:6px}
+.package-controls{padding-top:10px;gap:8px}.package-controls label{margin:0}
+.lib-card{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;gap:6px 10px;align-items:end}
+.lib-card>h3,.lib-card>p,.lib-card>pre,.lib-card>div{grid-column:1/-1}
+.lib-card>label{margin:0}.lib-card>p{margin:0}.lib-card>.btn{justify-self:start}
+#library-preview{max-height:140px;overflow:auto;margin:0}#library-preview:empty{display:none}
+#library-items:empty{display:none}
+#theme-packages.package-list{gap:6px}
+.package-row,.project-row{padding:8px 12px}
+.checklist{margin:6px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px}
+.check-row{padding:3px 0;gap:10px;grid-template-columns:minmax(0,1fr) minmax(120px,160px)}
+.check-row select{min-height:28px;padding:3px 8px;margin:0}
+#device .form-row>label{flex:1 1 200px}
+#device-notes{min-height:0}
+.card-footer{margin-top:10px;gap:10px}
+.job{padding:10px 14px}
+.hero{padding:14px 18px}.hero h1{margin:2px 0 6px}.hero p{margin:0 0 8px}.hero-grid{margin-top:8px}
+.contacts-table{min-width:620px}.contacts-table th{padding:7px 10px}.contacts-table td{padding:4px 10px}
+.contacts-table input{padding:5px 8px;min-height:28px}
+.device-details{margin-top:8px}
+.guide-card h3{margin-bottom:8px}.guide-card details{padding:6px 0}
+.import-card .upload-zone{margin:6px 0}
+
+/* helpers used by the compact pages */
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px;align-items:start}
+.scroll-y{max-height:min(42vh,420px);overflow:auto}
+.status-line{margin:6px 0 0;font-size:12.5px;color:#475569}
+.status-line.error-text{color:var(--red)}
+.kv-row{display:flex;flex-wrap:wrap;gap:2px 18px;font-size:12.5px;margin-top:6px}
+.kv-row span{color:#0f172a}.kv-row b{font-weight:600;color:#64748b;margin-right:4px}
+.conn-row{display:flex;gap:8px;align-items:flex-end}.conn-row .grow{flex:1;min-width:160px}
+.tile-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:10px}
+.mini-tile{display:flex;flex-direction:column;gap:1px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:#fff}
+.mini-tile:hover{border-color:#a7d5c4}.mini-tile b{font-size:13px}.mini-tile small{font-size:11px;color:var(--muted)}
+.inline-form{display:flex;gap:8px;align-items:center}.inline-form input{margin:0;width:210px}
+.data-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.data-table th{text-align:left;position:sticky;top:0;background:#f8fafc;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#64748b;padding:6px 8px;border-bottom:1px solid var(--border);white-space:nowrap}
+.data-table td{padding:5px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle;overflow-wrap:anywhere}
+.data-table .actions{white-space:nowrap;text-align:right}
+.data-table tr:hover{background:#fbfdfc}
+.btn.small{padding:3px 8px;font-size:11px;min-height:0}
+.progress-row{display:flex;align-items:center;gap:10px;margin-top:8px}
+.progress-row progress{flex:1;height:10px;accent-color:#059669}
+.badge{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10.5px;font-weight:600;background:#f1f5f9;color:#64748b}
+.badge.ok{background:#f0fdf4;color:#15803d}.badge.warn{background:#fefce8;color:#854d0e}.badge.bad{background:#fef2f2;color:#b91c1c}
+details.card>summary{cursor:pointer;font-weight:600}
+details.card[open]>summary{margin-bottom:6px}
+
+@media(max-width:1150px){
+ .sidebar{width:196px;padding:12px 8px}.content{padding:12px 16px 24px}.topbar{padding:0 16px}
+ .tile-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .grid-2{grid-template-columns:1fr}
+ .checklist{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+ .shell{display:block}.sidebar{width:100%;padding:8px 10px 4px}.brand{margin:0 4px 6px}
+ .sidebar nav{gap:2px;padding-bottom:4px}.nav-link{padding:6px 8px;font-size:12px}
+ .topbar{height:36px;padding:0 12px}.content{padding:10px 12px 20px}
+ .page-heading h1{font-size:19px}.page-heading p{font-size:12px;flex-basis:100%}
+ .card{padding:10px 12px}
+ .tile-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .conn-row,.inline-form{flex-wrap:wrap}.inline-form input{width:100%}
+ .theme-card{grid-template-columns:96px minmax(0,1fr)}.theme-preview{min-height:150px}.theme-preview img{width:72px;height:96px}
+ .lib-card{grid-template-columns:minmax(0,1fr) auto}
+ .check-row{grid-template-columns:minmax(0,1fr) 128px;font-size:12px}.check-row span{font-size:12px}
+ .scroll-y{max-height:min(46vh,380px)}
+ .data-table{font-size:12px}
+}

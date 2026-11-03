@@ -118,6 +118,7 @@ def build_parser() -> argparse.ArgumentParser:
     pbc.add_argument("--label", default="volume", help="label stored instead of the absolute path")
     pbc.add_argument("--exclude", action="append", default=[], metavar="REL", help="relative path to skip (repeatable)")
     pbc.add_argument("--max-bytes", type=int)
+    pbc.add_argument("--progress", type=Path, metavar="FILE", help="write copy counters (no file names) to FILE")
     pbv = pb.add_parser("verify", parents=[common], help="re-hash a backup against its manifest")
     pbv.add_argument("backup", type=Path)
     pbr = pb.add_parser("restore", parents=[common], help="plan (default) or apply a restore; never overwrites or deletes")
@@ -302,7 +303,8 @@ def _dispatch(args) -> Report | None:
         from symport.phone import ops
         if a == "backup":
             if args.op == "create":
-                return ops.backup_create(args.volume, args.dest, args.label, tuple(args.exclude), args.max_bytes)
+                return ops.backup_create(args.volume, args.dest, args.label, tuple(args.exclude), args.max_bytes,
+                                         args.progress)
             if args.op == "verify":
                 return ops.backup_verify(args.backup)
             return ops.backup_restore(args.backup, args.volume, args.apply, args.only)
