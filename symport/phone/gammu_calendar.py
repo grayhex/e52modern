@@ -59,7 +59,7 @@ def parse_ics(raw: bytes) -> dict:
     return {"events": events, "todos": todos, "skipped_components": skipped}
 
 
-def read(config: str) -> dict:
+def read(config: str, include_raw: bool = False) -> dict:
     with tempfile.TemporaryDirectory(prefix="symport-calendar-") as tmp:
         path = Path(tmp) / "phone.ics"
         _run(config, ["backup", str(path), "-yes"])
@@ -71,6 +71,9 @@ def read(config: str) -> dict:
                              "distinguished from missing support")
         data = parse_ics(raw)
         data["raw_ics_bytes"] = len(raw)
+        if include_raw:
+            import base64
+            data["raw_ics"] = base64.b64encode(raw).decode()
         if not data["events"] and not data["todos"]:
             data["status"] = "empty-or-unsupported"
         else:

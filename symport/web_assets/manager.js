@@ -33,7 +33,7 @@ dm('discover').onclick=()=>dmRun(async()=>{
   dm('status').textContent=r.devices.length?'Список обновлён. Идентификация телефона не подтверждена.':'Телефон не подключён. Подключите карту памяти или настройте PC Bridge на ПК с телефоном по инструкции подключения.';
   dmSelection();
   dm('capabilities').replaceChildren();
-  const descriptions={contacts:['Контакты','Нужен проверенный адаптер Gammu, SyncML или E52 Agent.'],sms:['SMS','Нужен транспорт с подтверждённым чтением и отправкой SMS.'],applications:['Приложения','Режим накопителя не предоставляет реестр установленных приложений.'],backup:['Копии файлов','Только текущая папка. Контакты, сообщения и системные данные не входят.'],bluetooth:['Bluetooth','Сопряжение и проверка доступных сервисов выполняются на ПК с телефоном.']};
+  const descriptions={contacts:['Контакты','Нужен проверенный адаптер Gammu, SyncML или E52 Agent.'],sms:['SMS','Нужен транспорт с подтверждённым чтением и отправкой SMS.'],applications:['Приложения','Режим накопителя не предоставляет реестр установленных приложений.'],backup:['Копии файлов','Полная копия накопителя — раздел «Резервные копии»; контакты, сообщения и прошивка не входят.'],calendar:['Календарь','Чтение через Gammu; поддержка E52 не подтверждена.'],bluetooth:['Bluetooth','Сопряжение и проверка доступных сервисов выполняются на ПК с телефоном.']};
   for(const name of Object.keys(r.limitations)){const item=descriptions[name];if(!item)continue;const p=el('p');p.append(el('strong','',item[0]+': '),document.createTextNode(item[1]));dm('capabilities').append(p);}
 });
 async function dmUpload(action){
@@ -75,9 +75,9 @@ function dmSelection(){
  for(const name of ['list','send','sis','mkdir','backup','preview'])dm(name).disabled=!device?.capabilities.includes('files');
  dm('info').replaceChildren();
  if(!device)return;
- const details=el('dl','device-details');
- const fields=[['Подключение',device.connected?'Доступно':'Отключено'],['Транспорт',device.transport],['Модель',device.model||'Не определена'],['RM-код',device.rm||'Не определён'],['Прошивка',device.firmware||'Не определена'],['Батарея',device.battery??'Нет данных'],['Свободно на диске',device.free===null||device.free===undefined?'Нет данных':(device.free/1024/1024).toFixed(0)+' МиБ']];
- for(const [label,value] of fields){details.append(el('dt','muted',label),el('dd','',String(value)));}
+ const details=el('div','kv-row');
+ const fields=[['Подключение',device.connected?'Доступно':'Отключено'],['Транспорт',device.transport],['Модель',device.model||'не определена'],['RM',device.rm||'не определён'],['Прошивка',device.firmware||'не определена'],['Батарея',device.battery??'нет данных'],['Свободно',device.free===null||device.free===undefined?'нет данных':(device.free/1024/1024).toFixed(0)+' МиБ']];
+ for(const [label,value] of fields){const item=el('span');item.append(el('b','',label+':'),document.createTextNode(String(value)));details.append(item);}
  dm('info').append(details);dm('files').replaceChildren();
 }
 dm('device').onchange=dmSelection;

@@ -21,9 +21,22 @@ def _base(command: str) -> Report:
     return rep
 
 
-def backup_create(volume: Path, dest: Path, label: str, exclude: tuple[str, ...], max_bytes: int | None) -> Report:
+def backup_create(volume: Path, dest: Path, label: str, exclude: tuple[str, ...], max_bytes: int | None,
+                  progress_file: Path | None = None) -> Report:
     rep = _base("phone backup create")
     kw = {"max_bytes": max_bytes} if max_bytes else {}
+    if progress_file is not None:
+        import time
+
+        from .backups import write_progress
+        last = [0.0]
+
+        def report(done, total, _rel, nbytes, bytes_total):
+            now = time.monotonic()
+            if done == total or now - last[0] >= 0.4:      # counters only; never file names
+                last[0] = now
+                write_progress(Path(progress_file), done, total, nbytes, bytes_total)
+        kw["progress"] = report
     try:
         res = archive.create(volume, dest, label=label, exclude=exclude, **kw)
     except archive.BackupError as e:

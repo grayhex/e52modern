@@ -158,7 +158,7 @@ def create(volume: Path, dest: Path, *, label: str = "volume", exclude: tuple[st
         entries.append({"path": rel, "size": n, "sha256": digest, "mtime_ns": st.st_mtime_ns})
         copied += n
         if progress:
-            progress(i, len(files), rel)
+            progress(i, len(files), rel, copied, total)
     manifest = {
         "schema": SCHEMA, "created": datetime.now(UTC).isoformat(timespec="seconds"),
         "source_label": label, "complete": not skipped,

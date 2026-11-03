@@ -55,7 +55,7 @@ class LocalTransports:
                 return gammu_contacts.import_contacts(config, data['contacts'], data.get('confirm'))
             if data['action'] == 'calendar-read':
                 from . import gammu_calendar
-                return gammu_calendar.read(config)
+                return gammu_calendar.read(config, include_raw=True)
             raise ValueError('Gammu предоставляет контакты; для файлов выберите накопитель')
         if data.get('action') == 'apps-inventory':
             root = self.files.roots.get(data.get('device'))

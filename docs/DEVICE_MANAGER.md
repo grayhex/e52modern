@@ -115,4 +115,5 @@ unknown and unsupported outcomes in the existing device test report.
 
 Полная файловая копия карты, восстановление без перезаписи, инвентарь SIS, передача SIS и чтение календаря через Gammu — в CLI
 (`symport phone …`, см. [PHONE_BACKUP.md](PHONE_BACKUP.md)). Через API Device Manager добавлены `apps-inventory` (тома) и
-`calendar-read` (устройство `gammu`). Планы — в [ROADMAP.md](ROADMAP.md).
+`calendar-read` (устройство `gammu`). Полные копии в браузере (страница «Резервные копии») работают только с накопителями,
+зарегистрированными на самом сервере (`SYMPORT_DEVICE_ROOTS`); через PC Bridge они **не поддерживаются**. Планы — в [ROADMAP.md](ROADMAP.md).
