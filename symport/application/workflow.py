@@ -40,9 +40,9 @@ def init_project(name: str, dest: Path, profile: Profile, sdk: modern_sdk.Modern
     if arch is None:
         rep.add("target.arch", FAIL, f"profile {profile.id} has no mappable ABI ({abi})")
         return rep
-    r = sdk.run(["init", str(dest), "--name", name, "--non-interactive", "--architecture", arch])
+    r, parsed = sdk.json(["init", str(dest), "--name", name, "--non-interactive", "--architecture", arch])
     rep.add("symbian.init", PASS if r.ok else FAIL,
-            f"`symbian init` ({arch}) {'succeeded' if r.ok else 'failed'}: {r.output[-400:]}",
+            f"`symbian init` ({arch}) {'succeeded' if r.ok else 'failed'}: {modern_sdk.summarize(r, parsed)}",
             "environment")
     if not r.ok:
         return rep
@@ -58,7 +58,11 @@ def init_project(name: str, dest: Path, profile: Profile, sdk: modern_sdk.Modern
     return rep
 
 
-def build_project(project: Path, profile: Profile, sdk: modern_sdk.ModernSdk) -> Report:
+def build_project(project: Path, profile: Profile, sdk: modern_sdk.ModernSdk, mode: str = "app",
+                  compiler: str | None = None, linker: str | None = None) -> Report:
+    """``mode='app'``: `symbian app build` (needs an installed native SDK, produced by `symbian init`).
+    ``mode='toolchain'``: low-level `symbian build` with the host Clang/LLD only (works for the SDK's
+    freestanding probe-style projects; no libc++/Window Server runtime)."""
     rep = Report("app build")
     try:
         cfg = proj.read_config(project)
@@ -67,15 +71,28 @@ def build_project(project: Path, profile: Profile, sdk: modern_sdk.ModernSdk) ->
         return rep
     arch = cfg.get("project", {}).get("architecture")
     want = {"armv5": "armv5t"}.get(profile.value("cpu.target_abi", ""), None)
-    rep.add("project.architecture", PASS if arch == want else FAIL,
-            f"project architecture {arch!r}; profile {profile.id} needs {want!r} "
-            "(set it in symbian.toml / `symbian app configure`)")
-    if arch != want:
+    explicit_flag = mode == "toolchain" and arch is None     # the low-level build takes --architecture
+    ok_arch = arch == want or explicit_flag
+    rep.add("project.architecture", PASS if ok_arch else FAIL,
+            (f"project does not set an architecture; passing --architecture {want} explicitly"
+             if explicit_flag else f"project architecture {arch!r}; profile {profile.id} needs {want!r} "
+             "(set it in symbian.toml / `symbian app configure`)"))
+    if not ok_arch:
         return rep
     if not _need_sdk(rep, sdk):
         return rep
-    r = sdk.run(["app", "build", "--project", str(project)])
-    rep.add("symbian.build", PASS if r.ok else FAIL, r.output[-600:] or "build finished", "environment")
+    if mode == "toolchain":
+        args = ["build", "--project", str(project), "--output", str(Path(project) / ".symbian" / "build"),
+                "--architecture", want]
+        args += ["--compiler", compiler] if compiler else []
+        args += ["--linker", linker] if linker else []
+        rep.limitations.append("toolchain mode uses the SDK's low-level `symbian build`: no installed native "
+                               "SDK, so only freestanding E32 images (no libc++/Window Server runtime).")
+    else:
+        args = ["app", "build", "--project", str(project)]
+    r, parsed = sdk.json(args)
+    rep.add("symbian.build", PASS if r.ok else FAIL,
+            modern_sdk.summarize(r, parsed) if not r.ok else "build finished", "environment", mode=mode)
     exe = proj.built_executable(project, cfg)
     if r.ok and exe:
         rep.artifacts.append(artifact_entry(exe))
@@ -104,8 +121,9 @@ def package_project(project: Path, profile: Profile, sdk: modern_sdk.ModernSdk,
     args = ["package", "--project", str(project), "--artifact", str(exe), "--output", str(out)]
     if cert and key:
         args += ["--signing-certificate", str(cert), "--signing-key", str(key)]
-    r = sdk.run(args)
-    rep.add("symbian.package", PASS if r.ok else FAIL, r.output[-600:] or "packaged", "environment")
+    r, parsed = sdk.json(args)
+    rep.add("symbian.package", PASS if r.ok else FAIL,
+            modern_sdk.summarize(r, parsed) if not r.ok else "packaged", "environment")
     if not r.ok:
         return rep
     sis_files = sorted(Path(out).glob("*.sis")) if Path(out).is_dir() else []

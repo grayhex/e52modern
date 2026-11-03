@@ -10,7 +10,7 @@
    существующие инструменты вызываются как backend'ы, а не переписываются.
 
 > **Статус честно:** тема и приложения **не проверялись на физическом Nokia E52** и в эмуляторе. Автоматически проверена
-> статическая корректность файлов. См. [`docs/STATUS.md`](docs/STATUS.md) и [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
+> статическая корректность файлов; разбор E32/SIS сверен с реальным SDK `symbian-platform` (`tools/sdk/verify-real-sdk.sh`). См. [`docs/STATUS.md`](docs/STATUS.md) и [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
 
 ## Быстрый старт
 
@@ -32,8 +32,8 @@ symport theme package --variant light --backend native    # эксперимен
 |---|---|
 | Окружение | `doctor`, `profile list/show` |
 | Тема (P0) | `theme build`, `theme inspect [--reproducible]`, `theme package [--backend auto\|makesis\|native\|modern-sdk]` |
-| Анализ | `sis inspect`, `app inspect`, `app analyze [--firmware-profile]` |
-| Приложения (P1) | `app init`, `app build`, `app package` (через `symbian-platform`) |
+| Анализ | `sis inspect`, `sis compare`, `app inspect`, `app analyze [--firmware-profile] [--cross-check]` |
+| Приложения (P1) | `app init`, `app build [--mode app\|toolchain]`, `app package` (через `symbian-platform`) |
 | Тестирование (P2) | `emulator list/test`, `device list/info/stage`, `report matrix` |
 
 Каждая команда поддерживает `--json` и `--report FILE`. Коды возврата: 0 успех, 1 ошибка проверки, 2 ошибка использования,

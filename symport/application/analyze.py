@@ -46,7 +46,8 @@ def _elf_note(data: bytes, rep: Report) -> None:
     rep.data["compatibility"] = {"status": "not-tested", "reason": "ELF is not an E32 image"}
 
 
-def analyze_file(path: Path, profile: Profile, fw: compat.FirmwareProfile | None) -> Report:
+def analyze_file(path: Path, profile: Profile, fw: compat.FirmwareProfile | None,
+                 cross_check: bool = False) -> Report:
     rep = Report(f"app inspect {Path(path).name}")
     rep.verification["static_automated"] = True
     try:
@@ -58,6 +59,9 @@ def analyze_file(path: Path, profile: Profile, fw: compat.FirmwareProfile | None
     rep.data["kind"] = kind
     if kind == "e32":
         analyze_e32_bytes(data, profile, fw, rep)
+        if cross_check and rep.data.get("images"):
+            from symport.analysis import crosscheck
+            crosscheck.crosscheck_file(Path(path), rep.data["images"][0], rep)
     elif kind == "sis":
         return analyze_sis(path, profile, fw)
     elif kind == "elf":
@@ -119,7 +123,8 @@ def analyze_sis(path: Path, profile: Profile, fw: compat.FirmwareProfile | None)
     return rep
 
 
-def analyze_project(project: Path, profile: Profile, fw: compat.FirmwareProfile | None) -> Report:
+def analyze_project(project: Path, profile: Profile, fw: compat.FirmwareProfile | None,
+                    cross_check: bool = False) -> Report:
     """Project directory: configuration + built E32 image if present."""
     from symport.application import project as proj
     from symport.application.workflow import inspect_project
@@ -137,6 +142,9 @@ def analyze_project(project: Path, profile: Profile, fw: compat.FirmwareProfile 
                                      "reason": "project not built"}
         return rep
     analyze_e32_bytes(exe.read_bytes(), profile, fw, rep)
+    if cross_check and rep.data.get("images"):
+        from symport.analysis import crosscheck
+        crosscheck.crosscheck_file(exe, rep.data["images"][0], rep)
     rep.verification["static_automated"] = True
     rep.limitations.append("Static analysis only; runtime behaviour not tested.")
     return rep

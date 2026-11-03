@@ -42,4 +42,8 @@ symbian sdk install ~/dev/symbian-sdk --archive <native SDK archive>    # glibc 
 export SYMPORT_SYMBIAN=$(which symbian)      # если он не в PATH SymPort
 ```
 
-Эти шаги описаны по документации проекта и **в среде разработки SymPort не выполнялись**.
+`pip install symbian-platform` и `symbian doctor` в среде разработки SymPort выполнены (версия 0.3.0). Нативный SDK-архив
+и `symbian sdk install` — нет (в релизах не найдено доступных артефактов, API GitHub закрыт областью сессии).
+Проверка связки одной командой: `tools/sdk/verify-real-sdk.sh` (нужны `clang++` с ARM-таргетом, `ld.lld`, `cmake`).
+
+> `symbian app build` требует Ninja ≥ 1.12 и ищет его рядом с компилятором — см. раздел о Ninja в `docs/APPLICATIONS.md`.

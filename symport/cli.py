@@ -69,6 +69,11 @@ def build_parser() -> argparse.ArgumentParser:
     si.add_argument("--target", default=DEFAULT_TARGET)
     si.add_argument("--firmware-profile", type=Path)
 
+    sc = sis.add_parser("compare", parents=[common],
+                        help="compare installer-relevant content of two SIS files (e.g. MakeSIS vs native writer)")
+    sc.add_argument("a", type=Path)
+    sc.add_argument("b", type=Path)
+
     app = sub.add_parser("app", help="native applications (via symbian-platform)").add_subparsers(
         dest="action", required=True)
     ai = app.add_parser("init", parents=[common], help="create a project with the SDK's starter")
@@ -78,16 +83,24 @@ def build_parser() -> argparse.ArgumentParser:
     ab = app.add_parser("build", parents=[common], help="build an E32 image")
     ab.add_argument("--project", type=Path, required=True)
     ab.add_argument("--target", default=DEFAULT_TARGET)
+    ab.add_argument("--mode", choices=("app", "toolchain"), default="app",
+                    help="app: `symbian app build` (installed native SDK); toolchain: low-level `symbian build`")
+    ab.add_argument("--compiler", help="ARM-capable clang++ (toolchain mode); ninja is looked up next to it")
+    ab.add_argument("--linker", help="ld.lld (toolchain mode)")
     an = app.add_parser("inspect", parents=[common], help="inspect a project or an E32/SIS/ELF file")
     an.add_argument("file", nargs="?", type=Path)
     an.add_argument("--project", type=Path)
     an.add_argument("--target", default=DEFAULT_TARGET)
     an.add_argument("--firmware-profile", type=Path)
+    an.add_argument("--cross-check", action="store_true",
+                    help="compare E32 fields with `symbian inspect --format e32` (independent implementation)")
     aa = app.add_parser("analyze", parents=[common], help="compatibility analysis of a project/binary")
     aa.add_argument("path", type=Path)
     aa.add_argument("--target", default=DEFAULT_TARGET)
     aa.add_argument("--firmware-profile", type=Path,
                     help="user-supplied firmware profile (DLL/ordinal table); without it imports stay 'unknown'")
+    aa.add_argument("--cross-check", action="store_true",
+                    help="compare E32 fields with `symbian inspect --format e32` (independent implementation)")
     ap = app.add_parser("package", parents=[common], help="package a built project as SIS")
     ap.add_argument("--project", type=Path, required=True)
     ap.add_argument("--target", default=DEFAULT_TARGET)
@@ -214,6 +227,23 @@ def _dispatch(args) -> Report | None:
             parts = {v: tpackage.package_variant(cfg, v, args.backend, args.output, args.cert, args.key)
                      for v in _variants(args.variant)}
             return _merge("theme package", parts)
+    if g == "sis" and a == "compare":
+        from symport.sis import compare as sis_compare
+        from symport.sis.fields import SisFormatError
+        rep = Report("sis compare")
+        try:
+            diffs = sis_compare.compare(args.a.read_bytes(), args.b.read_bytes())
+        except (OSError, SisFormatError) as e:
+            rep.add("sis.parse", FAIL, str(e))
+            return rep
+        rep.verification["static_automated"] = True
+        rep.data["differences"] = diffs
+        rep.add("sis.equivalent", PASS if not diffs else FAIL,
+                "installer-relevant content is identical" if not diffs
+                else f"{len(diffs)} difference(s): " + "; ".join(d["field"] for d in diffs))
+        rep.limitations.append("Compares identity, files and dependency counts only; byte layout and compression "
+                               "may differ legitimately. Says nothing about acceptance by a phone.")
+        return rep
     if g == "sis" and a == "inspect":
         fw = compat.load_firmware_profile(args.firmware_profile) if args.firmware_profile else None
         return app_analyze.analyze_sis(args.file, _profile(cfg, args.target), fw)
@@ -223,7 +253,8 @@ def _dispatch(args) -> Report | None:
             return workflow.init_project(args.name, args.dest or Path(args.name),
                                          _profile(cfg, args.target), sdk)
         if a == "build":
-            return workflow.build_project(args.project, _profile(cfg, args.target), sdk)
+            return workflow.build_project(args.project, _profile(cfg, args.target), sdk, args.mode,
+                                          args.compiler, args.linker)
         if a == "package":
             return workflow.package_project(args.project, _profile(cfg, args.target), sdk,
                                             args.output, args.cert, args.key)
@@ -234,11 +265,11 @@ def _dispatch(args) -> Report | None:
                 return workflow.inspect_project(args.project, profile)
             if not args.file:
                 raise ConfigError("give a file or --project")
-            return app_analyze.analyze_file(args.file, profile, fw)
+            return app_analyze.analyze_file(args.file, profile, fw, args.cross_check)
         if a == "analyze":
             if args.path.is_dir():
-                return app_analyze.analyze_project(args.path, profile, fw)
-            return app_analyze.analyze_file(args.path, profile, fw)
+                return app_analyze.analyze_project(args.path, profile, fw, args.cross_check)
+            return app_analyze.analyze_file(args.path, profile, fw, args.cross_check)
     if g == "emulator":
         if a == "list":
             return emulator.list_emulators(cfg)

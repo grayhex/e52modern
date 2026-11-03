@@ -9,11 +9,43 @@ from symport.backends import eka2l1, legacy_sdk, modern_sdk, nokia_skin, packagi
 from symport.config import Config, ConfigError, find_repo_root
 from symport.devices import profiles as prof
 from symport.report import ENVIRONMENT, FAIL, PASS, SKIP, WARN, Report
+from symport.util import run
 
 
 def _module_available(name: str) -> bool:
     import importlib.util
     return importlib.util.find_spec(name) is not None
+
+
+def _ninja_ok(path: str) -> tuple[bool, str]:
+    import re
+    r = run([path, "--version"], timeout=20)
+    m = re.match(r"(\d+)\.(\d+)", r.stdout.strip())
+    return (bool(m) and tuple(map(int, m.groups())) >= (1, 12)), r.stdout.strip()
+
+
+def _symbian_doctor(modern, rep: Report) -> None:
+    """Ask the installed symbian CLI what it sees (its own `doctor`), and flag the known Ninja trap."""
+    r, parsed = modern.json(["doctor"], timeout=60)
+    res = (parsed or {}).get("result") if parsed else None
+    if not r.ok or not res:
+        rep.add("symbian.doctor", WARN, "`symbian doctor` did not return a result", ENVIRONMENT)
+        return
+    tools_seen = res.get("tools", {})
+    rep.data["symbian_doctor"] = res
+    missing = [k for k in ("clang++", "cmake", "ninja", "ld.lld") if not tools_seen.get(k)]
+    rep.add("symbian.toolchain", WARN if missing else PASS,
+            "host toolchain for ARM builds: " + (f"missing {missing}" if missing else "clang++, cmake, ninja, ld.lld found"),
+            ENVIRONMENT)
+    if tools_seen.get("ninja"):
+        ok, ver = _ninja_ok(tools_seen["ninja"])
+        rep.add("symbian.ninja", PASS if ok else WARN,
+                f"ninja {ver}" + ("" if ok else " is older than 1.12, which `symbian app build` requires; the SDK "
+                                  "prefers a ninja located next to the compiler (see docs/INSTALL.md)"),
+                ENVIRONMENT)
+    rep.add("symbian.sdk_verified", PASS if res.get("target", {}).get("sdk_verified") else SKIP,
+            "native target SDK verified by `symbian doctor`" if res.get("target", {}).get("sdk_verified")
+            else "native target SDK not installed/verified (needed for `app init/build`)", ENVIRONMENT)
 
 
 def survey(repo: Path | None = None) -> Report:
@@ -75,6 +107,8 @@ def survey(repo: Path | None = None) -> Report:
         ver = modern.version() if modern.available else None
         tool("symbian", modern.executable, "app build/package/inspect, device staging (symbian-platform)",
              False, "pip install symbian-platform (Python 3.11-3.14, Linux glibc >= 2.28)", ver)
+        if modern.available:
+            _symbian_doctor(modern, rep)
         profs = []
         try:
             profs = prof.list_profiles(cfg.profiles_dirs)

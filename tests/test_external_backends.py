@@ -25,6 +25,8 @@ def sis_file(tmp_path, name="t.sis"):
 FAKE_SYMBIAN = r"""
 import sys, json
 a = sys.argv[1:]
+if a[:2] == ['--output-format', 'json']:
+    a = a[2:]
 open(sys.argv[0] + '.calls', 'a').write(json.dumps(a) + '\n')
 if a[:2] == ['device', 'list']:
     print('0: Nokia (usb) mass-storage')
@@ -190,6 +192,7 @@ def test_app_package_delegates_and_verifies_sis(tmp_path):
     sis = sis_file(tmp_path, "made.sis")
     fake = write_tool(tmp_path / "symbian",
                       "import sys, shutil, pathlib\na = sys.argv[1:]\n"
+                      "if a[:2] == ['--output-format', 'json']:\n    a = a[2:]\n"
                       "if a[0] == 'package':\n"
                       f"    out = pathlib.Path(a[a.index('--output') + 1]); out.mkdir(parents=True, exist_ok=True)\n"
                       f"    shutil.copy({str(sis)!r}, out / 'hello.sis')\n")
@@ -214,3 +217,20 @@ def test_sis_inspect_evaluates_embedded_e32(tmp_path):
                                                      [writer.SisFile("!:\\sys\\bin\\t.exe", make_e32(cpu=0x2002))])))
     d = json.loads(sp("sis", "inspect", str(armv6), "--json").stdout)
     assert d["data"]["compatibility"]["status"] == "incompatible"
+
+
+def test_app_build_toolchain_mode_passes_architecture_and_tools(tmp_path):
+    fake = write_tool(tmp_path / "symbian", FAKE_SYMBIAN)
+    proj = tmp_path / "p"
+    proj.mkdir()
+    (proj / "symbian.toml").write_text('[project]\nname = "p"\nkind = "e32-pic-experiment"\nuid3 = 0xe0000001\n')
+    r = sp("app", "build", "--project", str(proj), "--mode", "toolchain", "--compiler", "/x/clang++",
+           "--linker", "/x/ld.lld", "--json", env={"SYMPORT_SYMBIAN": str(fake)})
+    calls = [json.loads(line) for line in open(str(fake) + ".calls")]
+    assert calls[-1][0] == "build" and calls[-1][calls[-1].index("--architecture") + 1] == "armv5t"
+    assert calls[-1][calls[-1].index("--compiler") + 1] == "/x/clang++"
+    d = json.loads(r.stdout)
+    assert any("freestanding" in x for x in d["limitations"])
+    # app mode still refuses a project without an explicit armv5t architecture
+    r = sp("app", "build", "--project", str(proj), "--json", env={"SYMPORT_SYMBIAN": str(fake)})
+    assert r.returncode == 1

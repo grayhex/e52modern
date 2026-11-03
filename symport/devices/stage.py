@@ -29,9 +29,11 @@ def device_list() -> Report:
     rep = Report("device list")
     sdk = _sdk(rep)
     if sdk:
-        r = sdk.run(["device", "list"], timeout=60)
-        rep.add("symbian.device.list", PASS if r.ok else FAIL, r.output[-800:] or "no output", DEVICE)
+        r, parsed = sdk.json(["device", "list"], timeout=60)
+        rep.add("symbian.device.list", PASS if r.ok else FAIL, modern_sdk.summarize(r, parsed), DEVICE)
         rep.data["output"] = r.output
+        if parsed:
+            rep.data["sdk_result"] = parsed.get("result")
     rep.limitations.append("A USB product name or a successful file copy does not prove which firmware "
                            "the phone runs or that an application will execute.")
     return rep
@@ -42,9 +44,11 @@ def device_info(selector: str | None) -> Report:
     sdk = _sdk(rep)
     if sdk:
         args = ["device", "info"] + (["--device", selector] if selector else [])
-        r = sdk.run(args, timeout=60)
-        rep.add("symbian.device.info", PASS if r.ok else FAIL, r.output[-800:] or "no output", DEVICE)
+        r, parsed = sdk.json(args, timeout=60)
+        rep.add("symbian.device.info", PASS if r.ok else FAIL, modern_sdk.summarize(r, parsed), DEVICE)
         rep.data["output"] = r.output
+        if parsed:
+            rep.data["sdk_result"] = parsed.get("result")
     return rep
 
 
@@ -66,8 +70,8 @@ def device_stage(sis: Path, selector: str | None) -> Report:
     if not sdk:
         return rep
     args = ["device", "install", "--package", str(sis)] + (["--device", selector] if selector else [])
-    r = sdk.run(args, timeout=600)
-    rep.add("symbian.device.stage", PASS if r.ok else FAIL, r.output[-800:] or "no output", DEVICE,
+    r, parsed = sdk.json(args, timeout=600)
+    rep.add("symbian.device.stage", PASS if r.ok else FAIL, modern_sdk.summarize(r, parsed), DEVICE,
             sha256=sha256_file(Path(sis)))
     rep.add("device.install", UNKNOWN, "staged only: finish installation on the handset and record the "
             "result with the manual checklist (docs/DEVICE_TEST.md)", DEVICE)
