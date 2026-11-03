@@ -6,7 +6,9 @@ through a shell. This server is meant for loopback/SSH tunnel access, not the In
 from __future__ import annotations
 
 import argparse
+import base64
 import json
+import os
 import re
 import secrets
 import subprocess
@@ -19,6 +21,9 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 from symport.config import find_repo_root
+from symport.library import ThemeLibrary
+from symport.phone import DeviceManager
+from symport.phone.contracts import LIMIT
 
 ASSETS = Path(__file__).with_name("web_assets")
 NAMES = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")
@@ -152,6 +157,8 @@ def _selector(data: dict) -> str:
 class Workbench:
     def __init__(self, repo: Path):
         self.repo = repo
+        self.devices = DeviceManager(repo)
+        self.library = ThemeLibrary(repo)
         self.token = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
         self.jobs: list[dict] = []
@@ -162,7 +169,7 @@ class Workbench:
             jobs = [dict(j) for j in reversed(self.jobs)]
         return {"schema": "symport.web/1", "jobs": jobs,
                 "projects": projects(self.repo), "packages": packages(self.repo),
-                "device_report": self.read_report()}
+                "library": self.library.list(), "device_report": self.read_report()}
 
     def launch(self, data: dict) -> dict:
         args = command(self.repo, data)
@@ -288,6 +295,8 @@ def make_handler(state: Workbench):
                 "/": ("index.html", "text/html; charset=utf-8"),
                 "/app.css": ("app.css", "text/css; charset=utf-8"),
                 "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+                "/manager.js": ("manager.js", "text/javascript; charset=utf-8"),
+                "/library.js": ("library.js", "text/javascript; charset=utf-8"),
             }
             if url.path in static:
                 file, mime = static[url.path]
@@ -295,6 +304,12 @@ def make_handler(state: Workbench):
                 if file == "index.html":
                     body = body.replace(b"__SESSION_TOKEN__", state.token.encode())
                 return self._send(body, mime)
+            if url.path == "/api/library/download":
+                try:
+                    name, raw = state.library.download(parse_qs(url.query).get('id', [''])[0])
+                    return self._send(raw, 'application/octet-stream', filename=name)
+                except (ValueError, OSError) as exc:
+                    return self._json({'error': str(exc)}, 404)
             if url.path == "/api/state":
                 return self._json(state.snapshot())
             if url.path in ("/api/preview/light", "/api/preview/dark"):
@@ -329,8 +344,12 @@ def make_handler(state: Workbench):
                        f"http://127.0.0.1:{self.server.server_port}"}
             if origin and origin not in allowed:
                 return self._json({"error": "Origin not allowed"}, 403)
-            if not secrets.compare_digest(
-                    self.headers.get("X-Symport-Token", ""), state.token):
+            bridge_key = os.getenv("SYMPORT_BRIDGE_KEY", "")
+            authorized = (len(bridge_key) >= 32 and secrets.compare_digest(
+                self.headers.get("X-Symport-Bridge-Key", ""), bridge_key)
+                if self.path == "/api/bridge" else secrets.compare_digest(
+                    self.headers.get("X-Symport-Token", ""), state.token))
+            if not authorized:
                 return self._json({"error": "Bad session token"}, 403)
             if self.headers.get("Content-Type", "").split(";")[0] != "application/json":
                 return self._json({"error": "JSON required"}, 415)
@@ -338,19 +357,33 @@ def make_handler(state: Workbench):
                 length = int(self.headers.get("Content-Length", "0"))
             except ValueError:
                 return self._json({"error": "Invalid length"}, 400)
-            if length <= 0 or length > 12_000:
+            if length <= 0 or length > (LIMIT * 4 // 3 + 4096 if self.path in ("/api/manager", "/api/bridge", "/api/library") else 12_000):
                 return self._json({"error": "Invalid body size"}, 413)
             try:
                 body = json.loads(self.rfile.read(length))
                 if not isinstance(body, dict):
                     raise ValueError("Expected JSON object")
+                if self.path == "/api/library":
+                    action = body.get('action')
+                    if action == 'import':
+                        return self._json(state.library.import_package(body.get('name'), body.get('content', '')))
+                    if action == 'prepare-build':
+                        path = package_path(state.repo, body.get('package'))
+                        if not str(body.get('package', '')).startswith('theme:'):
+                            raise ValueError('Choose an E52 CLEAR theme package')
+                        return self._json(state.library.import_package(path.name, base64.b64encode(path.read_bytes()).decode()))
+                    if action == 'publish':
+                        return self._json(state.library.publish(body.get('id'), body.get('confirm')))
+                    raise ValueError('Unknown library operation')
+                if self.path in ("/api/manager", "/api/bridge"):
+                    return self._json(state.devices.execute(body))
                 if self.path == "/api/run":
                     result = state.launch(body)
                     return self._json(result, 202)
                 if self.path == "/api/device-report":
                     return self._json(state.save_report(body))
                 return self._json({"error": "Not found"}, 404)
-            except (ValueError, RuntimeError) as exc:
+            except (ValueError, RuntimeError, OSError) as exc:
                 return self._json({"error": str(exc)}, 400)
 
     return Handler

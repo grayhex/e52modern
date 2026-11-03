@@ -14,6 +14,11 @@ services:
     volumes:
       - symport-build:/srv/e52modern/build
       - symport-workspace:/srv/e52modern/workspace
+    environment:
+      # Enroll only explicitly mounted phone volumes. Never mount the host root.
+      SYMPORT_DEVICE_ROOTS: "${SYMPORT_DEVICE_ROOTS:-{}}"
+      SYMPORT_BRIDGE_URL: ${SYMPORT_BRIDGE_URL:-}
+      SYMPORT_BRIDGE_KEY: ${SYMPORT_BRIDGE_KEY:-}
     security_opt:
       - no-new-privileges:true
     cap_drop:

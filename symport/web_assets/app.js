@@ -1,6 +1,6 @@
 "use strict";
 const token = document.querySelector('meta[name="symport-token"]').content;
-const pages = {overview:"Обзор",themes:"Темы E52 CLEAR",apps:"Приложения",device:"Телефон и тесты",activity:"История операций"};
+const pages = {manager:"Телефон и файлы",contacts:"Контакты",messages:"Сообщения",backups:"Резервные копии",installed:"Приложения телефона",overview:"Обзор",themes:"Темы E52 CLEAR",apps:"Разработка",device:"Телефон и тесты",activity:"История операций"};
 const checklistLabels = {
   identify:"Модель, RM-код и версия прошивки",
   backup:"Резервная копия и возврат к штатной теме",
@@ -35,8 +35,8 @@ function notify(message){
   toastTimeout=setTimeout(()=>n.classList.remove("visible"),5300);
 }
 function navigate(){
-  const requested=(location.hash||"#overview").slice(1);
-  const current=pages[requested]?requested:"overview";
+  const requested=(location.hash||"#manager").slice(1);
+  const current=pages[requested]?requested:"manager";
   for(const p of document.querySelectorAll(".page"))p.classList.toggle("visible",p.id===current);
   for(const n of document.querySelectorAll("[data-nav]"))n.classList.toggle("active",n.dataset.nav===current);
   document.getElementById("page-label").textContent=pages[current];
@@ -98,6 +98,7 @@ async function refresh(){
   try{
     state=await request("GET","/api/state");
     render();
+    if(typeof renderLibrary === "function")renderLibrary(state);
   }catch(err){notify("Не удалось обновить данные: "+err.message)}
 }
 function downloadButton(item){
