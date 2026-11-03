@@ -84,6 +84,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
+      - name: Host toolchain required by the SDK (ARM-capable clang, lld, cmake)
+        run: sudo apt-get update && sudo apt-get install -y clang lld cmake
       - run: pip install -e '.[dev]'
       - name: Install symbian-platform (CLI only, without the GUI console dependencies)
         run: |

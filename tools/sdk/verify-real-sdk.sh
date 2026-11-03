@@ -14,7 +14,21 @@ mkdir -p "$WORK/toolbin" "$REPORTS"
 # The SDK looks for ninja NEXT TO the compiler first and needs ninja >= 1.12: build a private tool directory.
 python3 -m venv "$WORK/ninja-venv" >/dev/null
 "$WORK/ninja-venv/bin/pip" install -q --only-binary=:all: ninja
-for t in clang++ ld.lld cmake; do ln -sf "$(command -v "$t")" "$WORK/toolbin/$t"; done
+# Resolve a tool by plain name, then by versioned names (clang++-18, ld.lld-18 ...); fail with a clear message.
+find_tool() {
+  local name="$1" found
+  found="$(command -v "$name" || true)"
+  if [ -z "$found" ]; then
+    found="$(compgen -c "$name-" 2>/dev/null | grep -E "^$name-[0-9]+$" | sort -t- -k2 -n | tail -1 || true)"
+    [ -n "$found" ] && found="$(command -v "$found")"
+  fi
+  if [ -z "$found" ]; then
+    echo "required tool not found: $name (install clang, lld and cmake)" >&2
+    exit 3
+  fi
+  printf '%s\n' "$found"
+}
+for t in clang++ ld.lld cmake; do ln -sf "$(find_tool "$t")" "$WORK/toolbin/$t"; done
 ln -sf "$WORK/ninja-venv/bin/ninja" "$WORK/toolbin/ninja"
 
 # The probe project lives only in the SDK's source tree (public repo, read-only shallow clone).
