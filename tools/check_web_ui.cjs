@@ -28,7 +28,7 @@ fs.mkdirSync(shots,{recursive:true});
   const page=await browser.newPage({viewport:{width:1440,height:1100},deviceScaleFactor:1});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   for(let i=0;i<30;i++){try{await page.goto('http://127.0.0.1:8771');break;}catch(e){await new Promise(r=>setTimeout(r,200));}}
   await page.locator('#manager.visible').waitFor();await page.evaluate(()=>document.fonts.ready);
-  if(await page.locator('.nav-link .asset-icon').count()!==14)throw Error('Uploaded navigation icons missing');
+  if(await page.locator('.nav-link .asset-icon').count()!==16)throw Error('Uploaded navigation icons missing');
   if(!await page.locator('.brand-lockup').evaluate(img=>img.complete&&img.naturalWidth>0))throw Error('Uploaded logo not loaded');
   await page.screenshot({path:path.join(shots,'workspace-desktop.png'),fullPage:true});
   await page.click('[data-nav="contacts"]');await page.locator('#contacts.visible').waitFor();

@@ -19,3 +19,6 @@ tools/s60/.build
 *.pem
 firmware
 roms
+
+.env
+Nokia symbian*.zip

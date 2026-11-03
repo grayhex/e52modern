@@ -1,0 +1,10 @@
+{
+  "container_port": 8778,
+  "http": "ready",
+  "sdk_signature": "valid",
+  "phone_trust": "unknown",
+  "physical_device": "not-tested",
+  "archive_sha256": "fe6421c94fdb425c7f62731e348ed95727671abbfa247bd68bb5dd6ef4c2de33",
+  "private_key": "excluded",
+  "system_automation": "blocked"
+}

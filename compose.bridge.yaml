@@ -1,0 +1,47 @@
+# Docker -> authenticated SSH forward -> Windows/local PC Bridge.
+# Mount existing operator-owned key and a pre-verified known_hosts file. No phone API is published.
+services:
+  workbench:
+    environment:
+      SYMPORT_BRIDGE_URL: http://127.0.0.1:18765
+      SYMPORT_BRIDGE_KEY: ${SYMPORT_BRIDGE_KEY:?Set the same 32+ character Bridge key on both PCs}
+  bridge-tunnel:
+    image: e52modern-workbench:local
+    restart: unless-stopped
+    user: "${SYMPORT_SSH_UID:-1000}:${SYMPORT_SSH_GID:-1000}"
+    network_mode: service:workbench
+    depends_on:
+      workbench:
+        condition: service_healthy
+    command:
+      - ssh
+      - -NT
+      - -o
+      - StrictHostKeyChecking=yes
+      - -o
+      - UserKnownHostsFile=/ssh/known_hosts
+      - -o
+      - IdentitiesOnly=yes
+      - -o
+      - ExitOnForwardFailure=yes
+      - -o
+      - ServerAliveInterval=30
+      - -i
+      - /ssh/key
+      - -L
+      - 127.0.0.1:18765:127.0.0.1:8765
+      - ${SYMPORT_SSH_TARGET:?Set the SSH user@host of the PC running the local Bridge}
+    volumes:
+      - type: bind
+        source: ${SYMPORT_SSH_KEY_FILE:?Set an existing private key outside the repository}
+        target: /ssh/key
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${SYMPORT_SSH_KNOWN_HOSTS:?Set an existing verified known_hosts file}
+        target: /ssh/known_hosts
+        read_only: true
+        bind: {create_host_path: false}
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]

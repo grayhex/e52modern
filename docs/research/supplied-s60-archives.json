@@ -1,0 +1,436 @@
+[
+  {
+    "name": "Nokia symbian_1.zip",
+    "sha256": "fe6421c94fdb425c7f62731e348ed95727671abbfa247bd68bb5dd6ef4c2de33",
+    "entries": [
+      {
+        "name": "NortonSymbianHack.sisx",
+        "sha256": "7243ede7efbb53d4084e6ffc5c735141f7d21883623f804cafef5a3a4865581e",
+        "size": 708764,
+        "kind": "sis",
+        "e52": "unverified",
+        "system_risk": true
+      },
+      {
+        "name": "installserver.exe/installserver 3250/installserver.exe",
+        "sha256": "5dbb85bbfe48c544954b45c227463ede004513c22abe0532e5663fb472094a7f",
+        "size": 53780,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "installserver.exe/installserver 5500/installserver.exe",
+        "sha256": "1d0db5bedaa1d383efbe76c86f2967dbc312722bfe2056450c5a4b15cfe7716b",
+        "size": 53772,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "installserver.exe/installserver 9.1/installserver.exe",
+        "sha256": "10b5255dfb439d9b5b254762cdecab01aefb4578364347fddde2e65129141e87",
+        "size": 37332,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "installserver.exe/installserver 9.2/installserver.exe",
+        "sha256": "280b68c451c0c9c5c65e84fcaef78a6802f2c59b56fcbe95f00635c1ce807cf0",
+        "size": 37413,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "installserver.exe/installserver ^3/installserver.exe",
+        "sha256": "923967043828b53c455d1e7612237d584de5a15495a08a80fd5079a62e24ddbe",
+        "size": 75381,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "installserver.exe/installserver E50/installserver.exe",
+        "sha256": "8d70e468bbe0ea3621e084e0c5e8de996bbbc75e9373061f2c4765e8b79fe8e0",
+        "size": 57960,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "installserver.exe/installserver E61/installserver.exe",
+        "sha256": "c68b7bb225d3f76d5167ad76d7fd76d13c7996e5b0452a146988bcbac9ef1d05",
+        "size": 57772,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "installserver.exe/installserver 9.3, 9.4/installserver.exe",
+        "sha256": "09dfd642176926e6bea1b392614e143c8aa38f661dc91e8f13687d25efb49c73",
+        "size": 76816,
+        "kind": "binary",
+        "e52": "unverified",
+        "system_risk": true
+      },
+      {
+        "name": "Instalserver for RP+/Install Server RP+.rmp",
+        "sha256": "f015081ee04991b3ead92c72102620e6d95b9e4738dfa71574fbea7b88a62c10",
+        "size": 1140,
+        "kind": "patch",
+        "e52": "unverified",
+        "system_risk": true
+      },
+      {
+        "name": "Instalserver for RP+/Installserver Nokia 5320 4.13.rmp",
+        "sha256": "35c85a7b7d86496f6d469da94c364a8a7f3e0a4fa94241732c0f83c8bf3db9c4",
+        "size": 530,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "Instalserver for RP+/Installserver Nokia 5800 20.rmp",
+        "sha256": "15f91e4a07b1a328e7b50eb1974aabbdfb45d9dc3e0bb5f1166dc1625e964270",
+        "size": 536,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "Instalserver for RP+/Installserver Nokia 6210.rmp",
+        "sha256": "2e792ded4c16d6a59d9af01001d915149b09e2421b1d7c8dfa39e324c3c2177b",
+        "size": 438,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "Instalserver for RP+/Installserver Nokia 6220 3.46.rmp",
+        "sha256": "36ff37144791523167ddf78884359d5d4f8d4213266cecc10d502bf1561737c9",
+        "size": 567,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "Instalserver for RP+/Installserver Nokia Fp2 9.3  v.1.1.rmp",
+        "sha256": "e4bdff94a16c456e0e1e44e9dce88cea70185f8d06dae9f645f8fcbc9f494403",
+        "size": 655,
+        "kind": "patch",
+        "e52": "unverified",
+        "system_risk": true
+      },
+      {
+        "name": "Instalserver for RP+/Installserver Nokia Fp2 9.3.rmp",
+        "sha256": "f8ed7d38fd4c1f8e974e64288785af0f797ce0c56b6e5a33a159d6552b5824c9",
+        "size": 442,
+        "kind": "patch",
+        "e52": "unverified",
+        "system_risk": true
+      },
+      {
+        "name": "Instalserver for RP+/Installserver Nokia N78 v.20.149.rmp",
+        "sha256": "94a7b984233a2f6a6c61bafc246cc421409aa22e1dc673252c7f123e9f0d901e",
+        "size": 552,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "Instalserver for RP+/Installserver Nokia N79 v.11.049.rmp",
+        "sha256": "7f7cddcfcf6577ed72b98e9d679d8b90506cf83f600c165f215e48a7717e30d0",
+        "size": 552,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "Instalserver for RP+/Installserver Nokia N85.rmp",
+        "sha256": "2510ec455a302cb203339f7bde3eccf42fe0077e09102f597b54238361fe470c",
+        "size": 528,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "Instalserver for RP+/Installserver Nokia N96 v.12.043.rmp",
+        "sha256": "2faa9352163227ec09a53af4dbef28228b201862ccade4519a11a10427b61faf",
+        "size": 488,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "Instalserver for RP+/Installserver Samsung i8510.rmp",
+        "sha256": "7a4e9cfccfedd923763109a4e87e17de8739b32e5df35390159618974d8a5a9c",
+        "size": 540,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "Instalserver for RP+/Installserver Samsung INNOV8.rmp",
+        "sha256": "7ee16fab902f7cf657ba1421556b6790f324070a1e9de957f77bb70effcfa69e",
+        "size": 543,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "installserver.exe/info.txt",
+        "sha256": "36faad6c035f2a7cfe387ca074bd9ea689d57501fae2a40bf6ea3e462659785f",
+        "size": 1552,
+        "kind": "reference",
+        "e52": "unverified",
+        "system_risk": false
+      },
+      {
+        "name": "RomPatcherPlus 3.1.sisx",
+        "sha256": "685457f3c0d18a0cc699e59ec7541dc3b7c55b86d7847197b8c57eace502d9ee",
+        "size": 201908,
+        "kind": "sis",
+        "e52": "unverified",
+        "system_risk": false
+      },
+      {
+        "name": "Certificate Leftup/Leftup Cert.cer",
+        "sha256": "ee751ad504552cf5231222f53102be26962164afb4954ffcff269134356ffbcb",
+        "size": 3303,
+        "kind": "reference",
+        "e52": "unverified",
+        "system_risk": false
+      },
+      {
+        "name": "Certificate Leftup/Leftup Key.key",
+        "size": 887,
+        "excluded": "private-key-material"
+      }
+    ],
+    "malware_scan": "not-performed",
+    "firmware_validation": "not-tested"
+  },
+  {
+    "name": "Nokia symbian_2.zip",
+    "sha256": "5e5035a7c7b1cf01e317e22bed04a9453b86b40b67be5ac5b2dffbb36bde9cae",
+    "entries": [
+      {
+        "name": "symbian_hacked_2/Certificate Leftup/Leftup Cert.cer",
+        "sha256": "ee751ad504552cf5231222f53102be26962164afb4954ffcff269134356ffbcb",
+        "size": 3303,
+        "kind": "reference",
+        "e52": "unverified",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Certificate Leftup/Leftup Key.key",
+        "size": 887,
+        "excluded": "private-key-material"
+      },
+      {
+        "name": "symbian_hacked_2/installserver.exe/info.txt",
+        "sha256": "36faad6c035f2a7cfe387ca074bd9ea689d57501fae2a40bf6ea3e462659785f",
+        "size": 1552,
+        "kind": "reference",
+        "e52": "unverified",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/installserver.exe/installserver 3250/installserver.exe",
+        "sha256": "5dbb85bbfe48c544954b45c227463ede004513c22abe0532e5663fb472094a7f",
+        "size": 53780,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/installserver.exe/installserver 5500/installserver.exe",
+        "sha256": "1d0db5bedaa1d383efbe76c86f2967dbc312722bfe2056450c5a4b15cfe7716b",
+        "size": 53772,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/installserver.exe/installserver 9.1/installserver.exe",
+        "sha256": "10b5255dfb439d9b5b254762cdecab01aefb4578364347fddde2e65129141e87",
+        "size": 37332,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/installserver.exe/installserver 9.2/installserver.exe",
+        "sha256": "280b68c451c0c9c5c65e84fcaef78a6802f2c59b56fcbe95f00635c1ce807cf0",
+        "size": 37413,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/installserver.exe/installserver 9.3, 9.4/installserver.exe",
+        "sha256": "09dfd642176926e6bea1b392614e143c8aa38f661dc91e8f13687d25efb49c73",
+        "size": 76816,
+        "kind": "binary",
+        "e52": "unverified",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/installserver.exe/installserver E50/installserver.exe",
+        "sha256": "8d70e468bbe0ea3621e084e0c5e8de996bbbc75e9373061f2c4765e8b79fe8e0",
+        "size": 57960,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/installserver.exe/installserver E61/installserver.exe",
+        "sha256": "c68b7bb225d3f76d5167ad76d7fd76d13c7996e5b0452a146988bcbac9ef1d05",
+        "size": 57772,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/installserver.exe/installserver ^3/installserver.exe",
+        "sha256": "923967043828b53c455d1e7612237d584de5a15495a08a80fd5079a62e24ddbe",
+        "size": 75381,
+        "kind": "binary",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Instalserver for RP+/Install Server RP+.rmp",
+        "sha256": "f015081ee04991b3ead92c72102620e6d95b9e4738dfa71574fbea7b88a62c10",
+        "size": 1140,
+        "kind": "patch",
+        "e52": "unverified",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Instalserver for RP+/Installserver Nokia 5320 4.13.rmp",
+        "sha256": "35c85a7b7d86496f6d469da94c364a8a7f3e0a4fa94241732c0f83c8bf3db9c4",
+        "size": 530,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Instalserver for RP+/Installserver Nokia 5800 20.rmp",
+        "sha256": "15f91e4a07b1a328e7b50eb1974aabbdfb45d9dc3e0bb5f1166dc1625e964270",
+        "size": 536,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Instalserver for RP+/Installserver Nokia 6210.rmp",
+        "sha256": "2e792ded4c16d6a59d9af01001d915149b09e2421b1d7c8dfa39e324c3c2177b",
+        "size": 438,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Instalserver for RP+/Installserver Nokia 6220 3.46.rmp",
+        "sha256": "36ff37144791523167ddf78884359d5d4f8d4213266cecc10d502bf1561737c9",
+        "size": 567,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Instalserver for RP+/Installserver Nokia Fp2 9.3  v.1.1.rmp",
+        "sha256": "e4bdff94a16c456e0e1e44e9dce88cea70185f8d06dae9f645f8fcbc9f494403",
+        "size": 655,
+        "kind": "patch",
+        "e52": "unverified",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Instalserver for RP+/Installserver Nokia Fp2 9.3.rmp",
+        "sha256": "f8ed7d38fd4c1f8e974e64288785af0f797ce0c56b6e5a33a159d6552b5824c9",
+        "size": 442,
+        "kind": "patch",
+        "e52": "unverified",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Instalserver for RP+/Installserver Nokia N78 v.20.149.rmp",
+        "sha256": "94a7b984233a2f6a6c61bafc246cc421409aa22e1dc673252c7f123e9f0d901e",
+        "size": 552,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Instalserver for RP+/Installserver Nokia N79 v.11.049.rmp",
+        "sha256": "7f7cddcfcf6577ed72b98e9d679d8b90506cf83f600c165f215e48a7717e30d0",
+        "size": 552,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Instalserver for RP+/Installserver Nokia N85.rmp",
+        "sha256": "2510ec455a302cb203339f7bde3eccf42fe0077e09102f597b54238361fe470c",
+        "size": 528,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Instalserver for RP+/Installserver Nokia N96 v.12.043.rmp",
+        "sha256": "2faa9352163227ec09a53af4dbef28228b201862ccade4519a11a10427b61faf",
+        "size": 488,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Instalserver for RP+/Installserver Samsung i8510.rmp",
+        "sha256": "7a4e9cfccfedd923763109a4e87e17de8739b32e5df35390159618974d8a5a9c",
+        "size": 540,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/Instalserver for RP+/Installserver Samsung INNOV8.rmp",
+        "sha256": "7ee16fab902f7cf657ba1421556b6790f324070a1e9de957f77bb70effcfa69e",
+        "size": 543,
+        "kind": "patch",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/RomPatcherPlus 3.1.sisx",
+        "sha256": "685457f3c0d18a0cc699e59ec7541dc3b7c55b86d7847197b8c57eace502d9ee",
+        "size": 201908,
+        "kind": "sis",
+        "e52": "unverified",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/UMU Nokia Hack.sis",
+        "sha256": "ce18847d489572e6bcb0deebd2def996998e903c9d6acc1ffab41f4452619871",
+        "size": 900752,
+        "kind": "sis",
+        "e52": "unverified",
+        "system_risk": true
+      },
+      {
+        "name": "symbian_hacked_2/UMU SE Hack.sis",
+        "sha256": "0d0acfd0245e0ace3a92a852d481ae3fabb8509f07c8d538f72c82733f99d998",
+        "size": 840120,
+        "kind": "sis",
+        "e52": "incompatible-target-claim",
+        "system_risk": true
+      }
+    ],
+    "malware_scan": "not-performed",
+    "firmware_validation": "not-tested"
+  }
+]

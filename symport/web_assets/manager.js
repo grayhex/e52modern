@@ -23,6 +23,7 @@ async function dmList(){
     const del=el('button','btn ghost','Удалить');
     del.onclick=()=>dmRun(async()=>{if(!confirm('Удалить '+item.name+'? Каталог должен быть пустым.'))return;
       await dmCall({action:'delete',device:dm('device').value,path:dmPath(item.name),confirm:true});await dmList();});
+    if(!item.directory&&/\.sisx?$/i.test(item.name)){const inspect=el('button','btn ghost','Certificate Inspector');inspect.onclick=()=>inspectChoose('device',null,null,dm('device').value,dmPath(item.name));row.append(inspect);}
     row.append(open,del);dm('files').append(row);
   }
 }

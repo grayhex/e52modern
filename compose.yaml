@@ -7,15 +7,17 @@ services:
       dockerfile: Dockerfile
     image: e52modern-workbench:local
     restart: unless-stopped
+    command: ["python", "-m", "symport.web", "--host", "0.0.0.0", "--port", "${SYMPORT_HTTP_PORT:-8765}"]
     init: true
     # LOCAL ONLY on Linux host. Use SSH port forwarding to access remotely.
     ports:
-      - "127.0.0.1:8765:8765"
+      - "127.0.0.1:${SYMPORT_HTTP_PORT:-8765}:${SYMPORT_HTTP_PORT:-8765}"
     volumes:
       - symport-build:/srv/e52modern/build
       - symport-workspace:/srv/e52modern/workspace
       - mgo-symbian-auth:/symbian-auth:ro
     environment:
+      SYMPORT_HTTP_PORT: ${SYMPORT_HTTP_PORT:-8765}
       # Enroll only explicitly mounted phone volumes. Never mount the host root.
       SYMPORT_MGO_URL: http://mgo-symbian:8766
       SYMPORT_MGO_TOKEN_FILE: /symbian-auth/agent-token
@@ -30,7 +32,7 @@ services:
       - ALL
     pids_limit: 128
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/api/state', timeout=3).read()"]
+      test: ["CMD", "python", "-c", "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('SYMPORT_HTTP_PORT','8765')+'/api/state', timeout=3).read()"]
       interval: 30s
       timeout: 5s
       retries: 3

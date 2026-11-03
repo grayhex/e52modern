@@ -163,6 +163,12 @@ jobs:
           node --check symport/web_assets/suite.js
           node --check symport/web_assets/catalog.js
           node --check symport/web_assets/lab.js
+          node --check symport/web_assets/preferences.js
+          node --check symport/web_assets/inspector.js
+          bash -n tools/install.sh
+          SYMPORT_BRIDGE_KEY=00000000000000000000000000000000 SYMPORT_SSH_TARGET=test@example.invalid SYMPORT_SSH_KEY_FILE=/tmp/key SYMPORT_SSH_KNOWN_HOSTS=/tmp/known_hosts docker compose -f compose.yaml -f compose.bridge.yaml config --quiet
+          SYMPORT_HTTP_PORT=8777 docker compose config --quiet
+          SYMPORT_PHONE_DIRECTORY=/tmp docker compose -f compose.yaml -f compose.phone.yaml config --quiet
           docker compose --profile emulator config --quiet
       - name: Build Device Manager image
         run: docker build -t symport-device-manager:ci .
@@ -195,6 +201,7 @@ jobs:
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_web_ui.cjs
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_app_catalog.cjs
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_emulator_lab.cjs
+          NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_security_workspace.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

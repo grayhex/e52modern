@@ -41,7 +41,7 @@ function catRenderGrid(){
   card.append(head,el('span','eyebrow',catNames[app.category]||app.category),el('h3','',app.name),el('p','catalog-description',app.description),el('p','muted',`${app.version} · ${app.format.toUpperCase()} · ${app.network==='offline'?'Офлайн':app.network==='mixed'?'Сеть + кэш':'Онлайн'}`),el('span','chip',catStatuses[app.compatibility]));
   const actions=el('div','form-row');const detail=el('button','btn ghost','Подробнее');detail.onclick=()=>catDetails(app);actions.append(detail);
   if(app.delivery==='manual'){actions.append(catSafeLink(app.manual_url,'Скачать вручную ↗'));const transfer=el('a','text-link','Передать свой пакет →');transfer.href='#installed';card.append(el('p','muted',app.delivery_reason),transfer);}
-  const test=el('button','btn ghost','Проверить в эмуляторе');test.onclick=()=>labChoose(app.delivery==='automatic'?'catalog':'upload',app.id,'app');actions.append(test);
+  const test=el('button','btn ghost','Проверить в эмуляторе');test.onclick=()=>labChoose(app.delivery==='automatic'?'catalog':'upload',app.id,'app');actions.append(test);const inspect=el('button','btn ghost','Certificate Inspector');inspect.onclick=()=>inspectChoose(app.delivery==='automatic'?'catalog':'upload',app.id);actions.append(inspect);
   card.append(actions);cat('grid').append(card);
  }
 }

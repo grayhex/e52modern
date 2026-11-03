@@ -49,6 +49,7 @@ async function labShowReport(report,scroll){
  const dl=el('dl','device-details');for(const [key,value] of facts)dl.append(el('dt','muted',key),el('dd','lab-value',value));summary.append(dl);
  for(const field of ['error','launch_reason','screen_reason','instructions'])if(report[field])summary.append(el('p',field==='error'?'error-text':'note',report[field]));
  if(report.observations?.length)summary.append(el('p','note','Наблюдения пользователя: '+report.observations.map(o=>`${o.step}: ${o.result}`).join(' · ')));
+ lab('report-summary').dataset.install=report.install;lab('report-summary').dataset.launch=report.launch;lab('report-summary').dataset.report=report.id;
  lab('report-logs').textContent=JSON.stringify({events:report.events,job:report.agent_job,install:report.install_evidence,launch:report.launch_evidence,logs:report.logs,log_error:report.log_error,limitations:report.limitations,physical_transfer:report.physical_transfer},null,2);
  lab('theme-review').hidden=report.kind!=='theme'||report.install!=='installed';lab('transfer-panel').hidden=!['app','theme'].includes(report.kind)||report.install!=='installed';
  lab('phone-path').value=report.package?.name||'';lab('transfer-result').textContent=report.physical_transfer?'Пакет передан. Установка на Nokia: not-tested.':'';
