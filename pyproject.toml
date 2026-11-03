@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "symport"
+version = "0.1.0"
+description = "SymPort: toolkit for building, packaging, analysing and testing Symbian S60 themes and applications (part of E52Modern)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+theme = ["pillow>=10"]
+dev = ["pytest>=8", "ruff>=0.5", "pillow>=10"]
+
+[project.scripts]
+symport = "symport.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["symport*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["tools", "theme", "reference"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]

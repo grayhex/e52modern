@@ -1,5 +1,8 @@
 # tools/s60 — сборка скинов (тем) S60 3rd Ed. под Linux
 
+> Эти инструменты вызываются и проверяются единым CLI `symport` (`symport theme build/inspect/package`); прямой запуск
+> скриптов ниже по-прежнему поддерживается без изменений.
+
 Набор инструментов для сборки тем S60 без Carbide.ui/Windows. Собран из
 **открытых исходников Nokia/Symbian Foundation (EPL-1.0)** плюс два небольших
 собственных скрипта. Используется конвейером `tools/build_theme.py`, но каждый
@@ -71,8 +74,9 @@ python3 ../tools/s60/s60inspect.py out/myskin
 
 * Нет SVG: `mifbuild.py` отказывается упаковывать `.svg` (нужен SVG-T энкодер, его в открытом виде нет).
   Все графики — растровые BMP; маски — `<имя>_mask_soft.bmp`.
-* **Нет `makesis`/`signsis`.** Открытой реализации для SIS 9.x найти не удалось.
-  Из `.pkg` пакет собирается инструментами Symbian SDK / Carbide (Windows):
+* **Нет открытых `makesis`/`signsis`.** Для `.pkg` официальный путь — инструменты Symbian SDK / Carbide (Windows).
+  Экспериментальный неподписанный писатель и адаптеры к официальным инструментам — в `symport theme package`
+  (см. `docs/PACKAGING.md`). Вручную:
   ```
   makesis e52clearlight.pkg
   signsis e52clearlight.sis e52clearlight.sisx cert.cer key.key     # или createsis create ...

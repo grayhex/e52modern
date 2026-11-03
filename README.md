@@ -1,10 +1,63 @@
-# e52modern
+# E52Modern
 
-Тема **E52 / CLEAR** для Nokia E52 (S60 3rd Edition FP2) и инструменты для сборки тем S60 под Linux.
+Воспроизводимая среда разработки для Symbian S60 с целевым устройством **Nokia E52** (Symbian 9.3 / S60 3rd Ed. FP2,
+240×320, аппаратные клавиши). Состоит из двух частей:
 
-* Тема, статус и чек-лист: [`theme/README.md`](theme/README.md)
-* Инструменты (Nokia Skin Compiler, bmconv, mifbuild): [`tools/s60/README.md`](tools/s60/README.md)
+1. **E52 CLEAR** — действующий подпроект: тема для E52 (Light/Dark). Файлы `.skn/.mbm/.mif/.pkg` собираются
+   оригинальным компилятором Nokia; см. [`theme/README.md`](theme/README.md), [`tools/s60/README.md`](tools/s60/README.md).
+2. **SymPort** — Python-инструментарий (`symport/`), который объединяет сборку и проверку тем, упаковку SIS,
+   анализ бинарной совместимости, профили устройств и обвязку SDK/эмулятора/устройства. Принцип: *reuse first* —
+   существующие инструменты вызываются как backend'ы, а не переписываются.
+
+> **Статус честно:** тема и приложения **не проверялись на физическом Nokia E52** и в эмуляторе. Автоматически проверена
+> статическая корректность файлов. См. [`docs/STATUS.md`](docs/STATUS.md) и [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
+
+## Быстрый старт
 
 ```bash
-tools/s60/build.sh && python3 tools/build_theme.py
+python3 -m venv .venv && . .venv/bin/activate && pip install -e '.[dev]'
+tools/s60/build.sh                 # собрать skc и bmconv из вендорных исходников (нужен g++)
+symport doctor                     # окружение и backend'ы
+symport theme build                # обе темы (то же, что python3 tools/build_theme.py)
+symport theme inspect              # структура SKN/MBM/MIF, PKG, UID, палитра, манифест
+symport theme package --variant light --backend native    # экспериментальный неподписанный SIS
 ```
+
+Старые команды работают без изменений: `tools/s60/build.sh`, `python3 tools/build_theme.py`.
+`python -m symport` и команда `symport` эквивалентны.
+
+## Команды
+
+| Группа | Команды |
+|---|---|
+| Окружение | `doctor`, `profile list/show` |
+| Тема (P0) | `theme build`, `theme inspect [--reproducible]`, `theme package [--backend auto\|makesis\|native\|modern-sdk]` |
+| Анализ | `sis inspect`, `app inspect`, `app analyze [--firmware-profile]` |
+| Приложения (P1) | `app init`, `app build`, `app package` (через `symbian-platform`) |
+| Тестирование (P2) | `emulator list/test`, `device list/info/stage`, `report matrix` |
+
+Каждая команда поддерживает `--json` и `--report FILE`. Коды возврата: 0 успех, 1 ошибка проверки, 2 ошибка использования,
+3 операция недоступна (нет инструмента).
+
+## Документация
+
+[Архитектура](docs/ARCHITECTURE.md) · [Установка Linux/WSL2](docs/INSTALL.md) · [Внешние инструменты (аудит)](docs/EXTERNAL_TOOLS.md) ·
+[Сборка темы](docs/THEME.md) · [Упаковка и подпись SIS](docs/PACKAGING.md) · [Первое приложение](docs/APPLICATIONS.md) ·
+[Бинарная совместимость](docs/COMPATIBILITY.md) · [Эмулятор](docs/EMULATOR.md) · [Тест на E52](docs/DEVICE_TEST.md) ·
+[Статусы](docs/STATUS.md) · [Ограничения](docs/LIMITATIONS.md)
+
+## Тесты и CI
+
+```bash
+pytest            # без телефона и без проприетарного SDK
+ruff check .
+```
+
+CI (`.github/workflows/ci.yml`): стиль, тесты на Python 3.11–3.13, сборка `skc`/`bmconv`, пересборка обеих тем,
+проверка выходных файлов, воспроизводимость, JSON-отчёты и экспериментальный SIS как артефакты. Чужие ROM, прошивки,
+закрытые SDK и приватные ключи в CI не используются.
+
+## Лицензии
+
+Код SymPort — MIT (см. `pyproject.toml`). Вендорные исходники Nokia/Symbian Foundation — EPL-1.0
+(`tools/s60/vendor/NOTICE.md`). Внешние программы (symbian-platform — Apache-2.0, EKA2L1 — GPL-3.0) не входят в репозиторий.
