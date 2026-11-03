@@ -1,0 +1,44 @@
+{
+  "id": "mpgram",
+  "name": "MPGram",
+  "category": "communication",
+  "developer": "shinovon",
+  "description": "Telegram через отдельный MPGram backend для MIDP устройств.",
+  "version": "1.6.6",
+  "release_date": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.0"
+  ],
+  "format": "jar+jad",
+  "homepage": "https://github.com/shinovon/mpgram-client",
+  "license": "MIT + jazzlib licence; bundled terms require review",
+  "redistribution": "manual-original-source-only",
+  "delivery": "manual",
+  "manual_url": "https://nnproject.cc/mp",
+  "dependencies": [],
+  "network": "online",
+  "backend": "Требуется MPGram Web API backend. Учётные данные доступны оператору выбранного backend; сервис не проверен. Только ручная загрузка с сайта автора.",
+  "tls": "Сетевой сервис не проверялся; используйте только доверенный backend.",
+  "signature": "Подпись и установка на E52 не проверены. Системные ограничения не обходятся.",
+  "compatibility": "likely-compatible",
+  "compatibility_basis": "Дистрибутив/профиль проверен по источнику; физический E52 не тестировался.",
+  "e52_evidence": null,
+  "sources": [
+    "https://github.com/shinovon/mpgram-client",
+    "https://nnproject.cc/mp"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "mpgram",
+  "limitations": [
+    "Требуется MPGram Web API backend. Учётные данные доступны оператору выбранного backend; сервис не проверен. Только ручная загрузка с сайта автора.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": "Требуется MPGram Web API backend. Учётные данные доступны оператору выбранного backend; сервис не проверен. Только ручная загрузка с сайта автора.",
+  "requirements": [
+    "Требуется MPGram Web API backend. Учётные данные доступны оператору выбранного backend; сервис не проверен. Только ручная загрузка с сайта автора."
+  ]
+}

@@ -12,7 +12,7 @@ In **Темы и библиотека**, import a SIS/SISX (up to 8 MiB) or sele
 ## Implemented scope
 
 * Operator-enrolled mounted volume: directory listing, available/total disk space,
-  download/upload (8 MiB), directory creation, confirmed file/empty directory deletion.
+  download (64 MiB) / general upload (8 MiB), directory creation, confirmed file/empty directory deletion.
 * SIS/SISX transfer validates checksums and structure first. Completion means **file
   transferred**, not application installed. Finish installation on the handset and
   record observations in the existing **Телефон и тесты** checklist.
@@ -96,7 +96,7 @@ not implicitly granted. Never expose ports to the Internet; use loopback and SSH
 
 ## Media and software
 
-The Music & Video page transfers supported audio extensions and MP4/3GP up to 64 MiB per file. It does not transcode or set the active ringtone. The Games & Applications page validates and stages SIS/SISX or Java JAR/JAD up to 8 MiB, without claiming installation. Select an existing destination directory. Existing files are never replaced. Contact file parsing is limited to 4 MiB and 2000 entries.
+The Music & Video page transfers supported audio extensions and MP4/3GP up to 64 MiB per file. It does not transcode or set the active ringtone. The Games & Applications page validates and stages SIS/SISX or Java JAR/JAD up to 32 MiB, without claiming installation. Select an existing destination directory. Existing files are never replaced. Contact file parsing is limited to 4 MiB and 2000 entries.
 
 ## Validation
 

@@ -20,6 +20,8 @@ def _decompress(payload: bytes) -> bytes:
         raise SisFormatError("truncated compressed field")
     algo = struct.unpack_from("<I", payload, 0)[0]
     size = struct.unpack_from("<Q", payload, 4)[0]
+    if size > 128 * 1024 * 1024:
+        raise SisFormatError("uncompressed field exceeds 128 MiB limit")
     body = payload[12:]
     if algo == 0:
         if size != len(body):
@@ -27,10 +29,16 @@ def _decompress(payload: bytes) -> bytes:
         return body
     if algo == 1:
         try:
-            out = zlib.decompress(body)
+            inflater = zlib.decompressobj()
+            out = inflater.decompress(body, size + 1)
+            if len(out) > size or not inflater.eof:
+                raise SisFormatError("inflated data exceeds declared size or is truncated")
         except zlib.error:
             try:
-                out = zlib.decompress(body, -15)
+                inflater = zlib.decompressobj(-15)
+                out = inflater.decompress(body, size + 1)
+                if len(out) > size or not inflater.eof:
+                    raise SisFormatError("inflated data exceeds declared size or is truncated")
             except zlib.error as e:
                 raise SisFormatError(f"cannot inflate data: {e}") from e
         if len(out) != size:
@@ -54,7 +62,7 @@ def extract(data: bytes) -> dict[str, bytes]:
     if info["data_units"] != 1:
         raise SisFormatError("extraction supports single-data-unit packages only")
     return {fi["target"]: blobs[fi["file_index"]] for fi in info["files"]
-            if fi["file_index"] < len(blobs)}
+            if fi["file_index"] < len(blobs) and fi["operation"] != 8}
 
 
 def _inspect(data: bytes) -> tuple[dict, list[bytes]]:
@@ -153,9 +161,16 @@ def _inspect(data: bytes) -> tuple[dict, list[bytes]]:
             bcur = Cursor(b)
             _, comp, _ = bcur.field(f.T_COMPRESSED)
             blobs.append(_decompress(comp))
+            if sum(map(len, blobs)) > 128 * 1024 * 1024:
+                raise SisFormatError("SIS total uncompressed data exceeds 128 MiB")
     out["data_units"] = len(units)
     if len(units) == 1:
         for fi in files:
+            if fi["operation"] == 8:
+                if fi["length"] or fi["uncompressed_length"] or fi.get("sha1"):
+                    raise SisFormatError("null file operation declares unexpected payload")
+                fi.update(data_present=False, hash_ok=None, operation_note="null operation: no payload to hash")
+                continue
             idx = fi["file_index"]
             if idx >= len(blobs):
                 fi["data_present"] = False
@@ -164,7 +179,7 @@ def _inspect(data: bytes) -> tuple[dict, list[bytes]]:
             fi["data_present"] = True
             fi["actual_length"] = len(blobs[idx])
             fi["actual_sha1"] = hashlib.sha1(blobs[idx]).hexdigest()
-            fi["hash_ok"] = fi["actual_sha1"] == fi.get("sha1") and len(blobs[idx]) == fi["length"]
+            fi["hash_ok"] = fi["actual_sha1"] == fi.get("sha1") and len(blobs[idx]) == fi["uncompressed_length"]
     else:
         out["data_note"] = "multiple data units: embedded file hashes not checked"
     return out, blobs

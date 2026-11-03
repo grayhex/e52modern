@@ -1,0 +1,418 @@
+{
+  "s60maps": {
+    "homepage": "https://github.com/artem78/s60-maps/releases/tag/v1.26",
+    "artifacts": [
+      {
+        "name": "S60Maps_symbian9.2-9.4_v1_26.sis",
+        "url": "https://github.com/artem78/s60-maps/releases/download/v1.26/S60Maps_symbian9.2-9.4_v1_26.sis",
+        "size": 108948,
+        "sha256": "dfd14e7eef478c71d282448682d43194274807bd6ebabd7fd134c65e1b107302",
+        "publisher_sha256": "dfd14e7eef478c71d282448682d43194274807bd6ebabd7fd134c65e1b107302"
+      }
+    ]
+  },
+  "gps-tracker": {
+    "homepage": "https://github.com/artem78/s60-gps-tracker/releases/tag/v1.4.0",
+    "artifacts": [
+      {
+        "name": "GPSTracker.sis",
+        "url": "https://github.com/artem78/s60-gps-tracker/releases/download/v1.4.0/GPSTracker.sis",
+        "size": 33096,
+        "sha256": "31cfd26d91c7e4ef076b368863b6bd8a68994f1e364c756e287708585f71942a",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "mahomaps": {
+    "homepage": "https://github.com/mahomaps/mm-v1/releases/tag/1.2.4",
+    "artifacts": [
+      {
+        "name": "mm-v1.jar",
+        "url": "https://github.com/mahomaps/mm-v1/releases/download/1.2.4/mm-v1.jar",
+        "size": 174066,
+        "sha256": "65f52861e98accce55971a18809ceec46be941cc54e0099ebf3edff0a72c0402",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "s2putty": {
+    "homepage": "https://github.com/shinovon/s2putty/releases/tag/v1.6.1",
+    "artifacts": [
+      {
+        "name": "putty_s60v3.sis",
+        "url": "https://github.com/shinovon/s2putty/releases/download/v1.6.1/putty_s60v3.sis",
+        "size": 350024,
+        "sha256": "3d3ebd7bb8def34583dd85b43d531762420d5cfe5c52d7e6ed3f9496d887daa1",
+        "publisher_sha256": "3d3ebd7bb8def34583dd85b43d531762420d5cfe5c52d7e6ed3f9496d887daa1"
+      }
+    ]
+  },
+  "github-j2me": {
+    "homepage": "https://github.com/shinovon/GitHub-j2me/releases/tag/v0.9.9",
+    "artifacts": [
+      {
+        "name": "GH2ME.jar",
+        "url": "https://github.com/shinovon/GitHub-j2me/releases/download/v0.9.9/GH2ME.jar",
+        "size": 72133,
+        "sha256": "6dc79b1c60fe5d599e929ab7b17d75e86f226890db05959b61e8e8af846b431a",
+        "publisher_sha256": "6dc79b1c60fe5d599e929ab7b17d75e86f226890db05959b61e8e8af846b431a"
+      }
+    ]
+  },
+  "http-server": {
+    "homepage": "https://github.com/shinovon/j2me-http-server/releases/tag/v1.0.2",
+    "artifacts": [
+      {
+        "name": "httpserver.jar",
+        "url": "https://github.com/shinovon/j2me-http-server/releases/download/v1.0.2/httpserver.jar",
+        "size": 11640,
+        "sha256": "48a0658dcbbd8d2be4e0dd5ef7052ba2746d49ea3650274680d717c5332bf41e",
+        "publisher_sha256": "48a0658dcbbd8d2be4e0dd5ef7052ba2746d49ea3650274680d717c5332bf41e"
+      }
+    ]
+  },
+  "bluewap": {
+    "homepage": "https://github.com/gtrxAC/BlueWAP/releases/tag/v1.5",
+    "artifacts": [
+      {
+        "name": "bluewap_client.jar",
+        "url": "https://github.com/gtrxAC/BlueWAP/releases/download/v1.5/bluewap_client.jar",
+        "size": 72930,
+        "sha256": "e9b710ca511ff9df00d05d4714c923cc8f6a1442fd1592c3fcb4443b802f67c9",
+        "publisher_sha256": "e9b710ca511ff9df00d05d4714c923cc8f6a1442fd1592c3fcb4443b802f67c9"
+      }
+    ]
+  },
+  "hotpants": {
+    "homepage": "https://github.com/baumschubser/hotpants/releases/tag/2.0",
+    "artifacts": [
+      {
+        "name": "Hotpants.jar",
+        "url": "https://github.com/baumschubser/hotpants/releases/download/2.0/Hotpants.jar",
+        "size": 78355,
+        "sha256": "ec6b9135e4a3444bc0ed91c46f8c66e9116dbd1652fb221f7439acfebd6d59c2",
+        "publisher_sha256": null
+      },
+      {
+        "name": "Hotpants.jad",
+        "url": "https://github.com/baumschubser/hotpants/releases/download/2.0/Hotpants.jad",
+        "size": 353,
+        "sha256": "7205e0c1672bef5bc13b792ae59ae253632c6cea5d672d15a8d89b76f0332f55",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "w4me": {
+    "homepage": "https://github.com/mulfyx/w4me-station/releases/tag/v1.1.0",
+    "artifacts": [
+      {
+        "name": "w4me-station-base.jar",
+        "url": "https://github.com/mulfyx/w4me-station/releases/download/v1.1.0/w4me-station-base.jar",
+        "size": 296187,
+        "sha256": "925a6027c221199dc33b59f74f783debb4252ad313697a686cd49c646c7a8297",
+        "publisher_sha256": "925a6027c221199dc33b59f74f783debb4252ad313697a686cd49c646c7a8297"
+      },
+      {
+        "name": "w4me-station-base.jad",
+        "url": "https://github.com/mulfyx/w4me-station/releases/download/v1.1.0/w4me-station-base.jad",
+        "size": 502,
+        "sha256": "cd264c876e038029cfdee8eb111affd93f2a62c0182012afdb4fa1ddb7eaac2c",
+        "publisher_sha256": "cd264c876e038029cfdee8eb111affd93f2a62c0182012afdb4fa1ddb7eaac2c"
+      }
+    ]
+  },
+  "nmania": {
+    "homepage": "https://github.com/Feodor0090/nmania/releases/tag/2.7.0",
+    "artifacts": [
+      {
+        "name": "nmania_obf.jar",
+        "url": "https://github.com/Feodor0090/nmania/releases/download/2.7.0/nmania_obf.jar",
+        "size": 521486,
+        "sha256": "cd1e21b3da24c0c8f269261f7f92c590d8238ddb001d2937a7395b2b1e5fdc71",
+        "publisher_sha256": "cd1e21b3da24c0c8f269261f7f92c590d8238ddb001d2937a7395b2b1e5fdc71"
+      }
+    ]
+  },
+  "aikon": {
+    "homepage": "https://github.com/emir/AIKON/releases/tag/v0.18.4",
+    "artifacts": [
+      {
+        "name": "AIKON.jar",
+        "url": "https://github.com/emir/AIKON/releases/download/v0.18.4/AIKON.jar",
+        "size": 153512,
+        "sha256": "990b3b44b90fc579b6b5364643f2c1ed2831ef0e638e56cfe4e3818aaabad740",
+        "publisher_sha256": "990b3b44b90fc579b6b5364643f2c1ed2831ef0e638e56cfe4e3818aaabad740"
+      },
+      {
+        "name": "AIKON.jad",
+        "url": "https://github.com/emir/AIKON/releases/download/v0.18.4/AIKON.jad",
+        "size": 451,
+        "sha256": "b87570c74ee3bbcd221f3c734f5d834347e8a25ee3a424f1d9398c33028f0ce6",
+        "publisher_sha256": "b87570c74ee3bbcd221f3c734f5d834347e8a25ee3a424f1d9398c33028f0ce6"
+      }
+    ]
+  },
+  "meshcore": {
+    "homepage": "https://github.com/dobrishinov/MeshCore-J2ME/releases/tag/v1.0.0",
+    "artifacts": [
+      {
+        "name": "MeshCore.jar",
+        "url": "https://github.com/dobrishinov/MeshCore-J2ME/releases/download/v1.0.0/MeshCore.jar",
+        "size": 594528,
+        "sha256": "f532c2762b35131ae60c07c0abc82825a6b3bc73816a57d06c17a9e0e3b9c5d2",
+        "publisher_sha256": "f532c2762b35131ae60c07c0abc82825a6b3bc73816a57d06c17a9e0e3b9c5d2"
+      },
+      {
+        "name": "MeshCore.jad",
+        "url": "https://github.com/dobrishinov/MeshCore-J2ME/releases/download/v1.0.0/MeshCore.jad",
+        "size": 575,
+        "sha256": "9ad445b57df6da136c15b8094251d0c642788f97c73300964d753db0d8281575",
+        "publisher_sha256": "9ad445b57df6da136c15b8094251d0c642788f97c73300964d753db0d8281575"
+      }
+    ]
+  },
+  "ip-calculator": {
+    "homepage": "https://github.com/developer-kaczmarek/J2ME-IpCalculator/releases/tag/v1.0.0-t9",
+    "artifacts": [
+      {
+        "name": "IPCalculator-T9.jar",
+        "url": "https://github.com/developer-kaczmarek/J2ME-IpCalculator/releases/download/v1.0.0-t9/IPCalculator-T9.jar",
+        "size": 25645,
+        "sha256": "3d31a57f6b97b47bf652b10cc55a4bce175876bf2970bcd56e656f32565dc7cd",
+        "publisher_sha256": "3d31a57f6b97b47bf652b10cc55a4bce175876bf2970bcd56e656f32565dc7cd"
+      }
+    ]
+  },
+  "passgen": {
+    "homepage": "https://github.com/scadl/PassGen-J2ME/releases/tag/1.0",
+    "artifacts": [
+      {
+        "name": "PassGen.jar",
+        "url": "https://github.com/scadl/PassGen-J2ME/releases/download/1.0/PassGen.jar",
+        "size": 7439,
+        "sha256": "9194ec0a438551bb07bcb30754ea6fa9b5f985ed4088e1e4a3d18d069d356054",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "celeste": {
+    "homepage": "https://github.com/r58Playz/celeste-j2me/releases/tag/v1.0",
+    "artifacts": [
+      {
+        "name": "celeste-j2me.jar",
+        "url": "https://github.com/r58Playz/celeste-j2me/releases/download/v1.0/celeste-j2me.jar",
+        "size": 64924,
+        "sha256": "0bf9d2a4486649bf8d99e77a4cc6faf61e680dc62b7c7874bffd16a36eb65d42",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "vk4me": {
+    "homepage": "https://github.com/VK4ME/client/releases/tag/3.3.4",
+    "artifacts": [
+      {
+        "name": "latest.jar",
+        "url": "https://github.com/VK4ME/client/releases/download/3.3.4/latest.jar",
+        "size": 765323,
+        "sha256": "bebb79e8de7b70d3dba84201c26183bcc351b1c94518ae7032907d9adbc874e6",
+        "publisher_sha256": "bebb79e8de7b70d3dba84201c26183bcc351b1c94518ae7032907d9adbc874e6"
+      }
+    ]
+  },
+  "gpstest": {
+    "homepage": "https://github.com/shinovon/GPSTest/releases/tag/v1.0.1",
+    "artifacts": [
+      {
+        "name": "GPSTest.jar",
+        "url": "https://github.com/shinovon/GPSTest/releases/download/v1.0.1/GPSTest.jar",
+        "size": 4668,
+        "sha256": "2ee2f2affedefbd56e507ace64827b6aab3f061a089da157e9fb732cd2b1451a",
+        "publisher_sha256": "2ee2f2affedefbd56e507ace64827b6aab3f061a089da157e9fb732cd2b1451a"
+      }
+    ]
+  },
+  "export-rms": {
+    "homepage": "https://github.com/shinovon/ExportRMS/releases/tag/v2.1.0",
+    "artifacts": [
+      {
+        "name": "ExportRMS.jar",
+        "url": "https://github.com/shinovon/ExportRMS/releases/download/v2.1.0/ExportRMS.jar",
+        "size": 5787,
+        "sha256": "6dff7295eb8ffd29fc9de193cdc3441fb14a1a55c1d2dc45f65d8ff25e321232",
+        "publisher_sha256": "6dff7295eb8ffd29fc9de193cdc3441fb14a1a55c1d2dc45f65d8ff25e321232"
+      }
+    ]
+  },
+  "mahorasp": {
+    "homepage": "https://github.com/shinovon/MahoRasp/releases/tag/v1.1.1",
+    "artifacts": [
+      {
+        "name": "MahoRasp.jar",
+        "url": "https://github.com/shinovon/MahoRasp/releases/download/v1.1.1/MahoRasp.jar",
+        "size": 171331,
+        "sha256": "a1a1c524e13018247f67f6c22e5bba8cfa7d54d194d57e1d681a0e1cc8044e85",
+        "publisher_sha256": "a1a1c524e13018247f67f6c22e5bba8cfa7d54d194d57e1d681a0e1cc8044e85"
+      }
+    ]
+  },
+  "maholichki": {
+    "homepage": "https://github.com/shinovon/MahoLichki/releases/tag/v1.1.5",
+    "artifacts": [
+      {
+        "name": "MahoLichki.jar",
+        "url": "https://github.com/shinovon/MahoLichki/releases/download/v1.1.5/MahoLichki.jar",
+        "size": 48274,
+        "sha256": "1f98799ac1c5848d8747498692961ba03e8545ff240fc13745c6d21c2cf0a2d7",
+        "publisher_sha256": "1f98799ac1c5848d8747498692961ba03e8545ff240fc13745c6d21c2cf0a2d7"
+      }
+    ]
+  },
+  "brainfuck": {
+    "homepage": "https://github.com/shinovon/BrainfuckJ2ME/releases/tag/0.3.2",
+    "artifacts": [
+      {
+        "name": "BrainfuckEditor.jar",
+        "url": "https://github.com/shinovon/BrainfuckJ2ME/releases/download/0.3.2/BrainfuckEditor.jar",
+        "size": 8994,
+        "sha256": "4e34c3999c89531bdcc7d51ed2f690576fe44ce5d7a7316d439888959099782a",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "md5-benchmark": {
+    "homepage": "https://github.com/shinovon/MD5BenchmarkJ2ME/releases/tag/2.0.0",
+    "artifacts": [
+      {
+        "name": "MD5Bench.jar",
+        "url": "https://github.com/shinovon/MD5BenchmarkJ2ME/releases/download/2.0.0/MD5Bench.jar",
+        "size": 513318,
+        "sha256": "e7285bb919d6175ce5fc4eabe895315d2c1af7b54e1a55ab6cee3f59f5097e4d",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "game-2048": {
+    "homepage": "https://github.com/turbanoff/j2me-2048/releases/tag/1.0",
+    "artifacts": [
+      {
+        "name": "g2048.jar",
+        "url": "https://github.com/turbanoff/j2me-2048/releases/download/1.0/g2048.jar",
+        "size": 5135,
+        "sha256": "bdda8e37b9e7f469b347a2f0654a81d9ea8e420f58aff707f398adc7eca3b932",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "fplay": {
+    "homepage": "https://github.com/carlosrafaelgn/FPlayJ2ME",
+    "artifacts": [
+      {
+        "name": "FPlay.jar",
+        "url": "https://raw.githubusercontent.com/carlosrafaelgn/FPlayJ2ME/7691e46b6b9cc8fd339476e874d3d613a95afc3c/deployed/DefaultCldcPhone1/FPlay.jar",
+        "size": 120735,
+        "sha256": "2fb01598816e9f2c1bbe79541b3a7d580d99ad20ec3c3b21479c9393e611790a",
+        "publisher_sha256": null
+      },
+      {
+        "name": "FPlay.jad",
+        "url": "https://raw.githubusercontent.com/carlosrafaelgn/FPlayJ2ME/7691e46b6b9cc8fd339476e874d3d613a95afc3c/deployed/DefaultCldcPhone1/FPlay.jad",
+        "size": 574,
+        "sha256": "e2bd6ad636262d094a3d1641909962fb2845c272fd42fe341cd63d991a80e1f9",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "jtreversi": {
+    "homepage": "https://github.com/asalamon74/jtreversi",
+    "artifacts": [
+      {
+        "name": "jtReversi.jar",
+        "url": "https://raw.githubusercontent.com/asalamon74/jtreversi/e8499450fe8966acaa7d2b3e1458300cb1527968/bin/jtReversi.jar",
+        "size": 23571,
+        "sha256": "8730e35d2f4ecd8002ae362aeffcbbaef9c294bb2c210841abd73a48aee269eb",
+        "publisher_sha256": null
+      },
+      {
+        "name": "jtReversi.jad",
+        "url": "https://raw.githubusercontent.com/asalamon74/jtreversi/e8499450fe8966acaa7d2b3e1458300cb1527968/bin/jtReversi.jad",
+        "size": 242,
+        "sha256": "3984778110dd579f98ee9a823b2d929f177d949d1e8ee121653d648c750a5509",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "mdreader": {
+    "homepage": "https://github.com/Hinduc0der/mdreader-j2me",
+    "artifacts": [
+      {
+        "name": "MDReader-0.2.0-ru.jar",
+        "url": "https://raw.githubusercontent.com/Hinduc0der/mdreader-j2me/90d77d8686cd440080dec026455a9922c1e2f552/dist/versions/MDReader-0.2.0-ru.jar",
+        "size": 19955,
+        "sha256": "4ee06012d9c998cdceb8b78531276dc35d01f4f25f64ee07adcc357021e0d47a",
+        "publisher_sha256": null
+      },
+      {
+        "name": "MDReader-0.2.0-ru.jad",
+        "url": "https://raw.githubusercontent.com/Hinduc0der/mdreader-j2me/90d77d8686cd440080dec026455a9922c1e2f552/dist/versions/MDReader-0.2.0-ru.jad",
+        "size": 261,
+        "sha256": "d691a250a9f2d3eb672e4ea268e7bba0854da60fd02d9796022274d4403d7679",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "mpgram": {
+    "homepage": "https://nnproject.cc/mp",
+    "artifacts": [
+      {
+        "name": "mpgram.jar",
+        "url": "https://d.nnproject.cc/mpgram.jar",
+        "size": 253615,
+        "sha256": "d64e190c9c1c5d039cbcb1416c54750f21005a535b40c46dc1f24acc21d6bc34",
+        "publisher_sha256": null
+      },
+      {
+        "name": "mpgram.jad",
+        "url": "https://nnproject.cc/dl/mpgram.jad",
+        "size": 864,
+        "sha256": "b288e1832f2c052f23b1faf0d687212840b5b755629ea1a5864f2ce7e7a8daba",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "mapnav": {
+    "homepage": "https://github.com/magdel/MapNav/releases/tag/4.8.18",
+    "artifacts": [
+      {
+        "name": "mapnav-midlet-4.8.18.zip",
+        "url": "https://github.com/magdel/MapNav/releases/download/4.8.18/mapnav-midlet-4.8.18.zip",
+        "size": 394306,
+        "sha256": "8c4e1ae91a49406730e71035a11cbace96b597fed8cf9b8c2bea64690a45feed",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "scummvm": {
+    "homepage": "https://downloads.scummvm.org/frs/scummvm/1.7.0/scummvm-1.7.0-s60v3.zip",
+    "artifacts": [
+      {
+        "name": "scummvm-1.7.0-s60v3.zip",
+        "url": "https://downloads.scummvm.org/frs/scummvm/1.7.0/scummvm-1.7.0-s60v3.zip",
+        "size": 28728535,
+        "sha256": "2dc195195d2a66de653b440808ef4bb9ddc1cdc6edf700cbdc61e84476905f7e",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "pys60": {
+    "homepage": "https://sourceforge.net/projects/pys60/files/pys60/1.4.5/PythonForS60_1_4_5_3rdEd.sis/download",
+    "artifacts": [
+      {
+        "name": "PythonForS60_1_4_5_3rdEd.sis",
+        "url": "https://sourceforge.net/projects/pys60/files/pys60/1.4.5/PythonForS60_1_4_5_3rdEd.sis/download",
+        "size": 587124,
+        "sha256": "db991e343b120c1bc64ae445126efdeba5479bd2244672181a318776b2840856",
+        "publisher_sha256": null
+      }
+    ]
+  }
+}

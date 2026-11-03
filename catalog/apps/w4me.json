@@ -1,0 +1,46 @@
+{
+  "id": "w4me",
+  "name": "W4ME Station",
+  "category": "games",
+  "developer": "mulfyx",
+  "description": "WASM-4 runtime с включёнными офлайн-картриджами, без JIT.",
+  "version": "1.1.0",
+  "release_date": "2026-07-30",
+  "release_tag": "v1.1.0",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.1"
+  ],
+  "format": "jar+jad",
+  "homepage": "https://github.com/mulfyx/w4me-station",
+  "license": "MIT",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/mulfyx/w4me-station/releases/tag/v1.1.0",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Выбран вариант base без JSR-75; учитывайте скорость Java VM.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "verified-on-s60",
+  "e52_evidence": null,
+  "compatibility_basis": "README автора сообщает об S60; это не проверка на E52.",
+  "sources": [
+    "https://github.com/mulfyx/w4me-station",
+    "https://github.com/mulfyx/w4me-station/releases/tag/v1.1.0"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "w4me",
+  "limitations": [
+    "Выбран вариант base без JSR-75; учитывайте скорость Java VM.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Выбран вариант base без JSR-75; учитывайте скорость Java VM."
+  ]
+}

@@ -1,0 +1,80 @@
+[
+  {
+    "name": "JTube",
+    "source": "https://github.com/shinovon/JTube",
+    "status": "unavailable",
+    "reason": "README автора объявляет проект discontinued; доступный бинарник не доказывает живой YouTube-сервис.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "MIDPlay",
+    "source": "https://github.com/phd051199/MIDPlay",
+    "status": "unsupported",
+    "reason": "README описывает mock/demo playback без живого стриминга; исключён из полезных музыкальных приложений.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "TelegramMicro",
+    "source": "https://github.com/faissaloo/telegram-micro",
+    "status": "unsupported",
+    "reason": "Публичный developer preview не может запросить код входа без собственной credential-bearing сборки.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "OpenTTY 1.19 / 1.18.2",
+    "source": "https://github.com/mrlima4095/OpenTTY-J2ME/releases",
+    "status": "unsupported",
+    "reason": "Строгая проверка обнаружила повтор атрибута manifest и JAD-поля после пустой секции; автоматическая загрузка заблокирована.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "Discofi",
+    "source": "https://github.com/gtrxAC/Discofi",
+    "status": "unsupported",
+    "reason": "На stock Symbian требуется изменение TLS; системные патчи не включены в массовую установку.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "Discord J2ME",
+    "source": "https://github.com/gtrxAC/discord-j2me",
+    "status": "unavailable",
+    "reason": "Автор прекратил активную разработку и рекомендует более безопасную альтернативу. Публичные прокси не проверены.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "Garmin Mobile XT / CorePlayer / Quickoffice / Best TaskMan",
+    "source": "https://github.com/hstsethi/awesome-symbian",
+    "status": "unavailable",
+    "reason": "Не найден однозначный легальный доступный дистрибутив подходящей версии. Коммерческие модифицированные архивы не используются.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "Qt for Symbian",
+    "source": "https://wiki.qt.io/Support_for_Symbian",
+    "status": "untested",
+    "reason": "Нужен конкретный легальный runtime под E52 и версии зависимостей; автоматический пакет не выбран.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "FBReaderJ",
+    "source": "https://github.com/geometer/FBReaderJ",
+    "status": "unsupported",
+    "reason": "Это Android-проект, не Java ME MIDlet для E52.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "TrekBuddy / Mobile GMaps / X-plore / Y-Browser / ZXReader / OggPlay",
+    "source": "https://github.com/hstsethi/awesome-symbian",
+    "status": "unavailable",
+    "reason": "Оставлены на дальнейшее исследование оригинальных S60v3 дистрибутивов и условий распространения.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "Symbian TLS / JRT security patches",
+    "source": "https://github.com/shinovon/symbian-tls",
+    "status": "untested",
+    "category": "high-risk",
+    "reason": "Меняют защищённые системные компоненты. Не входят в каталог автоматической установки; требуют отдельного исследования, резервной копии и решения владельца.",
+    "checked_at": "2026-11-03"
+  }
+]

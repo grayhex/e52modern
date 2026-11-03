@@ -21,6 +21,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
+from symport.catalog import AppCatalog
 from symport.config import find_repo_root
 from symport.library import ThemeLibrary
 from symport.phone import DeviceManager
@@ -163,6 +164,7 @@ class Workbench:
     def __init__(self, repo: Path):
         self.repo = repo
         self.devices = DeviceManager(repo)
+        self.catalog = AppCatalog(repo, self.devices)
         self.library = ThemeLibrary(repo)
         self.token = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
@@ -368,6 +370,7 @@ def make_handler(state: Workbench):
                 "/manager.js": ("manager.js", "text/javascript; charset=utf-8"),
                 "/library.js": ("library.js", "text/javascript; charset=utf-8"),
                 "/suite.js": ("suite.js", "text/javascript; charset=utf-8"),
+                "/catalog.js": ("catalog.js", "text/javascript; charset=utf-8"),
                 "/compact.css": ("compact.css", "text/css; charset=utf-8"),
                 "/backups.js": ("backups.js", "text/javascript; charset=utf-8"),
                 "/calendar.js": ("calendar.js", "text/javascript; charset=utf-8"),
@@ -384,6 +387,12 @@ def make_handler(state: Workbench):
                 if file == "index.html":
                     body = body.replace(b"__SESSION_TOKEN__", state.token.encode())
                 return self._send(body, mime)
+            if url.path == "/api/catalog/archive":
+                try:
+                    key = parse_qs(url.query).get('id', [''])[0]
+                    return self._send(state.catalog.archive(key), 'application/zip', filename='symport-apps.zip')
+                except (ValueError, OSError) as exc:
+                    return self._json({'error': str(exc)}, 400)
             if url.path == "/api/library/download":
                 try:
                     name, raw = state.library.download(parse_qs(url.query).get('id', [''])[0])
@@ -443,6 +452,9 @@ def make_handler(state: Workbench):
                 body = json.loads(self.rfile.read(length))
                 if not isinstance(body, dict):
                     raise ValueError("Expected JSON object")
+                if self.path == "/api/catalog":
+                    result = state.catalog.execute(body)
+                    return self._json(result, 202 if body.get('action') in ('download', 'transfer') else 200)
                 if self.path == "/api/contacts":
                     if body.get('action') == 'preview':
                         return self._json(parse_export(body.get('name'), body.get('content')))

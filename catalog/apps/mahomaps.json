@@ -1,0 +1,47 @@
+{
+  "id": "mahomaps",
+  "name": "MahoMaps",
+  "category": "maps",
+  "developer": "mahomaps",
+  "description": "Клиент карт Яндекса для Java ME: просмотр, GPS и работа с кэшем.",
+  "version": "1.2.4",
+  "release_date": "2024-09-05",
+  "release_tag": "1.2.4",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.1"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/mahomaps/mm-v1",
+  "license": "GPL-3.0",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/mahomaps/mm-v1/releases/tag/1.2.4",
+  "dependencies": [],
+  "network": "mixed",
+  "backend": "Провайдер карт и опциональный прокси; публичные серверы не проверены.",
+  "tls": "Работа онлайн-сервиса и TLS на E52 не проверялась. Не передавайте учётные данные неизвестным прокси.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "verified-on-s60",
+  "e52_evidence": null,
+  "compatibility_basis": "README автора сообщает об S60; это не проверка на E52.",
+  "sources": [
+    "https://github.com/mahomaps/mm-v1",
+    "https://github.com/mahomaps/mm-v1/releases/tag/1.2.4"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "mahomaps",
+  "limitations": [
+    "Провайдер карт и опциональный прокси; публичные серверы не проверены.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "internet",
+    "recommended"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Провайдер карт и опциональный прокси; публичные серверы не проверены."
+  ]
+}

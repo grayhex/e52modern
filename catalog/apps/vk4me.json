@@ -1,0 +1,47 @@
+{
+  "id": "vk4me",
+  "name": "VK4ME",
+  "category": "communication",
+  "developer": "VK4ME",
+  "description": "Клиент VK для Java ME: сообщения и работа с социальной сетью.",
+  "version": "3.3.4",
+  "release_date": "2025-07-28",
+  "release_tag": "3.3.4",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.1"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/VK4ME/client",
+  "license": "GPL-3.0",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/VK4ME/client/releases/tag/3.3.4",
+  "dependencies": [],
+  "network": "online",
+  "backend": "Зависит от VK API и сторонних серверных адаптеров; вход и работа сервиса не проверялись.",
+  "tls": "Работа онлайн-сервиса и TLS на E52 не проверялась. Не передавайте учётные данные неизвестным прокси.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/VK4ME/client",
+    "https://github.com/VK4ME/client/releases/tag/3.3.4"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "vk4me",
+  "limitations": [
+    "Зависит от VK API и сторонних серверных адаптеров; вход и работа сервиса не проверялись.",
+    "На физическом E52 не тестировалось.",
+    "JAD автора ссылается на внешний HTTP URL; для локальной передачи выбран только JAR."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Зависит от VK API и сторонних серверных адаптеров; вход и работа сервиса не проверялись."
+  ]
+}
