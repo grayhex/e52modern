@@ -26,6 +26,21 @@ symport theme package --variant light --backend native    # эксперимен
 Старые команды работают без изменений: `tools/s60/build.sh`, `python3 tools/build_theme.py`.
 `python -m symport` и команда `symport` эквивалентны.
 
+## Браузерная панель (Docker / Linux / WSL2)
+
+В SymPort Workbench можно собирать тему, получать SIS, проверять окружение, управлять проектами и вести ручной протокол Nokia E52 без работы в консоли после запуска сервиса.
+
+```bash
+# Linux-сервер; слушает только loopback
+ docker compose up -d --build
+# На Windows: ssh -L 8765:127.0.0.1:8765 user@your-server
+# Открыть: http://127.0.0.1:8765
+```
+
+Без Docker: `python -m symport.web --open` (после установки зависимостей и компиляторов).
+
+См. [документацию Workbench](docs/WEB_UI.md). Сборка в Docker не содержит официальный MakeSIS или native GUI SDK по умолчанию; экспериментальный SIS не проверен на E52. USB на Windows не виден удалённому серверу автоматически.
+
 ## Команды
 
 | Группа | Команды |

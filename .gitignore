@@ -6,3 +6,5 @@ build/
 .pytest_cache/
 .ruff_cache/
 symport.toml
+.venv/
+workspace/

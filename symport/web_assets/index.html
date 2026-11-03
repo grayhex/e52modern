@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="symport-token" content="__SESSION_TOKEN__">
+  <meta name="theme-color" content="#0e1119">
+  <title>SymPort Workbench · E52Modern</title>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="#overview" aria-label="SymPort, главная">
+      <span class="brand-mark">S<span>·</span></span>
+      <span class="brand-title">SymPort <small>WORKBENCH</small></span>
+    </a>
+    <div class="nav-label">WORKSPACE</div>
+    <nav aria-label="Навигация">
+      <a href="#overview" class="nav-link active" data-nav="overview"><span>▦</span> Обзор</a>
+      <a href="#themes" class="nav-link" data-nav="themes"><span>◧</span> Темы E52 CLEAR</a>
+      <a href="#apps" class="nav-link" data-nav="apps"><span>▤</span> Приложения</a>
+      <a href="#device" class="nav-link" data-nav="device"><span>▣</span> Телефон и тесты</a>
+      <a href="#activity" class="nav-link" data-nav="activity"><span>≡</span> История операций</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <span class="status-dot"></span> Локальная панель
+      <p>Весь код выполняется на сервере. Установка на E52 подтверждается отдельно.</p>
+      <a target="_blank" rel="noopener noreferrer" href="https://github.com/grayhex/e52modern">Исходники на GitHub ↗</a>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div class="breadcrumbs">E52Modern <span>/</span> <strong id="page-label">Обзор</strong></div>
+      <div class="top-actions"><span id="running" class="running" hidden>● Выполняется операция…</span><span class="target">NOKIA E52 · S60 3rd FP2</span></div>
+    </header>
+    <div class="content">
+      <section id="overview" class="page visible" aria-labelledby="overview-title">
+        <div class="hero">
+          <div class="eyebrow">SYMBIAN DEVELOPMENT STUDIO</div>
+          <h1 id="overview-title">Твоя Nokia. Твои правила.</h1>
+          <p>Сборка тем и приложений для E52, упаковка SIS, отчёты совместимости и проверка на железе. Консоль можешь оставить археологам.</p>
+          <button class="btn primary" data-action="doctor">Проверить инструменты <span>↗</span></button>
+          <div class="hero-grid"><span>240 × 320</span><span>ARMv5T / EKA2</span><span>LIGHT + DARK</span></div>
+        </div>
+        <div class="section-heading"><h2>Панель управления</h2><span>Быстрый доступ</span></div>
+        <div class="quick-grid">
+          <button class="quick-card" data-jump="themes"><span class="quick-symbol">◈</span><strong>Тема E52 CLEAR</strong><small>Собрать и скачать Light / Dark</small><span class="chevron">↗</span></button>
+          <button class="quick-card" data-jump="apps"><span class="quick-symbol">▤</span><strong>Приложения</strong><small>Создать, собрать и проверить SIS</small><span class="chevron">↗</span></button>
+          <button class="quick-card" data-jump="device"><span class="quick-symbol">▣</span><strong>Моя E52</strong><small>USB, передача и чек-лист тестов</small><span class="chevron">↗</span></button>
+        </div>
+        <div class="card"><div class="card-head"><h3>Состояние окружения</h3><span id="doctor-status" class="muted">Ещё не проверено</span></div>
+          <div id="doctor-detail" class="empty">Нажми «Проверить инструменты», чтобы увидеть доступность SDK, упаковщиков и эмулятора.</div>
+        </div>
+        <div class="disclaimer">Важно: даже успешно собранный SIS может не установиться на конкретную прошивку. Статус «готово для проверки» не означает «проверено на телефоне».</div>
+      </section>
+      <section id="themes" class="page" aria-labelledby="themes-title">
+        <div class="page-heading"><span class="eyebrow">01 / THEME STUDIO</span><h1 id="themes-title">E52 CLEAR</h1><p>Настоящие ресурсы темы S60. Геометрия системы и родные элементы остаются на своих местах.</p></div>
+        <div class="themes-grid">
+          <article class="theme-card"><div class="theme-preview light"><img src="/api/preview/light" alt="Схематичный предпросмотр Light, не скриншот реального E52"></div><div class="theme-info"><div><h3>Clear Light</h3><p>Тёплый светлый фон, сдержанный синий акцент.</p><a class="text-link" href="/api/wallpaper/light" download="E52-CLEAR-Light-240x320.png">Скачать обои PNG ↓</a></div><div class="theme-buttons"><button class="btn secondary" data-action="theme.build" data-variant="light">Собрать</button><button class="btn ghost" data-action="theme.inspect" data-variant="light">Проверить</button></div><div class="package-controls"><label>Упаковщик <select id="backend-light"><option value="auto">Auto · только MakeSIS</option><option value="makesis">MakeSIS</option><option value="native">Native · экспериментальный!</option></select></label><button class="btn secondary package-button" data-action="theme.package" data-variant="light">Создать SIS</button></div></div></article>
+          <article class="theme-card"><div class="theme-preview dark"><img src="/api/preview/dark" alt="Схематичный предпросмотр Dark, не скриншот реального E52"></div><div class="theme-info"><div><h3>Clear Dark</h3><p>Графит, минимум визуального шума, читаемые акценты.</p><a class="text-link" href="/api/wallpaper/dark" download="E52-CLEAR-Dark-240x320.png">Скачать обои PNG ↓</a></div><div class="theme-buttons"><button class="btn secondary" data-action="theme.build" data-variant="dark">Собрать</button><button class="btn ghost" data-action="theme.inspect" data-variant="dark">Проверить</button></div><div class="package-controls"><label>Упаковщик <select id="backend-dark"><option value="auto">Auto · только MakeSIS</option><option value="makesis">MakeSIS</option><option value="native">Native · экспериментальный!</option></select></label><button class="btn secondary package-button" data-action="theme.package" data-variant="dark">Создать SIS</button></div></div></article>
+        </div>
+        <div class="card"><div class="card-head"><h3>Собранные пакеты</h3><span class="muted">Скачай на ПК, затем перенеси на E52</span></div><div id="theme-packages" class="package-list empty">Здесь появятся созданные SIS/SISX.</div></div>
+        <div class="disclaimer">Экспериментальный native writer не кодирует зависимости темы и пока не проверен на E52. Для первой установки рекомендован MakeSIS с совместимой подписью. Предпросмотр выше условный.</div>
+      </section>
+      <section id="apps" class="page" aria-labelledby="apps-title">
+        <div class="page-heading"><span class="eyebrow">02 / APPLICATIONS</span><h1 id="apps-title">Приложения</h1><p>Проекты в отдельном каталоге workspace, компиляция через symbian-platform и анализ E32/SIS.</p></div>
+        <div class="card"><div class="card-head"><h3>Новый проект</h3><span class="muted">ARMv5T · Nokia E52</span></div>
+          <div class="form-row"><label class="grow">Название проекта<input id="new-project" maxlength="40" placeholder="e52_diagnostics" autocomplete="off"></label><button class="btn primary" data-action="app.init">Создать</button></div>
+          <div class="note">Для генерации и сборки настоящего GUI нужен установленный нативный SDK. Успешный CLI-инспектор ещё не означает, что он установлен.</div>
+        </div>
+        <div class="card"><div class="card-head"><h3>Проекты</h3><span id="project-count" class="muted"></span></div><div id="projects" class="empty">Пока нет проектов. Создай первый выше.</div></div>
+        <div class="card"><div class="card-head"><h3>SIS приложений</h3></div><div id="app-packages" class="empty">Пакеты появятся здесь после сборки.</div></div>
+      </section>
+      <section id="device" class="page" aria-labelledby="device-title">
+        <div class="page-heading"><span class="eyebrow">03 / DEVICE LAB</span><h1 id="device-title">Твоя Nokia E52</h1><p>Подготовь пакеты до приезда телефона. После подключения фиксируй реальные результаты, а не надежды компилятора.</p></div>
+        <div class="card"><div class="card-head"><h3>Подключение</h3><span class="muted">USB устройства сервера</span></div>
+          <div class="form-row"><button class="btn secondary" data-action="device.list">Найти USB</button><button class="btn ghost" data-action="device.info">Информация</button><button class="btn ghost" data-action="emulator.list">Эмуляторы</button></div>
+          <label>Идентификатор устройства <input id="device-selector" placeholder="Выбери из отчёта USB, если устройств несколько"></label>
+          <div class="note">При запуске в Docker на удалённом сервере телефон, подключённый к Windows, здесь не появится. Просто скачай SIS в браузере и передай его на E52 вручную.</div>
+        </div>
+        <div class="card"><div class="card-head"><h3>Передать пакет</h3><span class="muted">Только копирование, не установка</span></div><div class="form-row"><label class="grow">SIS / SISX<select id="selected-package"><option value="">Выбери пакет</option></select></label><button class="btn secondary" data-action="sis.inspect">Проверить SIS</button><button class="btn secondary" data-action="device.stage">Передать по USB</button><button class="btn ghost" data-action="emulator.test">Эмулятор</button></div>
+          <div class="note">Можно скачать файл ниже и установить через диспетчер файлов телефона. При ошибке установки записывай точный текст сообщения Symbian.</div>
+          <div id="all-packages"></div>
+        </div>
+        <div class="card"><div class="card-head"><h3>Протокол проверки E52</h3><a href="/api/device-report" class="text-link">Скачать JSON ↓</a></div>
+          <div class="form-row"><label>RM-код<input id="rm" placeholder="С экрана *#0000#"></label><label>Версия прошивки<input id="firmware" placeholder="Версия ПО"></label></div>
+          <div id="device-steps" class="checklist"></div>
+          <label>Заметки и ошибки<textarea id="device-notes" rows="4" placeholder="Что произошло при установке, какие элементы не отображаются…"></textarea></label>
+          <div class="card-footer"><button id="save-device-report" class="btn primary">Сохранить протокол</button><span class="muted">Только ручные наблюдения. Не подменяют автоматические тесты.</span></div>
+        </div>
+      </section>
+      <section id="activity" class="page" aria-labelledby="activity-title">
+        <div class="page-heading"><span class="eyebrow">04 / ACTIVITY</span><h1 id="activity-title">Операции и отчёты</h1><p>Реальные результаты команд SymPort, ошибки сборки и созданные артефакты.</p></div>
+        <div id="jobs"></div>
+      </section>
+    </div>
+  </main>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
