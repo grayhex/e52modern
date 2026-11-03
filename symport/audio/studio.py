@@ -115,8 +115,8 @@ class RingtoneStudio:
         audio = next(
             (s for s in metadata.get("streams", []) if s.get("codec_type") == "audio"), None
         )
-        if not audio or not math.isfinite(duration) or not 0 < duration <= MAX_DURATION:
-            raise ValueError("Choose a file with an audio track lasting at most 10 minutes.")
+        if not audio or not math.isfinite(duration) or not 0.1 <= duration <= MAX_DURATION:
+            raise ValueError("Choose a file with an audio track lasting 0.1 seconds to 10 minutes.")
         return {
             "duration": duration,
             "channels": int(audio.get("channels", 0)),
@@ -251,8 +251,12 @@ class RingtoneStudio:
         opts = {
             "start": start,
             "end": end,
-            "fade_in": number("fade_in", 0.1, 0, min(10, (end - start) / 2)),
-            "fade_out": number("fade_out", 0.3, 0, min(10, (end - start) / 2)),
+            "fade_in": number(
+                "fade_in", min(0.1, (end - start) / 2), 0, min(10, (end - start) / 2)
+            ),
+            "fade_out": number(
+                "fade_out", min(0.3, (end - start) / 2), 0, min(10, (end - start) / 2)
+            ),
             "lufs": number("lufs", -16, -30, -9),
         }
         for key, default, allowed in [

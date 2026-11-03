@@ -167,6 +167,7 @@ jobs:
           node --check symport/web_assets/preferences.js
           node --check symport/web_assets/inspector.js
           node --check symport/web_assets/device-workspace.js
+          node --input-type=module --check < symport/web_assets/ringtone.js
           bash -n tools/install.sh
           SYMPORT_BRIDGE_KEY=00000000000000000000000000000000 SYMPORT_SSH_TARGET=test@example.invalid SYMPORT_SSH_KEY_FILE=/tmp/key SYMPORT_SSH_KNOWN_HOSTS=/tmp/known_hosts docker compose -f compose.yaml -f compose.bridge.yaml config --quiet
           SYMPORT_HTTP_PORT=8777 docker compose config --quiet
@@ -186,6 +187,7 @@ jobs:
           docker exec device-manager sh -c 'command -v gammu && command -v obexftp'
           docker exec device-manager python tools/check_gammu_contract.py
           docker exec device-manager python tools/check_device_container.py
+          docker run --rm --network none symport-device-manager:ci python tools/check_ringtone_container.py
 
   phone-workspace-browser:
     runs-on: ubuntu-latest

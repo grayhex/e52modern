@@ -8,7 +8,12 @@ from http.server import ThreadingHTTPServer
 from symport.web import Workbench,make_handler
 from symport.phone.local import LocalTransports
 from tests.test_ringtone import audio_bytes
-r=Path(sys.argv[1]);v=r/'volume';v.mkdir();(v/'sample.wav').write_bytes(audio_bytes(8));os.environ.update(SYMPORT_DEVICE_ROOTS=json.dumps({'card':str(v)}),SYMPORT_GAMMU_CONFIG='',SYMPORT_CONNECTIONS_FILE='',SYMPORT_BRIDGE_URL='')
+r=Path(sys.argv[1]);v=r/'volume';v.mkdir();(v/'sample.wav').write_bytes(audio_bytes(8));
+import wave,math,struct
+with wave.open(str(v/'sample.wav'),'rb') as w: params=w.getparams();frames=w.readframes(w.getnframes())
+values=struct.unpack('<'+'h'*(len(frames)//2),frames);shaped=[int(x*(.12+.88*(.5+.5*math.sin((i//2)/44100*2.3)))) for i,x in enumerate(values)]
+with wave.open(str(v/'sample.wav'),'wb') as w:w.setparams(params);w.writeframes(struct.pack('<'+'h'*len(shaped),*shaped))
+os.environ.update(SYMPORT_DEVICE_ROOTS=json.dumps({'card':str(v)}),SYMPORT_GAMMU_CONFIG='',SYMPORT_CONNECTIONS_FILE='',SYMPORT_BRIDGE_URL='')
 w=Workbench(r);original=w.devices.transport.devices
 w.devices.transport.devices=lambda:original()+[{'id':'e72-fixture','model':'Nokia E72 (RM-530)','firmware':'091.004','connected':True,'capabilities':[],'transport':'test-fixture'}]
 ThreadingHTTPServer(('127.0.0.1',8782),make_handler(w)).serve_forever()`;
@@ -30,8 +35,8 @@ const server=spawn(python,['-c',script,root],{cwd:repo,env:process.env,stdio:['i
  const download=page.waitForEvent('download');await page.click('#rt-download');const saved=await download;const dest=path.join(root,'export.mp3');await saved.saveAs(dest);
  const probe=spawnSync('ffprobe',['-v','error','-show_entries','format=duration:stream=channels,sample_rate','-of','json',dest],{encoding:'utf8'});const meta=JSON.parse(probe.stdout);if(meta.streams[0].channels!==1||Math.abs(Number(meta.format.duration)-4)>.15)throw Error('Wrong real MP3 output');
  page.once('dialog',d=>d.accept());await page.click('#rt-send');await page.waitForFunction(()=>document.querySelector('#rt-transfer-status').textContent.length>0);const phone=fs.readdirSync(path.join(root,'volume')).find(n=>n.endsWith('.mp3'));if(!phone||!fs.readFileSync(path.join(root,'volume',phone)).equals(fs.readFileSync(dest)))throw Error('Ringtone transfer differs from processed download');
- await page.screenshot({path:path.join(shots,'ringtone-studio-dark-en.png'),fullPage:true,animations:'disabled'});
- await page.selectOption('#ui-language','ru');await page.selectOption('#ui-theme','light');await page.screenshot({path:path.join(shots,'ringtone-studio-light-ru.png'),fullPage:true,animations:'disabled'});
+ await page.evaluate(()=>window.scrollTo(0,0));await page.waitForTimeout(100);await page.screenshot({path:path.join(shots,'ringtone-studio-dark-en.png'),fullPage:true,animations:'disabled'});
+ await page.selectOption('#ui-language','ru');await page.selectOption('#ui-theme','light');await page.evaluate(()=>window.scrollTo(0,0));await page.waitForTimeout(100);await page.screenshot({path:path.join(shots,'ringtone-studio-light-ru.png'),fullPage:true,animations:'disabled'});
  await page.setViewportSize({width:390,height:844});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Studio mobile overflow');
  await page.click('#rt-clear');await page.waitForFunction(()=>document.querySelector('#rt-editor').hidden);if(fs.readdirSync(path.join(root,'build/symport/ringtone-temp')).length)throw Error('Temporary source not deleted');
  if(errors.length||external.length)throw Error(JSON.stringify({errors,external}));console.log('PASS: actual FFmpeg/WaveSurfer, gallery source, preset/edit/zoom/play, normalized mono MP3/fades, exact download/confirmed transfer, cleanup, E72, Nimbus RU/EN/mobile; no external services.');
