@@ -1,0 +1,11 @@
+# Explicit opt-in: docker compose -f compose.yaml -f compose.phone.yaml up -d --build
+services:
+  workbench:
+    volumes:
+      - type: bind
+        source: ${SYMPORT_PHONE_DIRECTORY:?Set an explicit phone/card directory, never the host root}
+        target: /phone
+        bind:
+          create_host_path: false
+    environment:
+      SYMPORT_DEVICE_ROOTS: '{"phone":"/phone"}'

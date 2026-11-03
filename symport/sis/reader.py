@@ -79,14 +79,14 @@ def _inspect(data: bytes) -> tuple[dict, list[bytes]]:
     if not root.done():
         out["trailing_bytes"] = len(data) - root.pos
     c = Cursor(contents_payload)
-    _, crc_c, _ = c.field(f.T_CONTROLLER_CHECKSUM)
-    _, crc_d, _ = c.field(f.T_DATA_CHECKSUM)
+    crc_c = c.field(f.T_CONTROLLER_CHECKSUM)[1] if c.peek_type() == f.T_CONTROLLER_CHECKSUM else None
+    crc_d = c.field(f.T_DATA_CHECKSUM)[1] if c.peek_type() == f.T_DATA_CHECKSUM else None
     _, comp_payload, comp_raw = c.field(f.T_COMPRESSED)
     _, data_payload, data_raw = c.field(f.T_DATA)
     if not c.done():
         raise SisFormatError("unsupported extra top-level fields (embedded controllers?)")
-    out["controller_crc_ok"] = struct.unpack("<H", crc_c[:2])[0] == f.crc16(comp_raw)
-    out["data_crc_ok"] = struct.unpack("<H", crc_d[:2])[0] == f.crc16(data_raw)
+    out["controller_crc_ok"] = struct.unpack("<H", crc_c[:2])[0] == f.crc16(comp_raw) if crc_c is not None else None
+    out["data_crc_ok"] = struct.unpack("<H", crc_d[:2])[0] == f.crc16(data_raw) if crc_d is not None else None
 
     controller_bytes = _decompress(comp_payload)
     cc = Cursor(controller_bytes)

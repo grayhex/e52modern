@@ -23,6 +23,8 @@ from urllib.parse import parse_qs, urlsplit
 
 from symport.catalog import AppCatalog
 from symport.config import find_repo_root
+from symport.inspector import Inspector
+from symport.jailbreak import JailbreakManager
 from symport.lab import EmulatorLab
 from symport.library import ThemeLibrary
 from symport.phone import DeviceManager
@@ -168,6 +170,8 @@ class Workbench:
         self.catalog = AppCatalog(repo, self.devices)
         self.library = ThemeLibrary(repo)
         self.lab = EmulatorLab(repo, self.resolve_lab_package, self.devices)
+        self.inspector = Inspector(repo, self.resolve_lab_package, self.devices, self.lab)
+        self.jailbreak = JailbreakManager(repo, self.devices)
         self.token = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
         self.jobs: list[dict] = []
@@ -176,6 +180,19 @@ class Workbench:
 
     def resolve_lab_package(self, data):
         source, key = data.get('source'), data.get('reference')
+        if source == 'lab':
+            report = self.lab.report(key)
+            if not report.get('package'):
+                raise ValueError('Choose a package test report')
+            raw = (self.lab.root / 'packages' / (report['id'] + '.bin')).read_bytes()
+            import hashlib
+            if hashlib.sha256(raw).hexdigest() != report['package']['sha256']:
+                raise ValueError('Emulator package integrity changed')
+            return report['package']['name'], raw, report['kind']
+        if source == 'device':
+            downloaded = self.devices.execute({'action': 'download', 'device': data.get('device'), 'path': data.get('path')})
+            name = str(data.get('path', '')).replace('\\', '/').rsplit('/', 1)[-1]
+            return name, base64.b64decode(downloaded['content'], validate=True), 'app'
         if source == 'build':
             path = package_path(self.repo, key)
             return path.name, path.read_bytes(), 'theme' if key.startswith('theme:') else 'app'
@@ -404,6 +421,10 @@ def make_handler(state: Workbench):
                 "/suite.js": ("suite.js", "text/javascript; charset=utf-8"),
                 "/catalog.js": ("catalog.js", "text/javascript; charset=utf-8"),
                 "/lab.js": ("lab.js", "text/javascript; charset=utf-8"),
+                "/inspector.js": ("inspector.js", "text/javascript; charset=utf-8"),
+                "/preferences.js": ("preferences.js", "text/javascript; charset=utf-8"),
+                "/translations.json": ("translations.json", "application/json; charset=utf-8"),
+                "/preferences.css": ("preferences.css", "text/css; charset=utf-8"),
                 "/compact.css": ("compact.css", "text/css; charset=utf-8"),
                 "/lab.css": ("lab.css", "text/css; charset=utf-8"),
                 "/nimbus.css": ("nimbus.css", "text/css; charset=utf-8"),
@@ -501,12 +522,16 @@ def make_handler(state: Workbench):
                 length = int(self.headers.get("Content-Length", "0"))
             except ValueError:
                 return self._json({"error": "Invalid length"}, 400)
-            if length <= 0 or length > ((64 * 1024 * 1024 * 4 // 3 + 4096) if self.path in ("/api/manager", "/api/bridge", "/api/lab") else (LIMIT * 4 // 3 + 4096 if self.path in ("/api/library", "/api/contacts") else 12_000)):
+            if length <= 0 or length > ((64 * 1024 * 1024 * 4 // 3 + 4096) if self.path in ("/api/manager", "/api/bridge", "/api/lab", "/api/inspector", "/api/jailbreak") else (LIMIT * 4 // 3 + 4096 if self.path in ("/api/library", "/api/contacts") else 12_000)):
                 return self._json({"error": "Invalid body size"}, 413)
             try:
                 body = json.loads(self.rfile.read(length))
                 if not isinstance(body, dict):
                     raise ValueError("Expected JSON object")
+                if self.path == '/api/inspector':
+                    return self._json(state.inspector.execute(body))
+                if self.path == '/api/jailbreak':
+                    return self._json(state.jailbreak.execute(body))
                 if self.path == '/api/lab':
                     return self._json(state.lab.execute(body))
                 if self.path == "/api/catalog":

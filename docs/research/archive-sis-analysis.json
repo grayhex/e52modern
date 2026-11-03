@@ -1,0 +1,153 @@
+[
+  {
+    "archive": "Nokia symbian_1.zip",
+    "name": "NortonSymbianHack.sisx",
+    "package": {
+      "uid": 4026519760,
+      "uid_matches_header": true,
+      "names": [
+        "Symantec Symbian Hack"
+      ],
+      "vendor_unique_name": "CODeRUS",
+      "vendor_names": [
+        "CODeRUS"
+      ],
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    "signature": "valid",
+    "certificate_validity": [
+      "valid"
+    ],
+    "optional_crc": {
+      "controller": null,
+      "data": null
+    },
+    "undecoded_blocks": [
+      4
+    ]
+  },
+  {
+    "archive": "Nokia symbian_1.zip",
+    "name": "RomPatcherPlus 3.1.sisx",
+    "package": {
+      "uid": 537164703,
+      "uid_matches_header": true,
+      "names": [
+        "ROMPatcher Plus"
+      ],
+      "vendor_unique_name": "Marco Bellino",
+      "vendor_names": [
+        "Marco Bellino"
+      ],
+      "version": [
+        3,
+        1,
+        0
+      ]
+    },
+    "signature": "valid",
+    "certificate_validity": [
+      "valid"
+    ],
+    "optional_crc": {
+      "controller": true,
+      "data": true
+    },
+    "undecoded_blocks": null
+  },
+  {
+    "archive": "Nokia symbian_2.zip",
+    "name": "symbian_hacked_2/RomPatcherPlus 3.1.sisx",
+    "package": {
+      "uid": 537164703,
+      "uid_matches_header": true,
+      "names": [
+        "ROMPatcher Plus"
+      ],
+      "vendor_unique_name": "Marco Bellino",
+      "vendor_names": [
+        "Marco Bellino"
+      ],
+      "version": [
+        3,
+        1,
+        0
+      ]
+    },
+    "signature": "valid",
+    "certificate_validity": [
+      "valid"
+    ],
+    "optional_crc": {
+      "controller": true,
+      "data": true
+    },
+    "undecoded_blocks": null
+  },
+  {
+    "archive": "Nokia symbian_2.zip",
+    "name": "symbian_hacked_2/UMU Nokia Hack.sis",
+    "package": {
+      "uid": 3932934399,
+      "uid_matches_header": true,
+      "names": [
+        "UMU Nokia Hack by CODeRUS"
+      ],
+      "vendor_unique_name": "CODeRUS | Dart Vanya",
+      "vendor_names": [
+        "CODeRUS | Dart Vanya"
+      ],
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    "signature": "invalid",
+    "certificate_validity": [
+      "valid"
+    ],
+    "optional_crc": {
+      "controller": null,
+      "data": null
+    },
+    "undecoded_blocks": [
+      2
+    ]
+  },
+  {
+    "archive": "Nokia symbian_2.zip",
+    "name": "symbian_hacked_2/UMU SE Hack.sis",
+    "package": {
+      "uid": 3932934399,
+      "uid_matches_header": true,
+      "names": [
+        "UMU SE Hack by CODeRUS"
+      ],
+      "vendor_unique_name": "CODeRUS | Dart Vanya",
+      "vendor_names": [
+        "CODeRUS | Dart Vanya"
+      ],
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    "signature": "valid",
+    "certificate_validity": [
+      "valid"
+    ],
+    "optional_crc": {
+      "controller": null,
+      "data": null
+    },
+    "undecoded_blocks": [
+      2
+    ]
+  }
+]

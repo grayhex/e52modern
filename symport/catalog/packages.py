@@ -40,11 +40,11 @@ def validate_package(name: str, raw: bytes, jar: tuple[str, bytes] | None = None
     if suffix in ('.sis', '.sisx'):
         from symport.sis.reader import inspect
         info = inspect(raw)
-        if not all(info[k] for k in ('controller_crc_ok', 'data_crc_ok', 'uid_checksum_ok')):
+        if not info['uid_checksum_ok'] or not info['package']['uid_matches_header'] or any(info[k] is False for k in ('controller_crc_ok', 'data_crc_ok')):
             raise ValueError('SIS checksum validation failed')
         if any(f.get('hash_ok') is False for f in info['files']):
             raise ValueError('SIS payload hash mismatch')
-        return {'format': suffix[1:], 'signed': info['signed'],
+        return {'format': suffix[1:], 'signed': info['signed'], 'checksums': {k:info[k] for k in ('controller_crc_ok', 'data_crc_ok', 'uid_checksum_ok')},
                 'signature_verification': 'not-verified', 'dependencies': info['dependencies']}
     if suffix == '.jar':
         try:

@@ -17,3 +17,6 @@ workspace/
 *.pem
 firmware/
 roms/
+
+.env
+Nokia symbian*.zip
