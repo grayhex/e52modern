@@ -103,6 +103,11 @@ def test_http_ui_and_security(http_server):
     assert status == 200 and state.token.encode() in body and b"SymPort" in body
     status, body = _http(port, "GET", "/api/state")
     assert status == 200 and json.loads(body)["schema"] == "symport.web/1"
+    wallpaper = state.repo / "theme" / "assets" / "light"
+    wallpaper.mkdir(parents=True)
+    (wallpaper / "background.png").write_bytes(b"fake-png")
+    status, body = _http(port, "GET", "/api/wallpaper/light")
+    assert status == 200 and body == b"fake-png"
     status, _ = _http(port, "GET", "/api/state", headers={"Host": "evil.example"})
     assert status == 403
     status, _ = _http(port, "POST", "/api/device-report",
