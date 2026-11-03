@@ -21,3 +21,8 @@
 
 Screenshots use generated audio and temporary mounted folders. The E72 illustration
 is an original decorative asset; it is not a photo or an emulator button-coordinate map.
+
+Compact layout regression: at 1366×768 with advanced options collapsed, the editor
+and processed result fit inside the viewport. The logo stays within the top 32 px.
+Long Inspector pages are also scrolled at 1440×600/1100 to check top-left anchoring
+and independent menu scrolling. On narrow mobile screens the editor stacks normally.

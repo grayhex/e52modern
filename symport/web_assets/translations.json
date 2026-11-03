@@ -1062,7 +1062,9 @@
     "Передать готовый рингтон на Nokia? Назначьте мелодию в настройках телефона после передачи.": "Transfer this processed ringtone to Nokia? Assign it in phone settings after transfer.",
     "Запись прошивки отключена. В USB Bridge нет проверенной процедуры прошивки и восстановления. Образы для обновления физического телефона не принимаются.": "Firmware writing is disabled. USB Bridge does not include a verified flashing and recovery procedure. No firmware file is accepted for physical-device updates.",
     "В справочнике есть более новая версия. Запись на телефон отключена до появления проверенной процедуры восстановления.": "A newer version is listed. Physical-device flashing is disabled until a verified recovery procedure is available.",
-    "Клавиатура": "Keypad"
+    "Клавиатура": "Keypad",
+    "Настройки звука": "Sound settings",
+    "Дополнительные настройки звука": "Advanced audio settings"
   },
   "ru": {
     "${key}": "${ключ}",
@@ -1588,7 +1590,9 @@
     "Firmware writing is disabled. USB Bridge does not include a verified flashing and recovery procedure. No firmware file is accepted for physical-device updates.": "Запись прошивки отключена. В USB Bridge нет проверенной процедуры прошивки и восстановления. Образы для обновления физического телефона не принимаются.",
     "A newer version is listed. Physical-device flashing is disabled until a verified recovery procedure is available.": "В справочнике есть более новая версия. Запись на телефон отключена до появления проверенной процедуры восстановления.",
     "Disabled": "Отключено",
-    "Keypad": "Клавиатура"
+    "Keypad": "Клавиатура",
+    "Sound settings": "Настройки звука",
+    "Advanced audio settings": "Дополнительные настройки звука"
   },
   "patterns": [
     {
