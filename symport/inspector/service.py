@@ -19,6 +19,7 @@ HEX = re.compile(r'^[a-f0-9]{32}$')
 ERRORS = {
  'expired-certificate': ['Check the real phone date/time first. An expired certificate is not proof of a bad signature.', 'Prefer an updated package or an authorised re-signing certificate. Do not leave the phone clock incorrect; restore it after a deliberate offline diagnostic.'],
  'invalid-certificate': ['Check package integrity, issuer trust, certificate constraints and device binding. Re-download from the publisher.'],
+ 'restricted-capabilities': ['Package requests privileged capabilities; certificate authorisation and phone policy must be checked. Self-signing does not grant these privileges on stock firmware.'],
  'missing-capabilities': ['Compare requested capabilities with the authorising certificate and firmware policy. A self-signed certificate cannot grant restricted capabilities on stock firmware.'],
  'unsupported-os': ['Use a SIS for Symbian 9.x / S60 3rd FP2 and ARMv5. A signature or system patch cannot make an incompatible binary compatible.'],
  'missing-dependency': ['Install the publisher-documented dependency version. Dependency presence/version cannot be inferred from a file on a memory card.'],
@@ -96,6 +97,7 @@ class Inspector:
         if not isinstance(target, dict):
             raise ValueError('Target must be an object')
         target = {k: str(target.get(k, ''))[:120] for k in ('model', 'rm', 'firmware', 'os')}
+        is_e52 = bool(re.search(r'\bE52\b', target['model'], re.I))
         report = {'schema': 'symport.inspector/1', 'id': secrets.token_hex(16), 'name': name,
                   'sha256': hashlib.sha256(raw).hexdigest(), 'size': len(raw), 'package': info['package'],
                   'signatures': signatures, 'sis_checksums': {k:info[k] for k in ('uid_checksum_ok','controller_crc_ok','data_crc_ok')}, 'target': target, 'target_evidence': 'user-selected profile; not device attestation',
@@ -117,8 +119,8 @@ class Inspector:
                     report['binaries'].append(binary)
                     report['capabilities'] += binary.get('capabilities') or []
                     if binary.get('restricted_capabilities'):
-                        issues.append('missing-capabilities')
-                    if binary['kernel'] != 'eka2' or binary['cpu'] not in ('armv4', 'armv5'):
+                        issues.append('restricted-capabilities')
+                    if binary['kernel'] != 'eka2' or (is_e52 and binary['cpu'] not in ('armv4', 'armv5')):
                         issues.append('unsupported-os')
         except ValueError as exc:
             report['limitations'].append(str(exc))
@@ -137,13 +139,19 @@ class Inspector:
             dlls = provided.get('dlls')
             if not isinstance(dlls, dict) or len(dlls) > 10000:
                 raise ValueError('Invalid firmware export inventory')
+            for name, value in dlls.items():
+                ordinals = value.get('ordinals') if isinstance(value, dict) else None
+                if len(name) > 160 or (ordinals is not None and (not isinstance(ordinals, list) or len(ordinals) > 4096 or any(type(o) is not int or not 0 <= o <= 65535 for o in ordinals))):
+                    raise ValueError('Invalid DLL ordinal inventory')
             firmware = FirmwareProfile(str(provided.get('id', 'user-profile')), 'nokia-e52', target['firmware'], str(provided.get('source', 'user-supplied')),
                                        {k.lower(): set(v['ordinals']) if isinstance(v, dict) and isinstance(v.get('ordinals'), list) else None for k,v in dlls.items()})
             report['firmware_profile'] = {'id': firmware.id, 'source': firmware.source, 'evidence': 'user-supplied; not device-attested'}
+        if not is_e52:
+            report['limitations'].append('Model profile unknown; Nokia E52 compatibility is not inferred for another model.')
         profile = load_profile(Path(__file__).resolve().parents[2] / 'profiles/nokia-e52.toml')
         for binary in report['binaries']:
             checks = Report('inspector static compatibility')
-            binary['compatibility'] = evaluate(binary, profile, firmware, checks)
+            binary['compatibility'] = evaluate(binary, profile, firmware, checks) if is_e52 else 'unknown'
             binary['checks'] = checks.to_dict()['checks']
         report['capabilities'] = sorted(set(report['capabilities']))
         report['issues'] = list(dict.fromkeys(issues))

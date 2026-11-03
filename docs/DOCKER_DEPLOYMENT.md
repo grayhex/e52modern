@@ -1,0 +1,92 @@
+# Docker installation and daily workflow
+
+## Quick installation
+
+Requirements: Docker Engine/Desktop with Linux containers and Compose v2. Emulator Lab
+additionally needs Linux amd64 capacity, about 3 GiB RAM and your own supported firmware.
+From a checkout of E52Modern:
+
+```bash
+tools/install.sh --check          # validate Docker and Compose, no changes
+tools/install.sh                  # create .env only if missing, build/start, wait for HTTP
+# Or include the optional emulator:
+tools/install.sh --emulator
+```
+
+The installer preserves existing `.env` and named volumes. `.env.example` documents
+settings; no passwords/keys are shipped. Default URL is `http://127.0.0.1:8765`.
+For a different port set `SYMPORT_HTTP_PORT`; the published/container port, command and
+healthcheck change together so Host/Origin validation continues to match.
+`tools/install.sh --no-build` starts a previously built image.
+
+Remote Linux server: forward the **same port** over SSH, e.g.
+`ssh -L 8765:127.0.0.1:8765 user@server`. Open localhost in your browser. Workbench
+and phone-control APIs are not intended for direct public exposure or multi-user hosting.
+MGO's agent has no published ports and requires a backend-only bearer secret.
+
+## Phone connected to the Docker host
+
+Explicitly enrol a mounted phone/card directory (not the host root):
+
+```bash
+export SYMPORT_PHONE_DIRECTORY=/media/your-user/PHONE
+# Container user 10001 must already have the required access to this directory.
+docker compose -f compose.yaml -f compose.phone.yaml up -d --build
+```
+
+The directory must exist; Compose will not create a missing host path. Only `/phone`
+is enrolled. Choose it in Device Manager. Mounted files do not prove phone identity,
+installed application state or access to the protected phone system. USB on Windows
+is not automatically visible to a remote Linux server.
+
+## Phone connected to Windows / local PC Bridge
+
+Run the existing local authenticated Bridge on the PC with the phone, as documented
+in [DEVICE_MANAGER.md](DEVICE_MANAGER.md). For Docker, the SSH forward must live in
+Workbench's **network namespace**, not only on the Linux host's unrelated loopback.
+The optional overlay supplies this without publishing the Bridge API:
+
+1. Configure an operator-owned SSH key and verify the PC's SSH host fingerprint out
+   of band. Windows needs an enabled SSH server reachable through your LAN/private VPN.
+2. Set `SYMPORT_SSH_TARGET=user@pc-address`, `SYMPORT_SSH_KEY_FILE` and
+   `SYMPORT_SSH_KNOWN_HOSTS` to existing files outside the repository. Set
+   `SYMPORT_SSH_UID/GID` to their owner, keeping the private key mode 0600.
+3. Set the same 32+ character `SYMPORT_BRIDGE_KEY` on the local Bridge and in private
+   `.env`. Do not commit it. The overlay forwards to the local Bridge port 8765.
+4. Start:
+
+```bash
+docker compose -f compose.yaml -f compose.bridge.yaml up -d --build
+```
+
+The SSH sidecar shares Workbench loopback, reads keys read-only, strictly checks
+known_hosts and forwards `127.0.0.1:18765` to the PC's `127.0.0.1:8765`. It requires
+no privileged container and has no published ports. The image contains an SSH client,
+not an operator key. A Windows SSH/phone session was not available for hardware testing;
+Compose contract and existing Bridge mock tests cover configuration/HTTP boundaries.
+For a PC behind NAT without private connectivity, establish the documented operator
+SSH/private-network route first; public unauthenticated phone APIs are not a fallback.
+
+## Logical workflow
+
+1. Choose English/Russian and System/Light/Dark in the toolbar. Preferences persist in
+   this browser. Translation catalogs and fonts are local; user data is not sent to a
+   translation service. Raw JSON, filenames, certificate subjects and phone data retain
+   their original values. Nimbus dark uses navy surfaces and cyan/blue accents.
+2. Connect/discover the phone or explicit volume; review capabilities and identity limits.
+3. Back up accessible data before mutations. Import contacts, transfer media/packages,
+   or inspect a SIS before testing it in Emulator Lab and transferring the same bytes.
+4. Use Certificate Inspector recommendations before considering the separate experimental
+   workflow. Catalog never enables system patches automatically.
+
+## Updates, diagnostics and data
+
+`git pull` and `tools/install.sh` rebuild/update the selected services. Keep a backup
+of named volumes before an upgrade. `docker compose down` preserves data; `down -v`
+would erase it and is never run by the installer. Data volumes contain phone backups,
+Inspector/Jailbreak/Lab reports and uploaded files; MGO has separate firmware/saves/auth
+volumes. Do not copy private uploads into the source tree or image.
+
+Use `docker compose ps`, `docker compose logs workbench`, optional `logs mgo-symbian`
+and `logs bridge-tunnel`. A missing transport is shown as unavailable, not a fake device.
+No successful physical E52 unlock, full rollback or firmware compatibility is claimed.

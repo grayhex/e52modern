@@ -15,6 +15,9 @@ SymPort — прежде всего веб-среда работы с телеф
 * `symport/phone/gammu_contacts.py` — чтение книги, добавление без удаления и проверка чтением обратно;
 * `symport/phone/service.py` — диспетчер операций и журнал без содержимого данных;
 * `catalog/`, `symport/catalog/` — курируемые метаданные и одобренные источники, безопасный downloader, зависимости, очередь и пакетная передача;
+* `symport/inspector/` — ограниченный разбор X.509/SIS-подписей, статическая диагностика и подтверждённая передача тех же байтов;
+* `symport/jailbreak/` — fail-closed мастер: ZIP-инвентарь без ключей, dry-run/копия/staging, ручные свидетельства и hash-checked частичный откат;
+* `symport/web_assets/preferences.js`, `translations.json`, `preferences.css` — локальные RU/EN и Nimbus Dark;
 * `symport/lab/client.py` — ограниченный внутренний HTTP-клиент существующего агента MGO, bearer key из общего тома;
 * `symport/lab/service.py` — потоковая загрузка прошивки, оркестрация SIS/тем, постоянные отчёты и передача тех же байтов через Device Manager;
 * `symport/library.py` — проверка, импорт, явная локальная публикация и выдача SIS;
@@ -128,3 +131,7 @@ flowchart LR
 Java остаётся `unsupported`, без подмены ядром KEmulator. API не принимает
 произвольный URL агента, маршрут control API или путь файла сервера от браузера.
 [Контракт, хранение, проверка и ограничения](EMULATOR_LAB.md).
+
+Математика подписи не подменяет доверие телефона. Системные операции Jailbreak Manager
+не входят в транспортный allow-list; generic install/patch/system-write блокируются
+даже при подтверждении клиента. Откат ограничен собственными файлами с совпавшим SHA-256.

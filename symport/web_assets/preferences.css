@@ -4,3 +4,4 @@
 @media(max-width:760px){.topbar{padding-left:12px;padding-right:12px}.top-actions{flex-wrap:wrap}.top-actions .target{display:none}.breadcrumbs{font-size:11px}.preference-control select{max-width:100px}.security-grid{grid-template-columns:1fr}}
 #inspector .card,#jailbreak .card{min-width:0}#inspector input,#inspector select,#jailbreak input,#jailbreak select{max-width:100%;min-width:0}#inspect-facts .device-details{grid-template-columns:160px minmax(0,1fr)}#jb-files label{align-items:flex-start}#jb-summary p{overflow-wrap:anywhere}
 @media(max-width:540px){#inspector .form-row>label,#jailbreak .form-row>label{width:100%}#inspect-facts .device-details{grid-template-columns:1fr}}
+#jb-history .btn,#inspect-reports .btn{max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:left;justify-content:flex-start}

@@ -247,7 +247,7 @@
     "Карты и музыка приобретаются/копируются отдельно с разрешения правообладателей. Производительность зависит от VM.": "Maps and music purchased/copied separately with permission of copyright holders. Performance varies by VM.",
     "Карты, SSH, читалка…": "Maps, SSH, reader...",
     "Каталог назначения": "Destination directory",
-    "Каталог приложений": "Application directory",
+    "Каталог приложений": "App Catalog",
     "Каталог приложений и игр": "Catalogue of applications and games",
     "Категория": "Category",
     "КиБ": "KiB",
@@ -1384,7 +1384,14 @@
     "Trust": "Доверие телефона",
     "Compatibility": "Совместимость",
     "Capabilities": "Возможности (capabilities)",
-    "Version": "Версия"
+    "Version": "Версия",
+    "No capabilities decoded": "Capabilities не декодированы",
+    "Accessible folder to back up (empty = volume root)": "Доступная папка для копирования (пусто = корень накопителя)",
+    "Contacts": "Контакты",
+    "Test in Emulator Lab": "Проверить в Emulator Lab",
+    "Transfer to phone": "Передать на телефон",
+    "Transfer to isolated folder": "Передать в отдельную папку",
+    "Package requests privileged capabilities; certificate authorisation and phone policy must be checked. Self-signing does not grant these privileges on stock firmware.": "Пакет запрашивает привилегированные capabilities. Требуется проверить разрешения сертификата и политику телефона: самоподпись не предоставляет их на штатной прошивке."
   },
   "patterns": [
     {
@@ -1534,6 +1541,34 @@
     {
       "source": "Передано файлов: ZXVAR0XZ. Проверьте воспроизведение на телефоне.",
       "en": "Files transferred: ZXVAR0XZ. Check playback on your phone."
+    },
+    {
+      "source": "Удалить ZXVAR0XZ? Каталог должен быть пустым.",
+      "en": "Delete ZXVAR0XZ? The directory must be empty."
+    },
+    {
+      "source": "Передать ZXVAR0XZ? Это не установка приложения.",
+      "en": "Transfer ZXVAR0XZ? This does not install the application."
+    },
+    {
+      "source": "Передать ZXVAR0XZ на выбранный телефон? Это не установка.",
+      "en": "Transfer ZXVAR0XZ to the selected phone? This does not install it."
+    },
+    {
+      "source": "Опубликовать ZXVAR0XZ в локальной библиотеке? Совместимость с телефоном не подтверждена.",
+      "en": "Publish ZXVAR0XZ in the local library? Phone compatibility has not been verified."
+    },
+    {
+      "source": "Удалить копию ZXVAR0XZ с сервера? Данные на телефоне не затрагиваются.",
+      "en": "Delete backup ZXVAR0XZ from the server? Phone data is unaffected."
+    },
+    {
+      "source": "Создать полную копию файлов накопителя ZXVAR0XZ? Копирование может занять много времени; пока оно идёт, другие операции недоступны.",
+      "en": "Create a full file backup of volume ZXVAR0XZ? This may take a while; other operations will be unavailable during the copy."
+    },
+    {
+      "source": "Восстановить показанные файлы в ZXVAR0XZ?",
+      "en": "Restore the previewed files to ZXVAR0XZ?"
     }
   ]
 }

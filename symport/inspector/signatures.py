@@ -37,13 +37,13 @@ def certificates(raw):
     return result
 
 
-def verify(public, signature, data, algorithm):
+def verify(public, signature, data, algorithm, parameters=None):
     if isinstance(public, rsa.RSAPublicKey):
-        public.verify(signature, data, padding.PKCS1v15(), algorithm)
+        public.verify(signature, data, parameters or padding.PKCS1v15(), algorithm)
     elif isinstance(public, dsa.DSAPublicKey):
         public.verify(signature, data, algorithm)
     elif isinstance(public, ec.EllipticCurvePublicKey):
-        public.verify(signature, data, ec.ECDSA(algorithm))
+        public.verify(signature, data, parameters or ec.ECDSA(algorithm))
     else:
         raise UnsupportedAlgorithm('Unsupported public key')
 
@@ -128,19 +128,29 @@ def inspect_signatures(raw, at=None):
                         status = 'invalid'
                 entry['signatures'].append({'oid': oid, 'status': status, 'legacy_sha1': oid.endswith('.5') or oid == '1.2.840.10040.4.3',
                                             'signed_bytes': start, 'signed_sha256': hashlib.sha256(body[:start]).hexdigest()})
+            entry['root_signature'] = 'issuer-missing'
+            if chain[-1].issuer == chain[-1].subject:
+                try:
+                    verify(chain[-1].public_key(), chain[-1].signature, chain[-1].tbs_certificate_bytes, chain[-1].signature_hash_algorithm, chain[-1].signature_algorithm_parameters)
+                    entry['root_signature'] = 'valid-self-signature'
+                except InvalidSignature:
+                    entry['root_signature'] = 'invalid'
             entry['chain_links'] = []
             for child, issuer in zip(chain, chain[1:], strict=False):
                 status = 'invalid'
                 if child.issuer == issuer.subject:
                     try:
-                        verify(issuer.public_key(), child.signature, child.tbs_certificate_bytes, child.signature_hash_algorithm)
+                        verify(issuer.public_key(), child.signature, child.tbs_certificate_bytes, child.signature_hash_algorithm, child.signature_algorithm_parameters)
                         status = 'valid'
                     except InvalidSignature:
                         pass
                 entry['chain_links'].append(status)
-            statuses = [s['status'] for s in entry['signatures']] + entry['chain_links']
+            statuses = [s['status'] for s in entry['signatures']] + entry['chain_links'] + (['invalid'] if entry['root_signature'] == 'invalid' else [])
             entry['status'] = 'invalid' if 'invalid' in statuses else 'unsupported' if 'unsupported' in statuses else 'valid'
-        except (ValueError, UnsupportedAlgorithm) as exc:
+        except UnsupportedAlgorithm as exc:
+            entry['status'] = 'unsupported'
+            entry['error'] = str(exc)[:200]
+        except ValueError as exc:
             entry['error'] = str(exc)[:200]
         result.append(entry)
     return {'chains': result, 'dependencies': dependencies, 'at': at.isoformat(),

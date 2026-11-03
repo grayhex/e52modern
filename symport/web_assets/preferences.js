@@ -17,18 +17,19 @@ function tr(text){
  if(translated===undefined&&uiLanguage==='en'){
   const unit=key.match(/^(\d+(?:\.\d+)?) (ГиБ|МиБ|КиБ|шт\.|проект\(ов\))$/);
   if(unit)translated=unit[1]+' '+({'ГиБ':'GiB','МиБ':'MiB','КиБ':'KiB','шт.':'items','проект(ов)':'projects'})[unit[2]];
+  else if(key.includes(': ')&&uiTranslations.en[key.split(': ')[0]]){const index=key.indexOf(': ');translated=uiTranslations.en[key.slice(0,index)]+key.slice(index);}
   else if(key.includes(' · ')){const pieces=key.split(' · '),known=pieces.map(p=>uiTranslations.en[p]||p);if(known.some((p,i)=>p!==pieces[i]))translated=known.join(' · ');}
  }
  return translated===undefined?text:leading+translated+trailing;
 }
 function uiTranslateNode(node){
  if(node.nodeType===Node.TEXT_NODE){
-  if(!node.parentElement||node.parentElement.closest('script,style,pre,code,[data-i18n-skip],textarea,svg,#calendar-events,#calendar-todos,#inspect-reports,#jb-history'))return;
+  if(!node.parentElement||node.parentElement.closest('script,style,pre,code,[data-i18n-skip],textarea,svg,#inspect-facts dd,#calendar-events,#calendar-todos,#inspect-reports,#jb-history'))return;
   const value=node.nodeValue;let record=uiOriginal.get(node);
   if(!record||record.last!==value)record={source:value,last:value};
   const next=tr(record.source);record.last=next;uiOriginal.set(node,record);if(next!==value)node.nodeValue=next;
  }else if(node.nodeType===Node.ELEMENT_NODE){
-  if(node.matches('script,style,pre,code,[data-i18n-skip],textarea,svg,#calendar-events,#calendar-todos,#inspect-reports,#jb-history'))return;
+  if(node.matches('script,style,pre,code,[data-i18n-skip],textarea,svg,#inspect-facts dd,#calendar-events,#calendar-todos,#inspect-reports,#jb-history'))return;
   for(const attribute of ['placeholder','title','aria-label','alt'])if(node.hasAttribute(attribute)){
    const holder=node.getAttributeNode(attribute),value=holder.value;let record=uiOriginal.get(holder);
    if(!record||record.last!==value)record={source:value,last:value};const next=tr(record.source);record.last=next;uiOriginal.set(holder,record);if(value!==next)holder.value=next;

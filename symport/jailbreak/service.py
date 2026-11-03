@@ -97,7 +97,10 @@ class JailbreakManager:
                     'system_automation': 'blocked', 'reason': 'No E52 firmware + system-write transport + tested recovery procedure has been validated. File transfer is not installation.'}
         if action == 'import':
             raw = base64.b64decode(data.get('content', ''), validate=True)
-            result = inventory(raw, data.get('name', 'archive.zip'))
+            try:
+                result = inventory(raw, data.get('name', 'archive.zip'))
+            except (zipfile.BadZipFile, RuntimeError, NotImplementedError) as exc:
+                raise ValueError('Invalid, encrypted or unsupported ZIP archive') from exc
             result['id'] = secrets.token_hex(16)
             directory = self.root/'files'
             directory.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -141,7 +144,7 @@ class JailbreakManager:
                 raise ValueError('Confirm accessible-data backup')
             if run['backup']:
                 return run
-            result = self.devices.execute({'action': 'backup', 'device': run['device'], 'path': ''})
+            result = self.devices.execute({'action': 'backup', 'device': run['device'], 'path': data.get('path', '')})
             raw = base64.b64decode(result['content'], validate=True)
             folder = self.root/'backups'
             folder.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -156,6 +159,8 @@ class JailbreakManager:
         if action == 'stage':
             if data.get('confirm') is not True or data.get('ack_risk') is not True or not run['backup']:
                 raise ValueError('Backup and explicit risk/transfer confirmations required')
+            if not run['files']:
+                raise ValueError('Select files in a new dry-run plan before staging')
             if run.get('stage_started'):
                 raise ValueError('Staging was already attempted; inspect report and rollback before a new plan')
             run['stage_started'] = True
@@ -168,9 +173,16 @@ class JailbreakManager:
                     if sha(raw) != entry['sha256']:
                         raise ValueError('Source integrity changed')
                     suffix = PurePosixPath(entry['name']).suffix.lower()
-                    path = folder+f'/{index:02d}-{entry["sha256"][:12]}'+suffix
+                    filename = re.sub(r'[^A-Za-z0-9_.-]', '_', PurePosixPath(entry['name']).stem)[:90] or 'package'
+                    path = folder+f'/{index:02d}-'+filename+suffix
+                    staged = {'path': path, 'sha256': sha(raw), 'name': entry['name'], 'state': 'pending'}
+                    run['staged'].append(staged)
+                    self.record(run, 'stage-file', 'pending', sha256=sha(raw))
                     self.devices.execute({'action': 'upload', 'device': run['device'], 'path': path, 'content': base64.b64encode(raw).decode(), 'confirm': True})
-                    run['staged'].append({'path': path, 'sha256': sha(raw), 'name': entry['name']})
+                    echoed = self.devices.execute({'action': 'download', 'device': run['device'], 'path': path})
+                    if sha(base64.b64decode(echoed['content'], validate=True)) != entry['sha256']:
+                        raise ValueError('Transferred file read-back hash mismatch')
+                    staged['state'] = 'transferred-not-installed'
                     self.record(run, 'stage-file', 'transferred-not-installed', sha256=sha(raw))
             except (ValueError, OSError) as exc:
                 self.record(run, 'stage', 'partial-or-failed', error=str(exc)[:300])

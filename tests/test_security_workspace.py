@@ -179,3 +179,36 @@ def test_no_embedded_private_keys_or_unverified_archive_executables():
     assert not any('norton' in p.lower() and p.endswith(('.sis','.sisx','.exe')) for p in paths)
     catalog=json.loads((root/'symport/web_assets/translations.json').read_text())
     assert catalog['en']['Контакты']=='Contacts'
+
+
+def test_optional_crc_is_unknown_not_fabricated_valid():
+    raw=(FIXTURES/'sdk_probe_package.sis').read_bytes()
+    _,contents,_=f.Cursor(raw,16).field(f.T_CONTENTS)
+    c=f.Cursor(contents)
+    c.field()
+    c.field()
+    remaining=contents[c.pos:]
+    without_crc=raw[:16]+f.field(f.T_CONTENTS,remaining)
+    from symport.catalog.packages import validate_package
+    result=validate_package('no-crc.sis',without_crc)
+    assert result['checksums']['controller_crc_ok'] is None and result['checksums']['data_crc_ok'] is None
+    assert result['checksums']['uid_checksum_ok'] is True
+
+
+def test_original_backup_is_not_replaced_and_wrong_target_is_blocked(security):
+    _,manager,volume=security
+    run=plan(manager)
+    before=manager.execute({'action':'backup','id':run['id'],'confirm':True})['backup']['sha256']
+    (volume/'existing.txt').write_text('after manual change')
+    after=manager.execute({'action':'backup','id':run['id'],'confirm':True})['backup']['sha256']
+    assert before==after
+    a=manager.execute({'action':'state'})['archives'][0]
+    wrong=next(e['sha256'] for e in a['entries'] if '5800' in e['name'])
+    with pytest.raises(ValueError):
+        manager.execute({'action':'plan','archive':a['id'],'method':'norton','model':'E52','firmware':'unknown','files':[wrong]})
+
+
+def test_bad_zip_returns_a_controlled_error(security):
+    _,manager,_=security
+    with pytest.raises(ValueError,match='ZIP'):
+        manager.execute({'action':'import','content':base64.b64encode(b'invalid ZIP').decode()})
