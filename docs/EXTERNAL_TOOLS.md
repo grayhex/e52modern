@@ -17,10 +17,19 @@
   **не может** упаковать `.skn/.mbm/.mif/.pkg` темы.
 * В документации **нет** упоминания «E52», «S60 3rd FP2», «Legacy EKA2»: описаны ARMv5T/ARMv6, «ARMv5T older EKA2»
   (проверенные образцы прошивок: E71/RM-346 и 6120c/RM-243 — это другие телефоны), отдельный EKA1-профиль.
-  Совместимость с E52 этим проектом не заявлена. Установка `symbian-platform` и его нативного SDK
-  **в среде разработки этого репозитория не выполнялась**; интеграция проверена только на поддельном `symbian`.
+  Совместимость с E52 этим проектом не заявлена. Установка `symbian-platform` выполнена, нативный SDK — нет; см. раздел «Что запускалось».
 * Подпись: `symbian signing create/sign` — RSA/X.509, только для пакетов его собственного профиля.
   Подпись не даёт доверия телефона.
+
+## Что запускалось в среде разработки (2026-11-03)
+
+* `pip install symbian-platform` (0.3.0, без GUI-зависимостей `pywebview/PySide6`): `symbian doctor`, `toolchain probe`,
+  `build` (ARMv5T, `probes/e32_probe`), `package`, `signing create/sign` (одноразовый self-signed), `inspect --format e32|sis`.
+* `symbian-native` собран вручную из исходников SDK (Abseil `5650e9c` + `cpp/symbian`) за ~40 с; конвертация DLL с системным
+  LLD 18 не удалась (см. `docs/LIMITATIONS.md`).
+* Не запускалось: нативный SDK, `app init`, эмулятор, `device *` на реальном телефоне, MakeSIS/SignSIS.
+* Официальные Nokia-инструменты (`makesis.exe`) не загружались: проприетарные бинарники из неофициальных зеркал не
+  проверить на подлинность.
 
 ## EKA2L1 — https://github.com/EKA2L1/EKA2L1
 * Лицензия **GPL-3.0**. Сборки для Windows/macOS/Linux/Android через GitHub Actions, релиз «continous».

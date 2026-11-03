@@ -10,6 +10,7 @@ This module never imports the SDK; the ``symbian`` executable is an optional ext
 """
 from __future__ import annotations
 
+import json
 import os
 import shutil
 from dataclasses import dataclass
@@ -40,11 +41,28 @@ class ModernSdk:
             return RunResult(["symbian", *args], 127, "", "symbian CLI not found")
         return run([self.executable, *args], cwd=cwd, timeout=timeout)
 
+    def json(self, args: list[str], cwd: Path | None = None, timeout: float = 900) -> tuple[RunResult, dict | None]:
+        """Run with the CLI's canonical JSON output (``--output-format json`` is a global option)."""
+        r = self.run(["--output-format", "json", *args], cwd=cwd, timeout=timeout)
+        try:
+            parsed = json.loads(r.stdout)
+            return r, parsed if isinstance(parsed, dict) else None
+        except ValueError:
+            return r, None
+
     def version(self) -> str | None:
+        """Installed distribution version. The CLI has no --version, so ask its own interpreter."""
         if not self.executable:
             return None
-        r = run([self.executable, "--version"], timeout=30)
-        return r.output.splitlines()[0] if r.ok and r.output else None
+        try:
+            first = Path(self.executable).read_text(encoding="utf-8", errors="ignore").splitlines()[0]
+        except (OSError, IndexError):
+            return None
+        if not first.startswith("#!"):
+            return None
+        py = first[2:].strip().split()[0]
+        r = run([py, "-c", "import importlib.metadata as m; print(m.version('symbian-platform'))"], timeout=30)
+        return r.stdout.strip() or None if r.ok else None
 
 
 def locate() -> ModernSdk:
@@ -60,3 +78,30 @@ INSTALL_HINT = [
     "symbian doctor",
     "symbian sdk install ~/dev/symbian-sdk --archive <native SDK archive>   # glibc >= 2.39",
 ]
+
+
+def summarize(r: RunResult, parsed: dict | None) -> str:
+    """One-line outcome for reports: the CLI's own status when JSON was returned."""
+    if parsed and isinstance(parsed.get("status"), dict):
+        st = parsed["status"]
+        text = f"{st.get('name', '?')}" + (f": {st['message']}" if st.get("message") else "")
+    else:
+        text = (r.output or "no output")[-600:]
+    return hint(text) or text
+
+
+KNOWN_HINTS = [
+    ("Ninja 1.12", "the SDK looks for `ninja` NEXT TO the compiler first; a system ninja older than 1.12 "
+                   "(e.g. /usr/bin/ninja 1.11) shadows a newer one on PATH. Put ninja>=1.12 (pip install ninja) "
+                   "plus symlinks to clang++, ld.lld and cmake in one directory and pass it with "
+                   "--compiler/--linker."),
+    ("symbian-native", "E32 publishing needs the standalone `symbian-native` tool from the native SDK "
+                       "archive/installed SDK (`symbian sdk install ...`); the pip wheel alone is not enough."),
+]
+
+
+def hint(text: str) -> str | None:
+    for needle, advice in KNOWN_HINTS:
+        if needle in text:
+            return f"{text}\n  hint: {advice}"
+    return None
