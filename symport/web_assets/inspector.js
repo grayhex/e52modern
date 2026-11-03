@@ -4,19 +4,18 @@ const inspectApi=data=>request('POST','/api/inspector',data),jbApi=data=>request
 let inspected=null,inspectionExtra={},unlockState={},unlockRun=null;
 async function securityDo(fn){try{await fn();}catch(e){notify(e.message);(location.hash==='#jailbreak'?jb('status'):ix('status')).textContent=e.message;}}
 function inspectSources(){
- const previous=ix('reference').value,source=ix('source').value;ix('file').hidden=source!=='upload';ix('reference').hidden=['upload','device'].includes(source);
- const list=source==='build'?state.packages:source==='library'?(state.library||[]):source==='catalog'?catState.apps.filter(a=>a.delivery==='automatic'):[];
- ix('reference').replaceChildren(...list.map(p=>new Option(p.name,p.id)));if(list.some(p=>p.id===previous))ix('reference').value=previous;
+ const previousLabel=ix('reference').selectedOptions[0]?.textContent,previous=ix('reference').value,source=ix('source').value;ix('file').hidden=source!=='upload';ix('reference').hidden=['upload','device'].includes(source);
+ const list=source==='build'?state.packages:source==='library'?(state.library||[]):source==='catalog'?catState.apps.filter(a=>a.delivery==='automatic'):source==='lab'?(labState.reports||[]).filter(r=>r.package).map(r=>({name:r.package.name,id:r.id})):[];
+ ix('reference').replaceChildren(...list.map(p=>new Option(p.name,p.id)));if(source==='lab'&&previous&&!list.some(p=>p.id===previous))ix('reference').append(new Option(previousLabel||previous,previous));if([...ix('reference').options].some(o=>o.value===previous))ix('reference').value=previous;if(source==='library')ix('kind').value='theme';
 }
 function inspectChoose(source,reference,file,device,path){
- if(source==='lab'){inspectionExtra={source,reference};ix('source').value='upload';}
- else{inspectionExtra={};ix('source').value=source;}
- inspectSources();if(reference&&source!=='lab')ix('reference').value=reference;if(file)ix('file').files=file;
+ inspectionExtra={};ix('source').value=source;
+ inspectSources();if(source==='lab'&&reference&&![...ix('reference').options].some(o=>o.value===reference))ix('reference').append(new Option(labReport?.package?.name||reference,reference));if(reference)ix('reference').value=reference;if(source==='library'||labReport?.kind==='theme'&&source==='lab')ix('kind').value='theme';if(file)ix('file').files=file;
  if(device)ix('device').value=device;if(path)ix('path').value=path;location.hash='#inspector';
 }
 ix('source').onchange=()=>{inspectionExtra={};inspectSources();};
 function inspectRender(report){
- inspected=report;ix('result').hidden=false;ix('status').textContent=report.name+' · '+report.compatibility+' · '+report.signatures.status;
+ inspected=report;ix('kind').value=report.kind;ix('result').hidden=false;ix('status').textContent=report.name+' · '+report.compatibility+' · '+report.signatures.status;
  const facts=ix('facts');facts.replaceChildren();const dl=el('dl','device-details');
  for(const [k,v] of Object.entries({UID:'0x'+report.package.uid.toString(16),Version:report.package.version.join('.'),Publisher:report.package.vendor_names.join(', '),Signature:report.signatures.status,Trust:report.signatures.trust,Compatibility:report.compatibility,Capabilities:report.capabilities.join(', ')||'No capabilities decoded',SHA256:report.sha256}))dl.append(el('dt','muted',k),el('dd','lab-value',v));facts.append(dl);
  ix('issues').replaceChildren();for(const [code,items] of Object.entries(report.recommendations)){const box=el('div','note');box.append(el('strong','',code));for(const advice of items)box.append(el('p','',advice));ix('issues').append(box);}
@@ -24,7 +23,7 @@ function inspectRender(report){
  securityDo(async()=>{const s=await labApi({action:'state'});ix('emulator').replaceChildren(new Option('Select installed firmware',''),...(s.health?.firmware?.devices||[]).map(d=>new Option(d.model+' · '+d.code,d.code)));if(s.health?.defaults?.symbian)ix('emulator').value=s.health.defaults.symbian;});
 }
 ix('analyze').onclick=()=>securityDo(async()=>{
- const data={action:'analyze',source:ix('source').value,reference:ix('reference').value,device:ix('device').value,path:ix('path').value,...inspectionExtra,target:{model:ix('model').value,rm:ix('rm').value,firmware:ix('firmware').value,os:ix('os').value}};
+ const data={action:'analyze',source:ix('source').value,reference:ix('reference').value,device:ix('device').value,path:ix('path').value,...inspectionExtra,kind:ix('kind').value,target:{model:ix('model').value,rm:ix('rm').value,firmware:ix('firmware').value,os:ix('os').value}};
  if(data.source==='upload'){const file=ix('file').files[0];if(!file||file.size>32*1024**2)throw Error('Choose a SIS/SISX up to 32 MiB');data.name=file.name;data.content=await readFileBase64(file);}
  if(ix('date').value)data.at=ix('date').value;const profile=ix('profile').files[0];if(profile){if(profile.size>1024**2)throw Error('Firmware profile exceeds 1 MiB');data.firmware_profile=JSON.parse(await profile.text());}
  inspectRender(await inspectApi(data));

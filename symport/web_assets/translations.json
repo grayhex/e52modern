@@ -1096,7 +1096,11 @@
     "Test in Emulator Lab": "Проверить в Emulator Lab",
     "Transfer to phone": "Передать на телефон",
     "Transfer to isolated folder": "Передать в отдельную папку",
-    "Package requests privileged capabilities; certificate authorisation and phone policy must be checked. Self-signing does not grant these privileges on stock firmware.": "Пакет запрашивает привилегированные capabilities. Требуется проверить разрешения сертификата и политику телефона: самоподпись не предоставляет их на штатной прошивке."
+    "Package requests privileged capabilities; certificate authorisation and phone policy must be checked. Self-signing does not grant these privileges on stock firmware.": "Пакет запрашивает привилегированные capabilities. Требуется проверить разрешения сертификата и политику телефона: самоподпись не предоставляет их на штатной прошивке.",
+    "Emulator Lab test package": "Пакет из теста Emulator Lab",
+    "Test scenario": "Сценарий проверки",
+    "Application / game": "Приложение / игра",
+    "Theme (apply manually)": "Тема (применить вручную)"
   },
   "patterns": [
     {

@@ -72,5 +72,5 @@ real certificate UI and diagnosis. No successful install on a physical E52 is cl
 
 ![Certificate Inspector — English / Nimbus Dark](screenshots/inspector-dark-en.png)
 
-Validation on 2026-11-03: 245 tests, browser workflows and Docker HTTP inspection
+Validation on 2026-11-03: 246 tests, browser workflows and Docker HTTP inspection
 of the independent signed SDK fixture. [Docker evidence](validation/security-docker.json).
