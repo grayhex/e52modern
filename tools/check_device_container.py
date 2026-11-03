@@ -6,6 +6,7 @@ import io
 import json
 import os
 import re
+import time
 import wave
 import zipfile
 from pathlib import Path
@@ -18,13 +19,6 @@ args.add_argument('--port', type=int, default=8765)
 port = args.parse_args().port
 root = Path.cwd() / 'workspace/media-smoke'
 assert json.loads(os.environ.get('SYMPORT_DEVICE_ROOTS', '{}')) == {'smoke': str(root)}, 'Refuse to write outside the exact disposable fixture enrollment'
-root.mkdir(parents=True, exist_ok=False)
-Image.new('RGB', (64, 48), '#22d3ee').save(root / 'photo.jpg')
-with wave.open(str(root / 'sound.wav'), 'wb') as sound:
-    sound.setnchannels(1)
-    sound.setsampwidth(2)
-    sound.setframerate(8000)
-    sound.writeframes(bytes(16000))
 
 
 def request(method, path, body=None, headers=None):
@@ -37,7 +31,25 @@ def request(method, path, body=None, headers=None):
     return result
 
 
-status, headers, html = request('GET', '/')
+for attempt in range(50):
+    try:
+        status, headers, html = request('GET', '/')
+        break
+    except OSError:
+        time.sleep(0.2)
+else:
+    raise RuntimeError('Workbench did not become ready')
+
+root.mkdir(parents=True, exist_ok=False)
+Image.new('RGB', (64, 48), '#22d3ee').save(root / 'photo.jpg')
+with wave.open(str(root / 'sound.wav'), 'wb') as sound:
+    sound.setnchannels(1)
+    sound.setsampwidth(2)
+    sound.setframerate(8000)
+    sound.writeframes(bytes(16000))
+
+
+
 assert status == 200
 session = re.search(rb'name="symport-token" content="([^"]+)"', html).group(1).decode()
 cookie = headers['Set-Cookie'].split(';', 1)[0]

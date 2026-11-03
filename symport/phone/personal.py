@@ -83,7 +83,7 @@ def public(record: dict, domain: str) -> dict:
         "start": text(f.get("START_DATETIME")),
         "end": text(f.get("END_DATETIME")) if domain == "calendar" else "",
         "due": text(f.get("END_DATETIME")) if domain == "tasks" else "",
-        "completed": bool(f.get("COMPLETED")),
+        "completed": bool(f["COMPLETED"]) if "COMPLETED" in f else None,
         "priority": record.get("Priority", "None") if domain == "tasks" else None,
         "recurrence": any(k.startswith("REPEAT_") for k in f),
     }
@@ -182,7 +182,9 @@ def calendar_import(raw: str) -> list[dict]:
                         "start": _when(c, "dtstart") or "",
                         "end": _when(c, "dtend") or "",
                         "due": _when(c, "due") or "",
-                        "completed": _text(c, "status") == "COMPLETED",
+                        "completed": (_text(c, "status") == "COMPLETED")
+                        if _text(c, "status")
+                        else None,
                         "unsupported": sorted(complex_fields),
                         "entry_type": entry_type,
                         "priority": priority_name,
@@ -283,8 +285,10 @@ def update_record(before: dict | None, row: dict, domain: str) -> dict:
             and datetime.fromisoformat(row["end"]) < datetime.fromisoformat(row["start"])
         ):
             raise ValueError("End must follow the start")
-        if domain == "tasks":
-            replacement.append({"Type": "COMPLETED", "Value": int(bool(row.get("completed")))})
+        if domain == "tasks" and row.get("completed") is not None:
+            if type(row["completed"]) is not bool:
+                raise ValueError("Invalid task completion state")
+            replacement.append({"Type": "COMPLETED", "Value": int(row["completed"])})
         if not before and row.get("uid"):
             replacement.append({"Type": "LUID", "Value": str(row["uid"])[:250]})
         keys = {
@@ -297,6 +301,9 @@ def update_record(before: dict | None, row: dict, domain: str) -> dict:
                 ("end", "END_DATETIME"),
             ]
         } | {"COMPLETED"}
+
+        if row.get("completed") is None:
+            keys.discard("COMPLETED")
 
         def remove(k):
             return k in keys
@@ -464,11 +471,12 @@ class PersonalWorkspace:
                                 component.priority.value = str(priority)
                                 if not hasattr(component, "status"):
                                     component.add("status")
-                                component.status.value = (
-                                    "COMPLETED"
-                                    if fields(record).get("COMPLETED")
-                                    else "NEEDS-ACTION"
-                                )
+                                if "COMPLETED" in f:
+                                    component.status.value = (
+                                        "COMPLETED" if f["COMPLETED"] else "NEEDS-ACTION"
+                                    )
+                                else:
+                                    component.contents.pop("status", None)
                             combined.add(component)
                     raw = combined.serialize()
                 except ImportError:
