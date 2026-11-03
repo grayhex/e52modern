@@ -1,5 +1,6 @@
 "use strict";
 const dm = id => document.getElementById('dm-'+id);
+function dmSupports(device,cap){if(!device)return false;const caps=device.capabilities||[];if(caps.includes(cap))return true;if(device.transport==='obexftp'||device.transport==='obex-opp')return cap==='files-upload'&&caps.includes('files-stage');return caps.includes('files')&&['files-list','files-download','files-upload','files-delete','files-mkdir','files-backup','contacts-stage'].includes(cap);}
 const dmCall = async data => request('POST','/api/manager', data);
 let dmDevices=[];
 const dmPath = name => [dm('path').value.replace(/\/$/,''),name].filter(Boolean).join('/');
@@ -24,13 +25,13 @@ async function dmList(){
     del.onclick=()=>dmRun(async()=>{if(!confirm('Удалить '+item.name+'? Каталог должен быть пустым.'))return;
       await dmCall({action:'delete',device:dm('device').value,path:dmPath(item.name),confirm:true});await dmList();});
     if(!item.directory&&/\.sisx?$/i.test(item.name)){const inspect=el('button','btn ghost','Certificate Inspector');inspect.onclick=()=>inspectChoose('device',null,null,dm('device').value,dmPath(item.name));row.append(inspect);}
-    row.append(open,del);dm('files').append(row);
+    del.disabled=!dmSupports(dmDevices.find(d=>d.id===dm('device').value),'files-delete');row.append(open,del);dm('files').append(row);
   }
 }
 dm('list').onclick=()=>dmRun(dmList);
 dm('discover').onclick=()=>dmRun(async()=>{
   const previous=dm('device').value;const r=await dmCall({action:'discover'});dmDevices=r.devices;dm('device').replaceChildren();
-  for(const d of r.devices){const opt=el('option','',d.id+' · '+tr(d.connected?'Connected':'Disconnected'));opt.value=d.id;dm('device').append(opt);}
+  for(const d of r.devices){const opt=el('option','',(d.name||d.id)+' · '+tr(d.connected?'Connected':d.configured?'Configured':'Disconnected'));opt.value=d.id;dm('device').append(opt);}
   const preferred=r.devices.find(d=>d.id===previous)||r.devices.find(d=>d.connected&&d.capabilities.includes('personal-data'))||r.devices[0];if(preferred)dm('device').value=preferred.id;
   dm('status').textContent=r.devices.length?'Список обновлён.':'Телефон не подключён. Подключите карту памяти или настройте PC Bridge на ПК с телефоном по инструкции подключения.';
   dmSelection();
@@ -44,7 +45,7 @@ async function dmUpload(action){
  if(!confirm('Передать '+file.name+'? Это не установка приложения.'))return;
  const bytes=new Uint8Array(await file.arrayBuffer());let raw='';for(const b of bytes)raw+=String.fromCharCode(b);
  const r=await dmCall({action,device:dm('device').value,path:dmPath(file.name),content:btoa(raw),confirm:true});
- dm('status').textContent=r.status;await dmList();
+ dm('status').textContent=tr(r.status)+(r.destination?' · '+r.destination:'');if(dmSupports(dmDevices.find(d=>d.id===dm('device').value),'files-list'))await dmList();
 }
 dm('send').onclick=()=>dmRun(()=>dmUpload('upload'));
 dm('sis').onclick=()=>dmRun(()=>dmUpload('transfer'));
@@ -74,7 +75,9 @@ dm('restore').onclick=()=>dmRun(async()=>{
 function dmSelection(){
  window.dispatchEvent(new CustomEvent('symport-devices',{detail:dmDevices}));
  const device=dmDevices.find(d=>d.id===dm('device').value);
- for(const name of ['list','send','sis','mkdir','backup','preview'])dm(name).disabled=!device?.capabilities.includes('files');
+ for(const [name,cap] of Object.entries({list:'files-list',send:'files-upload',sis:'transfer',mkdir:'files-mkdir',backup:'files-backup',preview:'files-backup'}))dm(name).disabled=!dmSupports(device,cap);
+ dm('path').disabled=!!device?.capabilities.includes('opp-push');if(dm('path').disabled)dm('path').value='';
+ dm('files').replaceChildren();
  dm('info').replaceChildren();
  if(window.renderPhoneDashboard){renderPhoneDashboard(device);return;}
  if(!device)return;

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import threading
+from urllib.error import HTTPError
 from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
@@ -79,6 +80,11 @@ class OutboundRelay:
                     }
                 # A lost result is never retried: no accidental repeated SMS/writes.
                 self.call("result", {"id": work["id"], "result": result})
+            except HTTPError as exc:
+                if exc.code in (401, 403):
+                    break
+                if self.stop.wait(3):
+                    break
             except Exception:
                 if self.stop.wait(3):
                     break

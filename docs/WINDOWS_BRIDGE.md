@@ -88,3 +88,7 @@ modified binary without satisfying the bundled dependency licenses/source requir
 Hardware USB/Bluetooth tests: **не проверено на устройстве**. Build, mock and local
 HTTP checks do not establish compatibility with a physical E52. Use the manual
 procedure in TRANSPORTS.md before relying on personal-data writes.
+
+OBEX staging creates a new folder per transfer. JAD transfer is blocked through
+this adapter because it cannot preserve the accompanying JAR in that same folder;
+choose a JAR-only package or a mounted card. The catalog uses the same restriction.

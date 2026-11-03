@@ -1,7 +1,7 @@
 """No hardware fixtures: prove protocol boundaries, staging and profile validation."""
 import base64
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import pytest
 
@@ -36,7 +36,7 @@ def test_obex_stages_single_put_and_verifies():
     def run(args, cwd=None):
         calls.append(args)
         if args[0] == '--list':
-            entries = ''.join(f'<file name="{Path(k).name}" size="{len(v)}"/>' for k,v in stored.items() if str(Path(k).parent) == args[1])
+            entries = ''.join(f'<file name="{PurePosixPath(k).name}" size="{len(v)}"/>' for k,v in stored.items() if str(PurePosixPath(k).parent) == args[1])
             return ('<folder-listing>' + entries + '</folder-listing>').encode()
         if '--put' in args:
             stored[args[1]] = Path(args[-1]).read_bytes()

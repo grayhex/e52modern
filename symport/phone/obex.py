@@ -91,6 +91,7 @@ class ObexAdapter:
         self.profile = profile
         self.id = profile["id"]
         self.runner = runner or self._run
+        self.external = runner is None
 
     def _base(self) -> list[str]:
         executable = os.getenv("SYMPORT_OBEXFTP_EXECUTABLE") or shutil.which("obexftp")
@@ -165,6 +166,12 @@ class ObexAdapter:
                 "edition": self.profile["edition"],
             },
         }
+        if self.external:
+            try:
+                self._base()
+            except ValueError as exc:
+                row.update(configured=True, evidence=str(exc))
+                return row
         if self.profile["kind"] == "obex-opp":
             # OPP has no read-only folder probe. Offer an explicitly configured,
             # confirmed transfer attempt without inventing a discovered handset.
@@ -236,6 +243,8 @@ class ObexAdapter:
                 from symport.catalog.packages import validate_package
 
                 validate_package(name, raw)
+                if PurePosixPath(name).suffix.lower() == ".jad":
+                    raise ValueError("OBEX staging cannot preserve a JAR/JAD pair. Transfer a JAR-only package or use a mounted memory card.")
             if action == "media-upload":
                 allowed = {
                     "audio": {".mp3", ".aac", ".m4a", ".wav", ".mid", ".midi", ".amr"},

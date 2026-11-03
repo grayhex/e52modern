@@ -120,9 +120,9 @@ class AppCatalog:
             if job['action'] == 'transfer':
                 device = next((d for d in self.devices.transport.devices() if d['id'] == request['device']), None)
                 required = self.catalog.plan([i['id'] for i in job['items']])['bytes']
-                if not device or not device['connected'] or 'files' not in device['capabilities']:
+                if not device or not (device['connected'] or (device.get('configured') and 'opp-push' in device['capabilities'])) or not any(c in device['capabilities'] for c in ('files', 'transfer')):
                     raise ValueError('Connected file-capable phone required')
-                if device.get('free') is None or device['free'] < required:
+                if device.get('free') is not None and device['free'] < required:
                     raise ValueError('Insufficient or unknown free space on phone')
             for item in job['items']:
                 try:
@@ -149,7 +149,19 @@ class AppCatalog:
                             if validation['midp'] not in ('MIDP-1.0', 'MIDP-2.0', 'MIDP-2.1') or validation['cldc'] not in ('CLDC-1.0', 'CLDC-1.1'):
                                 raise ValueError('JAR MIDP/CLDC profile is not supported by the E52 profile')
                     update(item, 'validated')
-                    if job['action'] == 'transfer':
+                    if job['action'] == 'transfer' and any(c in device['capabilities'] for c in ('files-stage', 'opp-push')):
+                        if entry['format'] == 'jar+jad':
+                            raise ValueError('This OBEX adapter cannot preserve a JAR/JAD pair in one folder. Choose a JAR-only package or a mounted memory card.')
+                        receipts = []
+                        for cached, evidence in artifacts:
+                            folder = '' if 'opp-push' in device['capabilities'] else request.get('path', '').rstrip('/')
+                            receipt = self.devices.execute({'action': 'software-transfer', 'device': request['device'],
+                                'path': '/'.join(filter(None, (folder, cached.name))), 'confirm': True,
+                                'content': base64.b64encode(cached.read_bytes()).decode()})
+                            receipts.append(receipt)
+                        update(item, 'transferred', integrity='receiver-acknowledgement-only' if 'opp-push' in device['capabilities'] else 'sha256-read-back', receipts=receipts)
+                        update(item, 'awaiting-installation', instructions='Откройте переданный пакет на Nokia и подтвердите установку.')
+                    elif job['action'] == 'transfer':
                         directory = self.devices.execute({'action': 'list', 'device': request['device'], 'path': request.get('path', '')})
                         existing = {e['name'] for e in directory['entries']}
                         for cached, evidence in artifacts:

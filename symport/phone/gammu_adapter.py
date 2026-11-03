@@ -69,6 +69,7 @@ class GammuAdapter:
                         device.update(
                             connected=True,
                             model=model,
+                            manufacturer=values.get("manufacturer"),
                             rm=rm.group() if rm else None,
                             firmware=values.get("firmware"),
                             capabilities=["contacts-read", "calendar-read"],
