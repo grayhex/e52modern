@@ -118,7 +118,7 @@ class AppCatalog:
                 save(path, job)
         try:
             if job['action'] == 'transfer':
-                device = next((d for d in self.devices.transport.devices() if d['id'] == request['device']), None)
+                device = next((d for d in self.devices.execute({'action': 'discover'})['devices'] if d['id'] == request['device']), None)
                 required = self.catalog.plan([i['id'] for i in job['items']])['bytes']
                 if not device or not (device['connected'] or (device.get('configured') and 'opp-push' in device['capabilities'])) or not any(c in device['capabilities'] for c in ('files', 'transfer')):
                     raise ValueError('Connected file-capable phone required')

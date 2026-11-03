@@ -56,6 +56,7 @@ class GammuAdapter:
                         text=True,
                         timeout=20,
                         check=True,
+                        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
                         env={**os.environ, "LC_ALL": "C"},
                     ).stdout
                     values = {}

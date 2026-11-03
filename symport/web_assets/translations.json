@@ -1005,7 +1005,12 @@
     "Галерея недоступна через этот транспорт. Доступные файлы можно скачать в файловом менеджере.": "Gallery is unavailable through this transport. Use File Manager to download exposed files.",
     "Получено по OPP; не установлено": "received-by-opp-not-installed",
     "Проверено повторным чтением": "verified-by-readback",
-    "Передано; не установлено": "transferred-not-installed"
+    "Передано; не установлено": "transferred-not-installed",
+    "OPP подтверждает только приём файла. Для установки откройте пакет во входящих на телефоне.": "OPP reports receiver acceptance only. Open the package in the phone inbox to install it.",
+    "FTP сохраняет файлы в новой папке SymPort с проверкой SHA-256 повторным чтением.": "FTP transfers are saved in a new SymPort folder and checked by SHA-256 read-back.",
+    "Свободное место и SHA-256 проверяются там, где это поддерживает транспорт. Установка подтверждается на телефоне.": "Available free space and file SHA-256 are checked where the transport supports them. Installation is confirmed on the phone.",
+    "Только подтверждение приёма": "Receiver acknowledgement only",
+    "SHA-256 проверен повторным чтением": "SHA-256 read-back verified"
   },
   "ru": {
     "${key}": "${ключ}",
@@ -1473,7 +1478,12 @@
     "Gallery is unavailable through this transport. Use File Manager to download exposed files.": "Галерея недоступна через этот транспорт. Доступные файлы можно скачать в файловом менеджере.",
     "received-by-opp-not-installed": "Получено по OPP; не установлено",
     "verified-by-readback": "Проверено повторным чтением",
-    "transferred-not-installed": "Передано; не установлено"
+    "transferred-not-installed": "Передано; не установлено",
+    "OPP reports receiver acceptance only. Open the package in the phone inbox to install it.": "OPP подтверждает только приём файла. Для установки откройте пакет во входящих на телефоне.",
+    "FTP transfers are saved in a new SymPort folder and checked by SHA-256 read-back.": "FTP сохраняет файлы в новой папке SymPort с проверкой SHA-256 повторным чтением.",
+    "Available free space and file SHA-256 are checked where the transport supports them. Installation is confirmed on the phone.": "Свободное место и SHA-256 проверяются там, где это поддерживает транспорт. Установка подтверждается на телефоне.",
+    "Receiver acknowledgement only": "Только подтверждение приёма",
+    "SHA-256 read-back verified": "SHA-256 проверен повторным чтением"
   },
   "patterns": [
     {

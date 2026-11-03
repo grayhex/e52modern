@@ -43,6 +43,7 @@ class Agent:
         self.events = None
         self.started = False
         self.relay = None
+        self._relays = []
         self._volume_identities = {}
         self._enrolled_roots = {}
         self._enrolled_identities = {}
@@ -97,6 +98,8 @@ class Agent:
 
         self.revoke()
         self.relay = OutboundRelay(self, origin, token)
+        self._relays = [r for r in self._relays if r.thread.is_alive()]
+        self._relays.append(self.relay)
         self.relay.thread.start()
         return True
 
@@ -216,6 +219,10 @@ class Agent:
         self.server.server_close()
         if self.events:
             self.events.shutdown()
+        # Do not orphan a confirmed write when the tray exits. No new work is accepted.
+        for relay in self._relays:
+            relay.stop.set()
+            relay.thread.join()
 
 
 def self_test(report: Path | None):

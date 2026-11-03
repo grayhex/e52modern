@@ -120,6 +120,7 @@ class ObexAdapter:
                     stderr=stderr,
                     timeout=120,
                     check=False,
+                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
                     env={**os.environ, "LC_ALL": "C"},
                 )
             except (OSError, subprocess.TimeoutExpired) as exc:
