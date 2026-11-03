@@ -78,7 +78,7 @@ class JailbreakManager:
         return self.root/kind/(key+'.json')
 
     def get(self, kind, key):
-        return json.loads(self.path(kind, key).read_text())
+        return json.loads(self.path(kind, key).read_text(encoding="utf-8"))
 
     def record(self, run, action, status, **evidence):
         run['events'].append({'at': now(), 'action': action, 'status': status, **evidence})
@@ -92,8 +92,8 @@ class JailbreakManager:
     def _execute(self, data):
         action = data.get('action')
         if action == 'state':
-            return {'methods': METHODS, 'guide': GUIDE, 'archives': [json.loads(p.read_text()) for p in (self.root/'archives').glob('*.json')],
-                    'runs': [json.loads(p.read_text()) for p in sorted((self.root/'runs').glob('*.json'), key=lambda p:p.stat().st_mtime, reverse=True)[:30]],
+            return {'methods': METHODS, 'guide': GUIDE, 'archives': [json.loads(p.read_text(encoding="utf-8")) for p in (self.root/'archives').glob('*.json')],
+                    'runs': [json.loads(p.read_text(encoding="utf-8")) for p in sorted((self.root/'runs').glob('*.json'), key=lambda p:p.stat().st_mtime, reverse=True)[:30]],
                     'system_automation': 'blocked', 'reason': 'No E52 firmware + system-write transport + tested recovery procedure has been validated. File transfer is not installation.'}
         if action == 'import':
             raw = base64.b64decode(data.get('content', ''), validate=True)

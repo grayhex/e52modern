@@ -44,7 +44,7 @@ class Inspector:
         if not isinstance(key, str) or not HEX.fullmatch(key):
             raise ValueError('Invalid inspection ID')
         import json
-        return json.loads((self.root / (key+'.json')).read_text())
+        return json.loads((self.root / (key+'.json')).read_text(encoding="utf-8"))
 
     def package(self, key):
         report = self.report(key)
@@ -61,7 +61,7 @@ class Inspector:
             return self.report(data.get('id'))
         if action == 'list':
             import json
-            return {'reports': [json.loads(p.read_text()) for p in sorted(self.root.glob('*.json'), key=lambda p:p.stat().st_mtime, reverse=True)[:30]]}
+            return {'reports': [json.loads(p.read_text(encoding="utf-8")) for p in sorted(self.root.glob('*.json'), key=lambda p:p.stat().st_mtime, reverse=True)[:30]]}
         if action in ('emulate', 'transfer'):
             report, raw = self.package(data.get('id'))
             if data.get('confirm') is not True:

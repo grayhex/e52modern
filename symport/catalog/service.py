@@ -21,7 +21,7 @@ def now():
 def save(path: Path, value) -> None:
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     temporary = path.with_name(path.name + '.' + secrets.token_hex(4) + '.tmp')
-    temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2))
+    temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
     temporary.replace(path)
 
 
@@ -35,7 +35,7 @@ class AppCatalog:
         self.active = None
         # A restored process cannot resume in-flight network/device operations safely.
         for path in (self.root / 'jobs').glob('*.json'):
-            job = json.loads(path.read_text())
+            job = json.loads(path.read_text(encoding="utf-8"))
             if job['state'] == 'running':
                 job['state'] = 'interrupted'
                 for item in job['items']:
@@ -45,8 +45,8 @@ class AppCatalog:
 
     def state(self, filters=None) -> dict:
         with self.lock:
-            sets = json.loads((self.root / 'sets.json').read_text()) if (self.root / 'sets.json').exists() else {}
-            jobs = sorted([json.loads(p.read_text()) for p in (self.root / 'jobs').glob('*.json')], key=lambda j: j['created'], reverse=True)[:30]
+            sets = json.loads((self.root / 'sets.json').read_text(encoding="utf-8")) if (self.root / 'sets.json').exists() else {}
+            jobs = sorted([json.loads(p.read_text(encoding="utf-8")) for p in (self.root / 'jobs').glob('*.json')], key=lambda j: j['created'], reverse=True)[:30]
             apps = [dict(entry, distribution=self.catalog.sources.get(entry['source_id'], {}).get('artifacts', [])) for entry in self.catalog.list(filters)]
             return {'apps': apps, 'sets': sets, 'jobs': jobs,
                     'research': self.catalog.research, 'profile': 'nokia-e52'}
@@ -107,7 +107,7 @@ class AppCatalog:
     def job(self, key: str) -> dict:
         if not isinstance(key, str) or len(key) != 24 or any(c not in 'abcdef0123456789' for c in key):
             raise ValueError('Invalid job ID')
-        return json.loads((self.root / 'jobs' / (key + '.json')).read_text())
+        return json.loads((self.root / 'jobs' / (key + '.json')).read_text(encoding="utf-8"))
 
     def _run(self, job: dict, request: dict):
         path = self.root / 'jobs' / (job['id'] + '.json')

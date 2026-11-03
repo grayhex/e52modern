@@ -50,9 +50,9 @@ class EmulatorLab:
         self.current = None
         self.firmware = None
         self.generation = 0
-        self.uploads = json.loads((self.root / 'uploads.json').read_text()) if (self.root / 'uploads.json').exists() else {}
+        self.uploads = json.loads((self.root / 'uploads.json').read_text(encoding="utf-8")) if (self.root / 'uploads.json').exists() else {}
         for path in (self.root / 'reports').glob('*.json'):
-            report = json.loads(path.read_text())
+            report = json.loads(path.read_text(encoding="utf-8"))
             if report.get('running'):
                 report.update(running=False, status='not-tested', error='SymPort restarted; inspect MGO state before retry')
                 save(path, report)
@@ -73,7 +73,7 @@ class EmulatorLab:
         return report
 
     def state(self):
-        reports = sorted([json.loads(p.read_text()) for p in (self.root / 'reports').glob('*.json')], key=lambda r: r['created'], reverse=True)[:50]
+        reports = sorted([json.loads(p.read_text(encoding="utf-8")) for p in (self.root / 'reports').glob('*.json')], key=lambda r: r['created'], reverse=True)[:50]
         try:
             health = self.agent.request('GET', '/agent/health')
             result = {'available': True, 'health': health}
@@ -117,7 +117,7 @@ class EmulatorLab:
     def report(self, key):
         if not isinstance(key, str) or not HEX.fullmatch(key):
             raise ValueError('Invalid test report ID')
-        return json.loads((self.root / 'reports' / (key + '.json')).read_text())
+        return json.loads((self.root / 'reports' / (key + '.json')).read_text(encoding="utf-8"))
 
     def frame(self):
         raw = self.agent.request('GET', '/v1/screenshot?region=guest', binary=True, timeout=5)
