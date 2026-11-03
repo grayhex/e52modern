@@ -13,7 +13,7 @@ import subprocess
 import sys
 import threading
 import webbrowser
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -31,7 +31,7 @@ STEP_STATUS = ("pending", "pass", "fail", "not-applicable")
 
 
 def utcnow() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def projects(repo: Path) -> list[str]:
