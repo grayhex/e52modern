@@ -197,3 +197,34 @@ def test_websocket_host_origin_auth_and_status_only():
     finally:
         agent.stop.set()
         events.shutdown()
+
+
+def test_backend_pairing_lease_requires_owner_and_revokes(tmp_path):
+    from http.server import ThreadingHTTPServer
+
+    from symport.web import Workbench, make_handler
+    from tests.test_web import _http
+    state = Workbench(tmp_path)
+    original = state.devices.transport
+    server = ThreadingHTTPServer(('127.0.0.1', 0), make_handler(state))
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    port = server.server_port
+    owner = {'X-Symport-Token': state.token}
+    try:
+        assert _http(port, 'POST', '/api/connection', {'action':'enable'})[0] == 403
+        status, raw = _http(port, 'POST', '/api/connection', {'action':'enable'}, owner)
+        assert status == 200
+        lease = json.loads(raw)
+        assert lease['relay_token'] != state.token
+        assert _http(port, 'POST', '/api/bridge-relay/poll', {}, {'X-Symport-Relay-Key':'wrong'})[0] == 403
+        state.bridge_relay.pending = {'id':'test', 'data':{'action':'discover'}}
+        status, raw = _http(port, 'POST', '/api/bridge-relay/poll', {}, {'X-Symport-Relay-Key':lease['relay_token']})
+        assert status == 200 and json.loads(raw)['request']['id'] == 'test'
+        assert _http(port, 'POST', '/api/connection', {'action':'disconnect'}, owner)[0] == 200
+        assert state.devices.transport is original
+        assert _http(port, 'POST', '/api/bridge-relay/poll', {}, {'X-Symport-Relay-Key':lease['relay_token']})[0] == 403
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(3)

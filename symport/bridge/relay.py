@@ -86,6 +86,8 @@ class OutboundRelay:
                     result = {
                         "error": "The local transport could not complete the operation. Check Bridge diagnostics; read the phone before retrying a write."
                     }
+                if self.stop.is_set() or self.agent.stop.is_set():
+                    break  # revoked sessions receive no more private results
                 # A lost result is never retried: no accidental repeated SMS/writes.
                 self.call("result", {"id": work["id"], "result": result})
             except HTTPError as exc:
