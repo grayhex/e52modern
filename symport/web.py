@@ -301,6 +301,11 @@ def make_handler(state: Workbench):
                 variant = url.path.rsplit("/", 1)[-1]
                 path = state.repo / "theme" / "preview" / f"mock_{variant}_240x320.png"
                 return self._send(path.read_bytes(), "image/png")
+            if url.path in ("/api/wallpaper/light", "/api/wallpaper/dark"):
+                variant = url.path.rsplit("/", 1)[-1]
+                path = state.repo / "theme" / "assets" / variant / "background.png"
+                return self._send(path.read_bytes(), "image/png",
+                                  filename=f"E52-CLEAR-{variant}-240x320.png")
             if url.path == "/api/download":
                 package_id = parse_qs(url.query).get("id", [""])[0]
                 try:
