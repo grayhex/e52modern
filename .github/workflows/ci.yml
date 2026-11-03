@@ -123,6 +123,7 @@ jobs:
           done
           test "$ready" -eq 1
           python3 -c 'import json; d=json.load(open("/tmp/workbench-state.json")); assert d["schema"] == "symport.web/1"'
+          docker exec e52modern-ui python tools/check_gammu_contract.py
           docker exec e52modern-ui python -m symport theme build --variant light --json > /tmp/workbench-build.json
           docker exec e52modern-ui python -m symport theme package --variant light --backend native --json > /tmp/workbench-package.json
           python3 -c 'import json; assert json.load(open("/tmp/workbench-build.json"))["status"] == "ok"; assert json.load(open("/tmp/workbench-package.json"))["status"] == "ok"'
@@ -165,6 +166,7 @@ jobs:
           node --check symport/web_assets/lab.js
           node --check symport/web_assets/preferences.js
           node --check symport/web_assets/inspector.js
+          node --check symport/web_assets/device-workspace.js
           bash -n tools/install.sh
           SYMPORT_BRIDGE_KEY=00000000000000000000000000000000 SYMPORT_SSH_TARGET=test@example.invalid SYMPORT_SSH_KEY_FILE=/tmp/key SYMPORT_SSH_KNOWN_HOSTS=/tmp/known_hosts docker compose -f compose.yaml -f compose.bridge.yaml config --quiet
           SYMPORT_HTTP_PORT=8777 docker compose config --quiet
@@ -174,7 +176,7 @@ jobs:
         run: docker build -t symport-device-manager:ci .
       - name: Smoke test HTTP and transport dependencies
         run: |
-          docker run -d --name device-manager -p 127.0.0.1:8765:8765 symport-device-manager:ci
+          docker run -d --name device-manager -e 'SYMPORT_DEVICE_ROOTS={"smoke":"/srv/e52modern/workspace/media-smoke"}' -p 127.0.0.1:8765:8765 symport-device-manager:ci
           trap 'docker logs device-manager; docker rm -f device-manager' EXIT
           for i in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:8765/api/state > /tmp/state.json; then break; fi
@@ -182,6 +184,8 @@ jobs:
           done
           python -c 'import json; assert json.load(open("/tmp/state.json"))["schema"] == "symport.web/1"'
           docker exec device-manager sh -c 'command -v gammu && command -v obexftp'
+          docker exec device-manager python tools/check_gammu_contract.py
+          docker exec device-manager python tools/check_device_container.py
 
   phone-workspace-browser:
     runs-on: ubuntu-latest
@@ -202,6 +206,7 @@ jobs:
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_app_catalog.cjs
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_emulator_lab.cjs
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_security_workspace.cjs
+          NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_device_workspace.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

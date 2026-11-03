@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends g++ gammu obexftp bluez openssh-client \
+    && apt-get install -y --no-install-recommends g++ libgammu-dev pkg-config gammu obexftp bluez openssh-client \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /srv/e52modern
@@ -15,7 +15,7 @@ COPY . .
 # Keeps the existing Nokia Skin Compiler and bmconv toolchain.
 RUN --mount=type=secret,id=proxy_ca \
     if [ -f /run/secrets/proxy_ca ]; then export PIP_CERT=/run/secrets/proxy_ca; fi \
-    && pip install --no-cache-dir -e '.[theme]' \
+    && pip install --no-cache-dir -e '.[theme,phone,media]' \
     && tools/s60/build.sh \
     && mkdir -p build workspace /symbian-auth \
     && chown 10001:10001 /symbian-auth \

@@ -10,7 +10,7 @@ const shots=process.env.SYMPORT_SCREENSHOTS_DIR||path.resolve(__dirname,'../buil
   await page.waitForFunction(()=>document.getElementById('lab-status').textContent.includes('EKA2L1 master-'),null,{timeout:45000});await page.evaluate(()=>document.fonts.ready);
   const state=await page.evaluate(()=>labApi({action:'state'}));if(state.health.firmware.devices.length)throw Error('Refusing negative test on user firmware');
   if(!await page.locator('#lab-start').isDisabled())throw Error('Start available without firmware');
-  if(await page.locator('.nav-link .asset-icon').count()!==16)throw Error('Supplied navigation graphics not integrated');
+  if(await page.locator('.nav-link .asset-icon').count()!==17)throw Error('Supplied navigation graphics not integrated');
   if(!await page.locator('.brand-lockup').evaluate(img=>img.complete&&img.naturalWidth>0))throw Error('Logo missing');
   if(!await page.locator('.lab-e52-body').evaluate(img=>img.complete&&img.naturalWidth===831))throw Error('Silver E52 body missing');
   await page.screenshot({path:path.join(shots,'emulator-lab-desktop.png'),fullPage:true});

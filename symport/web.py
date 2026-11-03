@@ -17,9 +17,10 @@ import sys
 import threading
 import webbrowser
 from datetime import UTC, datetime
+from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, quote, urlsplit
 
 from symport.catalog import AppCatalog
 from symport.config import find_repo_root
@@ -31,6 +32,7 @@ from symport.phone import DeviceManager
 from symport.phone.backups import BackupStore, BackupStoreError, default_root
 from symport.phone.contacts import parse_export, vcards
 from symport.phone.contracts import LIMIT
+from symport.phone.media_downloads import MediaDownloads, byte_range
 
 ASSETS = Path(__file__).with_name("web_assets")
 NAMES = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")
@@ -167,6 +169,7 @@ class Workbench:
     def __init__(self, repo: Path):
         self.repo = repo
         self.devices = DeviceManager(repo)
+        self.media = MediaDownloads(repo, self.devices)
         self.catalog = AppCatalog(repo, self.devices)
         self.library = ThemeLibrary(repo)
         self.lab = EmulatorLab(repo, self.resolve_lab_package, self.devices)
@@ -385,7 +388,7 @@ def make_handler(state: Workbench):
                 f"127.0.0.1:{self.server.server_port}"}
 
         def _send(self, content: bytes, mime: str, status: int = 200,
-                  filename: str | None = None) -> None:
+                  filename: str | None = None, session: bool = False) -> None:
             self.send_response(status)
             self.send_header("Content-Type", mime)
             self.send_header("Content-Length", str(len(content)))
@@ -395,9 +398,11 @@ def make_handler(state: Workbench):
             self.send_header("Referrer-Policy", "no-referrer")
             self.send_header(
                 "Content-Security-Policy",
-                "default-src 'self'; img-src 'self' data:; script-src 'self'; "
+                "default-src 'self'; img-src 'self' data:; media-src 'self'; script-src 'self'; "
                 "style-src 'self'; connect-src 'self'; object-src 'none'; "
                 "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+            if session:
+                self.send_header("Set-Cookie", f"symport_media={state.token}; HttpOnly; SameSite=Strict; Path=/api/media/")
             if filename:
                 self.send_header("Content-Disposition",
                                  f'attachment; filename="{filename}"')
@@ -416,6 +421,8 @@ def make_handler(state: Workbench):
                 "/": ("index.html", "text/html; charset=utf-8"),
                 "/app.css": ("app.css", "text/css; charset=utf-8"),
                 "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+                "/device-workspace.js": ("device-workspace.js", "text/javascript; charset=utf-8"),
+                "/device-workspace.css": ("device-workspace.css", "text/css; charset=utf-8"),
                 "/manager.js": ("manager.js", "text/javascript; charset=utf-8"),
                 "/library.js": ("library.js", "text/javascript; charset=utf-8"),
                 "/suite.js": ("suite.js", "text/javascript; charset=utf-8"),
@@ -451,7 +458,71 @@ def make_handler(state: Workbench):
                     return self._json({"error": "Not found"}, 404)
                 if file == "index.html":
                     body = body.replace(b"__SESSION_TOKEN__", state.token.encode())
-                return self._send(body, mime)
+                return self._send(body, mime, session=file == "index.html")
+            if url.path.startswith('/api/media/'):
+                cookie = SimpleCookie()
+                try:
+                    cookie.load(self.headers.get('Cookie', ''))
+                    value = cookie['symport_media'].value if 'symport_media' in cookie else ''
+                except Exception:
+                    value = ''
+                if not secrets.compare_digest(value.encode(), state.token.encode()) or self.headers.get('Sec-Fetch-Site') == 'cross-site':
+                    return self._json({'error': 'Open SymPort before viewing private media'}, 403)
+                sent = False
+                archive = None
+                try:
+                    if url.path.startswith('/api/media/export/'):
+                        archive = state.media.archive(url.path.rsplit('/', 1)[-1])
+                        size, mime, name = archive.stat().st_size, 'application/zip', 'symport-media.zip'
+                        start, end, status = 0, size - 1, 200
+                        def archive_chunks():
+                            with archive.open('rb') as source:
+                                while chunk := source.read(256 * 1024):
+                                    yield chunk
+                        chunks = archive_chunks()
+                    elif url.path == '/api/media/file':
+                        query = parse_qs(url.query)
+                        item = {k: query.get(k, [''])[0] for k in ('device', 'path', 'revision')}
+                        meta = state.devices.execute(dict(item, action='media-info'))
+                        size, mime, name = meta['size'], meta['mime'], meta['name']
+                        try:
+                            start, end, status = byte_range(self.headers.get('Range'), size)
+                        except ValueError:
+                            self.send_response(416)
+                            self.send_header('Content-Range', f'bytes */{size}')
+                            self.send_header('Content-Length', '0')
+                            self.send_header('Cache-Control', 'no-store')
+                            self.end_headers()
+                            return
+                        chunks = state.media.chunks(item, start, end)
+                    else:
+                        raise ValueError('Media route not found')
+                    self.send_response(status)
+                    self.send_header('Content-Type', mime)
+                    self.send_header('Content-Length', str(max(0, end - start + 1)))
+                    self.send_header('Accept-Ranges', 'bytes' if not archive else 'none')
+                    if status == 206:
+                        self.send_header('Content-Range', f'bytes {start}-{end}/{size}')
+                    if archive or parse_qs(url.query).get('download') == ['1']:
+                        self.send_header('Content-Disposition', "attachment; filename*=UTF-8''" + quote(name, safe=''))
+                    self.send_header('Cache-Control', 'no-store')
+                    self.send_header('X-Content-Type-Options', 'nosniff')
+                    self.send_header('Referrer-Policy', 'no-referrer')
+                    self.send_header('Content-Security-Policy', "default-src 'none'; sandbox")
+                    self.end_headers()
+                    sent = True
+                    for chunk in chunks:
+                        self.wfile.write(chunk)
+                    if archive:
+                        archive.unlink(missing_ok=True)
+                    if archive or parse_qs(url.query).get("download") == ["1"]:
+                        state.devices.record("media-download", "success")
+                except (ValueError, OSError, KeyError):
+                    if sent:
+                        self.close_connection = True
+                    else:
+                        return self._json({'error': 'Media unavailable or changed; refresh the gallery'}, 400)
+                return
             if url.path == "/api/catalog/archive":
                 try:
                     key = parse_qs(url.query).get('id', [''])[0]
@@ -522,7 +593,7 @@ def make_handler(state: Workbench):
                 length = int(self.headers.get("Content-Length", "0"))
             except ValueError:
                 return self._json({"error": "Invalid length"}, 400)
-            if length <= 0 or length > ((64 * 1024 * 1024 * 4 // 3 + 4096) if self.path in ("/api/manager", "/api/bridge", "/api/lab", "/api/inspector", "/api/jailbreak") else (LIMIT * 4 // 3 + 4096 if self.path in ("/api/library", "/api/contacts") else 12_000)):
+            if length <= 0 or length > ((64 * 1024 * 1024 * 4 // 3 + 4096) if self.path in ("/api/manager", "/api/bridge", "/api/lab", "/api/inspector", "/api/jailbreak") else (LIMIT * 4 // 3 + 4096 if self.path in ("/api/library", "/api/contacts") else 512_000 if self.path == "/api/media/export" else 12_000)):
                 return self._json({"error": "Invalid body size"}, 413)
             try:
                 body = json.loads(self.rfile.read(length))
@@ -563,6 +634,8 @@ def make_handler(state: Workbench):
                     if action == 'publish':
                         return self._json(state.library.publish(body.get('id'), body.get('confirm')))
                     raise ValueError('Unknown library operation')
+                if self.path == "/api/media/export":
+                    return self._json(state.media.export(body))
                 if self.path in ("/api/manager", "/api/bridge"):
                     return self._json(state.devices.execute(body))
                 if self.path == "/api/backups":

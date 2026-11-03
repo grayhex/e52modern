@@ -12,6 +12,8 @@ license = { text = "MIT" }
 dependencies = ["vobject>=0.9.9,<1", "cryptography>=46,<49"]
 
 [project.optional-dependencies]
+phone = ["python-gammu>=3.2.6,<4"]
+media = ["pillow>=10"]
 theme = ["pillow>=10"]
 dev = ["pytest>=8", "ruff>=0.5", "pillow>=10"]
 
@@ -22,7 +24,7 @@ symport = "symport.cli:main"
 include = ["symport*"]
 
 [tool.setuptools.package-data]
-symport = ["web_assets/*.html", "web_assets/*.css", "web_assets/*.js", "web_assets/fonts/*.ttf", "web_assets/fonts/*.txt", "web_assets/phones/*.png", "web_assets/phones/*.json", "web_assets/phones/*.md", "web_assets/brand/*.svg", "web_assets/brand/*.png", "web_assets/brand/*.md", "web_assets/icons/outline/*.svg", "web_assets/icons/tiles/*.svg", "web_assets/icons/png/*.png", "web_assets/graphics.json", "web_assets/translations.json"]
+symport = ["phone/*.json", "web_assets/*.html", "web_assets/*.css", "web_assets/*.js", "web_assets/fonts/*.ttf", "web_assets/fonts/*.txt", "web_assets/phones/*.png", "web_assets/phones/*.json", "web_assets/phones/*.md", "web_assets/brand/*.svg", "web_assets/brand/*.png", "web_assets/brand/*.md", "web_assets/icons/outline/*.svg", "web_assets/icons/tiles/*.svg", "web_assets/icons/png/*.png", "web_assets/graphics.json", "web_assets/translations.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -166,7 +166,7 @@ def test_device_manager_exposes_inventory_and_calendar(tmp_path, monkeypatch):
     with pytest.raises(ValueError):
         mgr.execute({"action": "apps-inventory", "device": 5})
     info = mgr.execute({"action": "discover"})
-    assert "calendar" in info["limitations"] and "unverified" in info["limitations"]["calendar"]
+    assert "calendar" in info["limitations"] and "iCalendar export" in info["limitations"]["calendar"]
     with pytest.raises(ValueError, match="Gammu"):
         mgr.execute({"action": "calendar-read", "device": "gammu"})
     log = (tmp_path / "build" / "symport" / "device-manager" / "operations.jsonl").read_text()

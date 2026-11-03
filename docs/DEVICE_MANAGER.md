@@ -20,14 +20,14 @@ In **Темы и библиотека**, import a SIS/SISX (up to 8 MiB) or sele
   8 MiB / 500 files maximum. Restore previews exact filenames, sizes and conflicts,
   requires confirmation for that archive and never overwrites existing files.
 * Persistent operation journal, excluding payloads, phone paths, IMEI and exception text.
-* Optional Gammu adapter: identification plus phonebook export and confirmed append with read-back verification; reports observed model/firmware/RM when returned;
+* Optional Gammu adapter: identity/dashboard, per-store capability probes, read/export and previewed add/update synchronization with private backups and read-back verification; reports observed model/firmware/RM when returned;
   missing data remains unknown. Configuration chooses USB/Bluetooth; auto-pairing is outside this adapter. See [contact import](CONTACTS.md).
 * PC Bridge uses the same Device Manager API through an authenticated loopback SSH
   tunnel. Transport selection is server configuration, never an HTTP parameter.
 
 No physical Nokia E52 has been tested. Filesystem and HTTP tests exercise real temporary
 files and mock transports; they do not establish USB, Bluetooth or firmware compatibility.
-Installed application inventory and SMS remain unavailable with a reason. Contacts support file imports, vCard staging and optional Gammu phonebook access; handset compatibility is unverified.
+Mounted volumes cannot expose the installed-application registry. SMS, contacts and calendar use independently probed Gammu services. See [media and personal-data workflows](DEVICE_WORKSPACE.md) for the current capability matrix, Windows wheels, native-adapter setup and safety controls.
 File backup is not a complete handset backup. Battery and internal phone memory are
 unknown on mounted-volume connections; disk space is only the enrolled volume's space.
 
@@ -62,7 +62,7 @@ list/info/stage operations remain in **Телефон и тесты**.
 ## Windows PC Bridge and remote Linux Docker
 
 The remote Linux server cannot discover USB/Bluetooth devices attached to Windows.
-Run Workbench on that PC with Python >=3.11, `pip install -e '.[dev]'`, and a checkout of this branch:
+Run Workbench on that PC with Python >=3.11, `pip install -e '.[phone,media]'`, and a checkout of this branch:
 
 ```powershell
 $env:SYMPORT_DEVICE_ROOTS='{"e52-card":"E:/"}'
@@ -82,7 +82,7 @@ On the Linux Workbench process, set `SYMPORT_BRIDGE_URL=http://127.0.0.1:18765`
 and securely supply the same `SYMPORT_BRIDGE_KEY` (at least 32 characters).
 Only the bridge endpoint accepts this key; the normal browser uses the existing
 session token. Run the bridge on port 8765; the forwarded request pins that Host header.
-The bridge key grants file-management access: protect both endpoints and rotate it by
+The bridge key grants device-management access, including personal data: protect both endpoints and rotate it by
 restarting both processes. Requests use the loopback tunnel, without Internet proxying.
 
 A container's `127.0.0.1` is not the host's loopback. For remote Docker, establish the
@@ -96,7 +96,7 @@ not implicitly granted. Never expose ports to the Internet; use loopback and SSH
 
 ## Media and software
 
-The Music & Video page transfers supported audio extensions and MP4/3GP up to 64 MiB per file. It does not transcode or set the active ringtone. The Games & Applications page validates and stages SIS/SISX or Java JAR/JAD up to 32 MiB, without claiming installation. Select an existing destination directory. Existing files are never replaced. Contact file parsing is limited to 4 MiB and 2000 entries.
+The Music & Video page includes a recursive gallery, thumbnails, ranged preview and private ZIP downloads ([limits and details](DEVICE_WORKSPACE.md#media-gallery)). It also transfers supported audio extensions and MP4/3GP up to 64 MiB per file. It does not transcode or set the active ringtone. The Games & Applications page validates and stages SIS/SISX or Java JAR/JAD up to 32 MiB, without claiming installation. Select an existing destination directory. Existing files are never replaced. Contact file parsing is limited to 4 MiB and 2000 entries.
 
 ## Validation
 

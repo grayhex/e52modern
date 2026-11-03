@@ -9,10 +9,11 @@ function tr(text){
  if(typeof text!=='string')return text;
  const leading=text.match(/^\s*/)[0],trailing=text.match(/\s*$/)[0],key=text.trim().replace(/\s+/g,' ');
  let translated=uiTranslations[uiLanguage]?.[key];
- if(translated===undefined&&uiLanguage==='en')for(const pattern of uiTranslations.patterns||[]){
+ if(translated===undefined)for(const pattern of uiTranslations.patterns||[]){
+  if(!pattern[uiLanguage])continue;
   const bits=pattern.source.split(/(ZXVAR\d+XZ)/),order=[];
   const regex='^'+bits.map(bit=>/^ZXVAR\d+XZ$/.test(bit)?(order.push(bit),'(.*?)'):bit.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('')+'$';
-  const match=key.match(new RegExp(regex));if(match){translated=pattern.en;for(let i=0;i<order.length;i++)translated=translated.replace(order[i],({'Офлайн':'Offline','Онлайн':'Online','Сеть + кэш':'Network + cache'})[match[i+1]]||match[i+1]);break;}
+  const match=key.match(new RegExp(regex));if(match){translated=pattern[uiLanguage];for(let i=0;i<order.length;i++)translated=translated.replace(order[i],({'Офлайн':'Offline','Онлайн':'Online','Сеть + кэш':'Network + cache'})[match[i+1]]||match[i+1]);break;}
  }
  if(translated===undefined&&uiLanguage==='en'){
   const unit=key.match(/^(\d+(?:\.\d+)?) (ГиБ|МиБ|КиБ|шт\.|проект\(ов\))$/);

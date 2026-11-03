@@ -29,12 +29,13 @@ async function dmList(){
 }
 dm('list').onclick=()=>dmRun(dmList);
 dm('discover').onclick=()=>dmRun(async()=>{
-  const r=await dmCall({action:'discover'});dmDevices=r.devices;dm('device').replaceChildren();
-  for(const d of r.devices){const opt=el('option','',d.id+(d.connected?' · подключён':' · отключён'));opt.value=d.id;dm('device').append(opt);}
-  dm('status').textContent=r.devices.length?'Список обновлён. Идентификация телефона не подтверждена.':'Телефон не подключён. Подключите карту памяти или настройте PC Bridge на ПК с телефоном по инструкции подключения.';
+  const previous=dm('device').value;const r=await dmCall({action:'discover'});dmDevices=r.devices;dm('device').replaceChildren();
+  for(const d of r.devices){const opt=el('option','',d.id+' · '+tr(d.connected?'Connected':'Disconnected'));opt.value=d.id;dm('device').append(opt);}
+  const preferred=r.devices.find(d=>d.id===previous)||r.devices.find(d=>d.connected&&d.capabilities.includes('personal-data'))||r.devices[0];if(preferred)dm('device').value=preferred.id;
+  dm('status').textContent=r.devices.length?'Список обновлён.':'Телефон не подключён. Подключите карту памяти или настройте PC Bridge на ПК с телефоном по инструкции подключения.';
   dmSelection();
   dm('capabilities').replaceChildren();
-  const descriptions={contacts:['Контакты','Нужен проверенный адаптер Gammu, SyncML или E52 Agent.'],sms:['SMS','Нужен транспорт с подтверждённым чтением и отправкой SMS.'],applications:['Приложения','Режим накопителя не предоставляет реестр установленных приложений.'],backup:['Копии файлов','Полная копия накопителя — раздел «Резервные копии»; контакты, сообщения и прошивка не входят.'],calendar:['Календарь','Чтение через Gammu; поддержка E52 не подтверждена.'],bluetooth:['Bluetooth','Сопряжение и проверка доступных сервисов выполняются на ПК с телефоном.']};
+  const descriptions={contacts:['Контакты','Нужен проверенный адаптер Gammu, SyncML или E52 Agent.'],sms:['SMS','Нужен транспорт с подтверждённым чтением и отправкой SMS.'],applications:['Приложения','Режим накопителя не предоставляет реестр установленных приложений.'],backup:['Копии файлов','Полная копия накопителя — раздел «Резервные копии»; контакты, сообщения и прошивка не входят.'],calendar:['Календарь','Чтение и экспорт через Gammu; доступ зависит от выбранного драйвера.'],bluetooth:['Bluetooth','Сопряжение и проверка доступных сервисов выполняются на ПК с телефоном.']};
   for(const name of Object.keys(r.limitations)){const item=descriptions[name];if(!item)continue;const p=el('p');p.append(el('strong','',item[0]+': '),document.createTextNode(item[1]));dm('capabilities').append(p);}
 });
 async function dmUpload(action){
@@ -75,6 +76,7 @@ function dmSelection(){
  const device=dmDevices.find(d=>d.id===dm('device').value);
  for(const name of ['list','send','sis','mkdir','backup','preview'])dm(name).disabled=!device?.capabilities.includes('files');
  dm('info').replaceChildren();
+ if(window.renderPhoneDashboard){renderPhoneDashboard(device);return;}
  if(!device)return;
  const details=el('div','kv-row');
  const fields=[['Подключение',device.connected?'Доступно':'Отключено'],['Транспорт',device.transport],['Модель',device.model||'не определена'],['RM',device.rm||'не определён'],['Прошивка',device.firmware||'не определена'],['Батарея',device.battery??'нет данных'],['Свободно',device.free===null||device.free===undefined?'нет данных':(device.free/1024/1024).toFixed(0)+' МиБ']];
