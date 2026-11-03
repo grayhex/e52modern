@@ -29,7 +29,8 @@ class DeviceManager:
 
     def execute(self, data: dict) -> dict:
         allowed = {'discover', 'history', 'list', 'download', 'upload', 'transfer',
-                   'mkdir', 'delete', 'backup', 'restore-preview', 'restore'}
+                   'mkdir', 'delete', 'backup', 'restore-preview', 'restore', 'contacts-stage',
+                   'contacts-read', 'contacts-import', 'media-upload', 'software-transfer'}
         if not isinstance(data.get('action'), str) or data['action'] not in allowed:
             raise ValueError('Unknown device operation')
         if data['action'] not in ('discover', 'history'):
@@ -37,10 +38,15 @@ class DeviceManager:
                 raise ValueError('Device and path must be strings')
             if len(data.get('path', '')) > 1024 or not isinstance(data.get('content', ''), str):
                 raise ValueError('Invalid path or content')
+        if data['action'] == 'media-upload' and data.get('kind') not in ('audio', 'video'):
+            raise ValueError('Выберите тип медиа: аудио или видео')
+        if data['action'] in ('contacts-stage', 'contacts-import'):
+            from .contacts import normalize
+            data = dict(data, contacts=normalize(data.get('contacts')))
         with self.lock:
             if data.get('action') == 'discover':
                 return {'devices': self.transport.devices(), 'limitations': {
-                    'contacts': 'Requires a tested Gammu/SyncML or native Agent adapter',
+                    'contacts': 'Импорт Google CSV / Apple vCard, передача vCard на карту или запись через Gammu с чтением для проверки',
                     'sms': 'Requires a tested Gammu or native Agent adapter',
                     'applications': 'Mounted volumes do not expose the installed application registry',
                     'backup': 'File backup covers only the selected folder, not contacts, SMS, applications or firmware',
@@ -56,7 +62,7 @@ class DeviceManager:
                     result = self.transport.execute(data)
                 except zipfile.BadZipFile as exc:
                     raise ValueError('Invalid ZIP archive') from exc
-                status = 'success'
+                status = 'unverified' if result.get('status') == 'partial-or-unverified' else 'success'
                 return result
             finally:
                 self.journal.parent.mkdir(parents=True, exist_ok=True, mode=0o700)

@@ -8,6 +8,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import io
+import secrets
 import shutil
 import zipfile
 from pathlib import Path, PurePosixPath
@@ -38,25 +39,44 @@ class MountedVolumes:
         if not isinstance(value, str) or '\\' in value or '\0' in value:
             raise ValueError("Invalid device path")
         parts = PurePosixPath(value).parts
-        if value.startswith('/') or any(p in ('.', '..') or ':' in p for p in parts):
+        reserved = {'CON', 'PRN', 'AUX', 'NUL', *(f'COM{i}' for i in range(1, 10)), *(f'LPT{i}' for i in range(1, 10))}
+        if value.startswith('/') or any(p in ('.', '..') or ':' in p or p.endswith((' ', '.'))
+                                        or p.split('.')[0].upper() in reserved for p in parts):
             raise ValueError("Path must be relative to the enrolled drive")
         root = self.roots[device]
         if not root.is_dir() or root.is_symlink():
             raise ValueError("Device disconnected")
         # Reject symlinks in *every* ancestor, including the enrolled root.
         for ancestor in (root, *root.parents):
-            if ancestor.is_symlink():
+            if ancestor.is_symlink() or (getattr(ancestor, 'is_junction', lambda: False)()):
                 raise ValueError("Symlink roots are forbidden")
         path = root
         for part in parts:
             path = path / part
-            if path.is_symlink():
+            if path.is_symlink() or (getattr(path, 'is_junction', lambda: False)()):
                 raise ValueError("Symlinks are forbidden")
         return path
 
     def execute(self, data: dict) -> dict:
         action = data.get('action')
         path = self._path(data.get('device'), data.get('path', ''))
+        if action == 'contacts-stage':
+            from .contacts import vcards
+            if data.get('confirm') is not True:
+                raise ValueError('Подтвердите передачу vCard на телефон')
+            cards = vcards(data['contacts'])
+            folder = path / ('Contacts-import-' + secrets.token_hex(5))
+            folder.mkdir()
+            try:
+                for i, card in enumerate(cards, 1):
+                    (folder / f'contact-{i:04}.vcf').write_text(card, encoding='utf-8', newline='')
+            except OSError:
+                for entry in folder.iterdir():
+                    entry.unlink()
+                folder.rmdir()
+                raise
+            return {'status': 'vcards-transferred-not-imported', 'count': len(cards),
+                    'folder': folder.name, 'instructions': 'Откройте vCard на телефоне и сохраните в Контакты. Запись в книгу ещё не подтверждена.'}
         if action == 'list':
             entries = []
             for p in sorted(path.iterdir(), key=lambda p: p.name.casefold()):
@@ -122,7 +142,7 @@ class MountedVolumes:
             if not path.is_file() or path.stat().st_size > LIMIT:
                 raise ValueError('Only regular files up to 8 MiB can be downloaded')
             return {'name': path.name, 'content': base64.b64encode(path.read_bytes()).decode()}
-        if action in ('delete', 'upload', 'mkdir', 'transfer'):
+        if action in ('delete', 'upload', 'mkdir', 'transfer', 'media-upload', 'software-transfer'):
             if data.get('confirm') is not True:
                 raise ValueError('Explicit confirmation required')
             if path == self.roots[data['device']]:
@@ -136,9 +156,24 @@ class MountedVolumes:
                 path.mkdir()
             else:
                 content = base64.b64decode(data.get('content', ''), validate=True)
-                if len(content) > LIMIT:
-                    raise ValueError('File exceeds 8 MiB')
-                if action == 'transfer':
+                if len(content) > (64 * 1024 * 1024 if action == 'media-upload' else LIMIT):
+                    raise ValueError('File exceeds transfer limit')
+                if action == 'media-upload':
+                    allowed = {'audio': {'.mp3', '.aac', '.m4a', '.wav', '.mid', '.midi', '.amr'},
+                               'video': {'.mp4', '.3gp'}}
+                    if path.suffix.lower() not in allowed.get(data.get('kind'), set()):
+                        raise ValueError('Неподдерживаемое расширение медиафайла')
+                if action == 'software-transfer' and path.suffix.lower() in ('.jar', '.jad'):
+                    if path.suffix.lower() == '.jar':
+                        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+                            if 'META-INF/MANIFEST.MF' not in archive.namelist():
+                                raise ValueError('JAR не содержит манифест MIDlet')
+                            entry = archive.getinfo('META-INF/MANIFEST.MF')
+                            if entry.file_size > 65536 or b'MIDlet-' not in archive.read(entry):
+                                raise ValueError('JAR не содержит манифест MIDlet')
+                    elif b'MIDlet-Jar-URL:' not in content or b'MIDlet-Name:' not in content:
+                        raise ValueError('Некорректный дескриптор JAD')
+                elif action in ('transfer', 'software-transfer'):
                     from symport.sis.reader import inspect
                     info = inspect(content)
                     if path.suffix.lower() not in ('.sis', '.sisx') or not all(
@@ -146,9 +181,16 @@ class MountedVolumes:
                     ):
                         raise ValueError('Invalid SIS/SISX package')
                 # Exclusive creation prevents accidental replacement of phone data.
-                with path.open('xb') as target:
-                    target.write(content)
-            return {'status': 'transferred-not-installed' if action == 'transfer' else 'completed'}
+                created = False
+                try:
+                    with path.open('xb') as target:
+                        created = True
+                        target.write(content)
+                except OSError:
+                    if created:
+                        path.unlink(missing_ok=True)
+                    raise
+            return {'status': 'transferred-not-installed' if action in ('transfer', 'software-transfer') else 'completed'}
         raise ValueError('Unsupported operation for mounted-volume transport')
 
 

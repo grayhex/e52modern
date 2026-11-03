@@ -20,15 +20,14 @@ In **Темы и библиотека**, import a SIS/SISX (up to 8 MiB) or sele
   8 MiB / 500 files maximum. Restore previews exact filenames, sizes and conflicts,
   requires confirmation for that archive and never overwrites existing files.
 * Persistent operation journal, excluding payloads, phone paths, IMEI and exception text.
-* Optional Gammu `identify` adapter: reports observed model/firmware/RM when returned;
-  missing data remains unknown. Configuration chooses USB/Bluetooth; auto-pairing is
-  deliberately outside this adapter.
+* Optional Gammu adapter: identification plus phonebook export and confirmed append with read-back verification; reports observed model/firmware/RM when returned;
+  missing data remains unknown. Configuration chooses USB/Bluetooth; auto-pairing is outside this adapter. See [contact import](CONTACTS.md).
 * PC Bridge uses the same Device Manager API through an authenticated loopback SSH
   tunnel. Transport selection is server configuration, never an HTTP parameter.
 
 No physical Nokia E52 has been tested. Filesystem and HTTP tests exercise real temporary
 files and mock transports; they do not establish USB, Bluetooth or firmware compatibility.
-Installed application inventory, contacts/vCard and SMS remain unavailable with a reason.
+Installed application inventory and SMS remain unavailable with a reason. Contacts support file imports, vCard staging and optional Gammu phonebook access; handset compatibility is unverified.
 File backup is not a complete handset backup. Battery and internal phone memory are
 unknown on mounted-volume connections; disk space is only the enrolled volume's space.
 
@@ -63,7 +62,7 @@ list/info/stage operations remain in **Телефон и тесты**.
 ## Windows PC Bridge and remote Linux Docker
 
 The remote Linux server cannot discover USB/Bluetooth devices attached to Windows.
-Run Workbench on that PC with Python >=3.11 and a checkout of this branch:
+Run Workbench on that PC with Python >=3.11, `pip install -e '.[dev]'`, and a checkout of this branch:
 
 ```powershell
 $env:SYMPORT_DEVICE_ROOTS='{"e52-card":"E:/"}'
@@ -94,6 +93,10 @@ For a directly attached mounted volume, add an explicit narrow bind mount and se
 `SYMPORT_DEVICE_ROOTS` to the **container** path. No privileged container is required.
 Gammu, obexftp and BlueZ executables are included in Docker; D-Bus/hardware access is
 not implicitly granted. Never expose ports to the Internet; use loopback and SSH.
+
+## Media and software
+
+The Music & Video page transfers supported audio extensions and MP4/3GP up to 64 MiB per file. It does not transcode or set the active ringtone. The Games & Applications page validates and stages SIS/SISX or Java JAR/JAD up to 8 MiB, without claiming installation. Select an existing destination directory. Existing files are never replaced. Contact file parsing is limited to 4 MiB and 2000 entries.
 
 ## Validation
 

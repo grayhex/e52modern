@@ -23,6 +23,7 @@ from urllib.parse import parse_qs, urlsplit
 from symport.config import find_repo_root
 from symport.library import ThemeLibrary
 from symport.phone import DeviceManager
+from symport.phone.contacts import parse_export, vcards
 from symport.phone.contracts import LIMIT
 
 ASSETS = Path(__file__).with_name("web_assets")
@@ -297,7 +298,11 @@ def make_handler(state: Workbench):
                 "/app.js": ("app.js", "text/javascript; charset=utf-8"),
                 "/manager.js": ("manager.js", "text/javascript; charset=utf-8"),
                 "/library.js": ("library.js", "text/javascript; charset=utf-8"),
+                "/suite.js": ("suite.js", "text/javascript; charset=utf-8"),
             }
+            font = url.path.removeprefix('/fonts/')
+            if url.path.startswith('/fonts/') and font in {'DMSans.ttf', 'FiraCode.ttf', 'PlusJakartaSans.ttf'}:
+                return self._send((ASSETS / 'fonts' / font).read_bytes(), 'font/ttf')
             if url.path in static:
                 file, mime = static[url.path]
                 body = (ASSETS / file).read_bytes()
@@ -357,12 +362,26 @@ def make_handler(state: Workbench):
                 length = int(self.headers.get("Content-Length", "0"))
             except ValueError:
                 return self._json({"error": "Invalid length"}, 400)
-            if length <= 0 or length > (LIMIT * 4 // 3 + 4096 if self.path in ("/api/manager", "/api/bridge", "/api/library") else 12_000):
+            if length <= 0 or length > ((64 * 1024 * 1024 * 4 // 3 + 4096) if self.path in ("/api/manager", "/api/bridge") else (LIMIT * 4 // 3 + 4096 if self.path in ("/api/library", "/api/contacts") else 12_000)):
                 return self._json({"error": "Invalid body size"}, 413)
             try:
                 body = json.loads(self.rfile.read(length))
                 if not isinstance(body, dict):
                     raise ValueError("Expected JSON object")
+                if self.path == "/api/contacts":
+                    if body.get('action') == 'preview':
+                        return self._json(parse_export(body.get('name'), body.get('content')))
+                    if body.get('action') == 'export':
+                        import io
+                        import zipfile
+                        cards = vcards(body.get('contacts'))
+                        buffer = io.BytesIO()
+                        with zipfile.ZipFile(buffer, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
+                            for i, card in enumerate(cards, 1):
+                                archive.writestr(f'contact-{i:04}.vcf', card.encode('utf-8'))
+                        return self._json({'vcard': base64.b64encode(''.join(cards).encode()).decode(),
+                                           'zip': base64.b64encode(buffer.getvalue()).decode()})
+                    raise ValueError('Неизвестная операция контактов')
                 if self.path == "/api/library":
                     action = body.get('action')
                     if action == 'import':

@@ -37,7 +37,7 @@ class LocalTransports:
                 if model:
                     rm = re.search(r'RM-\d+', model)
                     device.update(connected=True, model=model, rm=rm.group() if rm else None,
-                                  firmware=values.get('firmware'), evidence='Gammu identify response')
+                                  firmware=values.get('firmware'), capabilities=['contacts-read', 'contacts-import'], evidence='Gammu identify response; phonebook support must be checked by reading')
             except (OSError, subprocess.SubprocessError):
                 device['evidence'] = 'Gammu unavailable, configuration invalid or phone unreachable'
             result.append(device)
@@ -45,7 +45,15 @@ class LocalTransports:
 
     def execute(self, data: dict) -> dict:
         if data.get('device') == 'gammu':
-            raise ValueError('This Gammu adapter supports identification only; use a mounted drive for files')
+            from . import gammu_contacts
+            config = os.getenv('SYMPORT_GAMMU_CONFIG')
+            if not config:
+                raise ValueError('Настройте Gammu на ПК с телефоном')
+            if data['action'] == 'contacts-read':
+                return {'contacts': gammu_contacts.read(config)}
+            if data['action'] == 'contacts-import':
+                return gammu_contacts.import_contacts(config, data['contacts'], data.get('confirm'))
+            raise ValueError('Gammu предоставляет контакты; для файлов выберите накопитель')
         return self.files.execute(data)
 
 
