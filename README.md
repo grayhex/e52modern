@@ -69,6 +69,9 @@ EKA2L1; аппаратные кнопки и клавиатура ПК пере�
 
 ![Emulator Lab — настоящий MGO без пользовательской прошивки](docs/screenshots/emulator-lab-desktop.png)
 
+[Lab на мобильном](docs/screenshots/emulator-lab-mobile.png) ·
+[Проверки и ограничения](docs/EMULATOR_LAB.md#проверено-3-ноября-2026).
+
 ## Контакты, музыка и ПО
 
 **Контакты:** выгрузите Google CSV/vCard из Google Contacts или vCard из iCloud/Apple

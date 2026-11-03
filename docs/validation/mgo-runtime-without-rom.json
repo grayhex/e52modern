@@ -1,0 +1,25 @@
+{
+  "agent_auth": "required",
+  "host_filesystem_proxy": "forbidden",
+  "engine": "EKA2L1 master-e04eb03+mgo-vpl2",
+  "physical_e52": "not-tested",
+  "successful_firmware_boot": "not-tested",
+  "hardware_keys": "available",
+  "capabilities": {
+    "accelerometer": false,
+    "firmwareFormats": [
+      "rom",
+      "rpkg",
+      "archive",
+      "vpl"
+    ],
+    "hostScreenshot": false,
+    "platform": "qt",
+    "touchSpaces": [
+      "guest",
+      "normalized"
+    ]
+  },
+  "no_firmware_screen": "no_screen",
+  "invalid_factory_manifest": "vpl_invalid"
+}

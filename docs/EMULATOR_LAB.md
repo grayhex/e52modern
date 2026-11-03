@@ -192,3 +192,27 @@ Smoke проверяет настоящий maintenance-запуск EKA2L1, д�
 Собственная прошивка E52, успешный boot, установка/запуск реального SIS, применение
 темы и работа на физической Nokia **ещё не проверены**. Именно этот этап требует
 вашего комплекта и ручного протокола.
+
+## Проверено 3 ноября 2026
+
+- **233 pytest-теста**, Ruff и Compose validation прошли.
+- Chromium: импорт/экспорт контактов, файлы/медиа, каталог, пакеты, библиотека,
+  копии/восстановление, календарь; навигация/логотип из предоставленной графики;
+  desktop 1440×1100 и mobile 390×844 без переполнения.
+- Положительная цепочка Lab проверена mock-MGO: браузер, upload firmware, клавиши,
+  SIS/темы, сборки/каталог/библиотека, отчёт, SHA-256 и реальная запись тех же байтов
+  на временный том. Это не запуск реальной прошивки.
+- Настоящий Docker MGO/EKA2L1: maintenance start, bearer authentication, запрет host
+  filesystem route, клавиши/capabilities, no-screen без ROM, отказ парсера VPL.
+- Настоящая цепочка **браузер → SymPort → MGO → EKA2L1**: загрузка оригинальных
+  синтетических VPL/FPSX, реальный `vpl_invalid`, сохранённый `failed` и логи;
+  установленных устройств 0, выдуманных снимков 0.
+
+Машиночитаемые результаты: [runtime](validation/mgo-runtime-without-rom.json) и
+[браузер](validation/mgo-browser-without-rom.json). Эти проверки включены в CI;
+они не содержат ROM и не заявляют успешный boot E52.
+
+![Lab с настоящим MGO, без ROM](screenshots/emulator-lab-desktop.png)
+
+[Мобильный интерфейс](screenshots/emulator-lab-mobile.png) ·
+[Реальная ошибка установщика](screenshots/emulator-lab-firmware-error.png).
