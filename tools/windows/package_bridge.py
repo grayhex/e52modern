@@ -81,7 +81,7 @@ raw = fetch(url)
 licenses.append({'name': 'libGammu', 'version': version, 'license': 'GPL-2.0-or-later', 'source': url, 'sha256': hashlib.sha256(raw).hexdigest()})
 (out / 'DEPENDENCIES.json').write_text(json.dumps(licenses, indent=2), encoding='utf-8')
 (out / 'LICENSE.txt').write_text('SymPort source: MIT (sources/LICENSE). This combined Windows distribution includes Gammu/python-gammu (GPL-2.0-or-later) and pystray (LGPL-3.0). Distribution under GPL-3.0-or-later; original dependency notices apply. Corresponding sources and the build recipe are in sources/. No Nokia drivers, proprietary ROM or signing keys are included.\n', encoding='utf-8')
-(out / 'GPL-3.0.txt').write_bytes(fetch('https://www.gnu.org/licenses/gpl-3.0.txt'))
+shutil.copy(root / 'tools/windows/licenses/GPL-3.0.txt', out / 'GPL-3.0.txt')
 (out / 'SHA256SUMS.txt').write_text(hashlib.sha256((out/'SymPortBridge.exe').read_bytes()).hexdigest() + '  SymPortBridge.exe\n', encoding='ascii')
 
 (source / 'BUILD-INFO.json').write_text(json.dumps({'python': platform.python_version(), 'platform': platform.platform(), 'source_commit': subprocess.check_output(['git','rev-parse','HEAD'], cwd=root, text=True).strip(), 'dependencies': licenses}, indent=2), encoding='utf-8')
