@@ -8,3 +8,12 @@ build/
 symport.toml
 .venv/
 workspace/
+# User-owned Symbian firmware and signing material belong outside source control.
+*.rom
+*.rpkg
+*.vpl
+*.fpsx
+*.key
+*.pem
+firmware/
+roms/

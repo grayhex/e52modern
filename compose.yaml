@@ -14,12 +14,16 @@ services:
     volumes:
       - symport-build:/srv/e52modern/build
       - symport-workspace:/srv/e52modern/workspace
+      - mgo-symbian-auth:/symbian-auth:ro
     environment:
       # Enroll only explicitly mounted phone volumes. Never mount the host root.
+      SYMPORT_MGO_URL: http://mgo-symbian:8766
+      SYMPORT_MGO_TOKEN_FILE: /symbian-auth/agent-token
       SYMPORT_GAMMU_CONFIG: ${SYMPORT_GAMMU_CONFIG:-}
       SYMPORT_DEVICE_ROOTS: "${SYMPORT_DEVICE_ROOTS:-{}}"
       SYMPORT_BRIDGE_URL: ${SYMPORT_BRIDGE_URL:-}
       SYMPORT_BRIDGE_KEY: ${SYMPORT_BRIDGE_KEY:-}
+    networks: [default, emulator]
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -32,6 +36,36 @@ services:
       retries: 3
       start_period: 20s
 
+  # Existing MGO agent/EKA2L1 image, pinned to the inspected contract. No emulator code is copied here.
+  mgo-symbian:
+    profiles: [emulator]
+    image: ghcr.io/grayhex/mgo-symbian@sha256:83e62c6737a1cdcdf992bd8d3803738ff6a73b278a71118e69318446db4789cc
+    restart: unless-stopped
+    init: false
+    environment:
+      AGENT_TOKEN_FILE: /symbian-auth/agent-token
+      MAX_FIRMWARE_BYTES: 2147483648
+      MAX_INSTANCE_SECONDS: 7200
+    volumes:
+      - mgo-symbian-data:/data
+      - mgo-symbian-auth:/symbian-auth
+    networks: [emulator]
+    read_only: true
+    tmpfs: [/tmp:size=512m]
+    shm_size: 256m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    cpus: 2
+    mem_limit: 3g
+    pids_limit: 512
+    # No ports: only Workbench can reach the authenticated agent. EKA2L1 stays on agent loopback.
+
+networks:
+  emulator:
+    internal: true
+
 volumes:
   symport-build:
   symport-workspace:
+  mgo-symbian-data:
+  mgo-symbian-auth:

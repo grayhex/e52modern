@@ -23,6 +23,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from symport.catalog import AppCatalog
 from symport.config import find_repo_root
+from symport.lab import EmulatorLab
 from symport.library import ThemeLibrary
 from symport.phone import DeviceManager
 from symport.phone.backups import BackupStore, BackupStoreError, default_root
@@ -166,11 +167,42 @@ class Workbench:
         self.devices = DeviceManager(repo)
         self.catalog = AppCatalog(repo, self.devices)
         self.library = ThemeLibrary(repo)
+        self.lab = EmulatorLab(repo, self.resolve_lab_package, self.devices)
         self.token = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
         self.jobs: list[dict] = []
         self.last_run: dict | None = None
         self.backups = BackupStore(default_root(repo))
+
+    def resolve_lab_package(self, data):
+        source, key = data.get('source'), data.get('reference')
+        if source == 'build':
+            path = package_path(self.repo, key)
+            return path.name, path.read_bytes(), 'theme' if key.startswith('theme:') else 'app'
+        if source == 'library':
+            name, raw = self.library.download(key)
+            return name, raw, 'theme'
+        if source == 'catalog':
+            entry = self.catalog.catalog.entries.get(key) if isinstance(key, str) else None
+            if not entry or entry['delivery'] != 'automatic':
+                raise ValueError('Скачайте ручной пакет у автора и загрузите его в Lab')
+            declared = self.catalog.catalog.sources[entry['source_id']]
+            artifact = next((a for a in declared['artifacts'] if a['name'].lower().endswith(('.sis', '.sisx', '.jar'))), None)
+            if not artifact:
+                raise ValueError('В каталоге нет подходящего пакета для теста')
+            path, _ = self.catalog.downloader.fetch(declared, artifact)
+            return path.name, path.read_bytes(), 'app'
+        if source == 'upload':
+            name, encoded = data.get('name'), data.get('content')
+            if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9_.-]{1,120}\.(sisx?|jar|jad)', name, re.I):
+                raise ValueError('Нужен файл SIS/SISX/JAR/JAD с безопасным именем')
+            if not isinstance(encoded, str):
+                raise ValueError('Invalid package content')
+            raw = base64.b64decode(encoded, validate=True)
+            if len(raw) > 32 * 1024 * 1024:
+                raise ValueError('Максимальный размер пакета — 32 МиБ')
+            return name, raw, 'app'
+        raise ValueError('Unknown package source')
 
     def snapshot(self) -> dict:
         with self.lock:
@@ -371,12 +403,17 @@ def make_handler(state: Workbench):
                 "/library.js": ("library.js", "text/javascript; charset=utf-8"),
                 "/suite.js": ("suite.js", "text/javascript; charset=utf-8"),
                 "/catalog.js": ("catalog.js", "text/javascript; charset=utf-8"),
+                "/lab.js": ("lab.js", "text/javascript; charset=utf-8"),
                 "/compact.css": ("compact.css", "text/css; charset=utf-8"),
+                "/lab.css": ("lab.css", "text/css; charset=utf-8"),
+                "/nimbus.css": ("nimbus.css", "text/css; charset=utf-8"),
                 "/backups.js": ("backups.js", "text/javascript; charset=utf-8"),
                 "/calendar.js": ("calendar.js", "text/javascript; charset=utf-8"),
             }
+            if url.path == '/phones/nokia-e52-silver.png':
+                return self._send((ASSETS / 'phones/nokia-e52-silver.png').read_bytes(), 'image/png')
             font = url.path.removeprefix('/fonts/')
-            if url.path.startswith('/fonts/') and font in {'DMSans.ttf', 'FiraCode.ttf', 'PlusJakartaSans.ttf'}:
+            if url.path.startswith('/fonts/') and font in {'DMSans.ttf', 'FiraCode.ttf', 'PlusJakartaSans.ttf', 'Inter.ttf', 'JetBrainsMono.ttf'}:
                 return self._send((ASSETS / 'fonts' / font).read_bytes(), 'font/ttf')
             if url.path in static:
                 file, mime = static[url.path]
@@ -440,18 +477,31 @@ def make_handler(state: Workbench):
                     self.headers.get("X-Symport-Token", ""), state.token))
             if not authorized:
                 return self._json({"error": "Bad session token"}, 403)
+            if urlsplit(self.path).path == '/api/lab/firmware':
+                if self.headers.get('Content-Type', '').split(';')[0] != 'application/octet-stream':
+                    return self._json({'error': 'Binary firmware upload required'}, 415)
+                try:
+                    self.connection.settimeout(120)
+                    args = parse_qs(urlsplit(self.path).query)
+                    length = int(self.headers.get('Content-Length', '0'))
+                    result = state.lab.upload_firmware(self.rfile, length, args.get('slot', [''])[0], args.get('name', [''])[0], args.get('bundle', [None])[0])
+                    return self._json(result)
+                except (ValueError, OSError) as exc:
+                    return self._json({'error': str(exc)}, 400)
             if self.headers.get("Content-Type", "").split(";")[0] != "application/json":
                 return self._json({"error": "JSON required"}, 415)
             try:
                 length = int(self.headers.get("Content-Length", "0"))
             except ValueError:
                 return self._json({"error": "Invalid length"}, 400)
-            if length <= 0 or length > ((64 * 1024 * 1024 * 4 // 3 + 4096) if self.path in ("/api/manager", "/api/bridge") else (LIMIT * 4 // 3 + 4096 if self.path in ("/api/library", "/api/contacts") else 12_000)):
+            if length <= 0 or length > ((64 * 1024 * 1024 * 4 // 3 + 4096) if self.path in ("/api/manager", "/api/bridge", "/api/lab") else (LIMIT * 4 // 3 + 4096 if self.path in ("/api/library", "/api/contacts") else 12_000)):
                 return self._json({"error": "Invalid body size"}, 413)
             try:
                 body = json.loads(self.rfile.read(length))
                 if not isinstance(body, dict):
                     raise ValueError("Expected JSON object")
+                if self.path == '/api/lab':
+                    return self._json(state.lab.execute(body))
                 if self.path == "/api/catalog":
                     result = state.catalog.execute(body)
                     return self._json(result, 202 if body.get('action') in ('download', 'transfer') else 200)

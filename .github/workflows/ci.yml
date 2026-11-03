@@ -127,6 +127,19 @@ jobs:
           docker exec e52modern-ui python -m symport theme package --variant light --backend native --json > /tmp/workbench-package.json
           python3 -c 'import json; assert json.load(open("/tmp/workbench-build.json"))["status"] == "ok"; assert json.load(open("/tmp/workbench-package.json"))["status"] == "ok"'
 
+      - name: Real MGO/EKA2L1 smoke without proprietary ROM
+        run: |
+          docker tag e52modern-workbench:ci e52modern-workbench:local
+          mkdir -p build/reports
+          trap 'docker compose -p symport-lab-smoke --profile emulator logs mgo-symbian || true; docker compose -p symport-lab-smoke --profile emulator down -v || true' EXIT
+          docker compose -p symport-lab-smoke --profile emulator up -d mgo-symbian
+          docker compose -p symport-lab-smoke run --rm -T --no-deps workbench python tools/check_mgo_runtime.py | tee build/reports/mgo-runtime.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mgo-real-runtime-without-rom
+          path: build/reports/mgo-runtime.json
+
   device-manager-container:
     runs-on: ubuntu-latest
     steps:
@@ -137,7 +150,8 @@ jobs:
           node --check symport/web_assets/library.js
           node --check symport/web_assets/suite.js
           node --check symport/web_assets/catalog.js
-          docker compose config --quiet
+          node --check symport/web_assets/lab.js
+          docker compose --profile emulator config --quiet
       - name: Build Device Manager image
         run: docker build -t symport-device-manager:ci .
       - name: Smoke test HTTP and transport dependencies
@@ -168,6 +182,7 @@ jobs:
         run: |
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_web_ui.cjs
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_app_catalog.cjs
+          NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_emulator_lab.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

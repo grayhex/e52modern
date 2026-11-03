@@ -1,6 +1,6 @@
 "use strict";
 const token = document.querySelector('meta[name="symport-token"]').content;
-const pages = {manager:"Телефон и файлы",catalog:"Каталог приложений",media:"Музыка и видео",contacts:"Контакты",calendar:"Календарь",messages:"Сообщения",backups:"Резервные копии",installed:"Приложения телефона",overview:"Обзор",themes:"Темы E52 CLEAR",apps:"Разработка",device:"Телефон и тесты",activity:"История операций"};
+const pages = {lab:"Emulator Lab",manager:"Телефон и файлы",catalog:"Каталог приложений",media:"Музыка и видео",contacts:"Контакты",calendar:"Календарь",messages:"Сообщения",backups:"Резервные копии",installed:"Приложения телефона",overview:"Обзор",themes:"Темы E52 CLEAR",apps:"Разработка",device:"Телефон и тесты",activity:"История операций"};
 const checklistLabels = {
   identify:"Модель, RM-код и версия прошивки",
   backup:"Резервная копия и возврат к штатной теме",
@@ -113,7 +113,8 @@ function itemRow(item){
   const left=el("div");
   left.append(el("strong","",item.name),
               el("small","",item.source+" · "+(item.size/1024).toFixed(1)+" КБ · не проверено на E52"));
-  row.append(left,downloadButton(item));
+  const test=el("button","btn secondary","Проверить в эмуляторе");test.onclick=()=>labChoose("build",item.id,item.kind);
+  row.append(left,downloadButton(item),test);
   return row;
 }
 function renderPackages(){

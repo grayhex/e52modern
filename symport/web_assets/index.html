@@ -4,10 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="symport-token" content="__SESSION_TOKEN__">
-  <meta name="theme-color" content="#F8FAFC">
+  <meta name="theme-color" content="#22D3EE">
   <title>SymPort · Ваш телефон Symbian</title>
   <link rel="stylesheet" href="/app.css">
   <link rel="stylesheet" href="/compact.css">
+  <link rel="stylesheet" href="/nimbus.css">
+  <link rel="stylesheet" href="/lab.css">
   <script src="/app.js" defer></script>
   <script src="/manager.js" defer></script>
   <script src="/library.js" defer></script>
@@ -15,6 +17,7 @@
   <script src="/catalog.js" defer></script>
   <script src="/backups.js" defer></script>
   <script src="/calendar.js" defer></script>
+  <script src="/lab.js" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -37,6 +40,7 @@
     <div class="nav-label">ИНСТРУМЕНТЫ</div>
     <nav aria-label="Разработка и темы">
       <a href="#themes" class="nav-link" data-nav="themes"><span>◧</span> Темы и библиотека</a>
+      <a href="#lab" class="nav-link" data-nav="lab"><span>▧</span> Emulator Lab</a>
       <a href="#apps" class="nav-link" data-nav="apps"><span>⌘</span> Разработка</a>
       <a href="#device" class="nav-link" data-nav="device"><span>✓</span> Проверка на телефоне</a>
       <a href="#overview" class="nav-link" data-nav="overview"><span>⚙</span> Окружение</a>
@@ -66,6 +70,62 @@
 </div>
 </div>
 </section>
+<section id="lab" class="page" aria-labelledby="lab-title">
+ <div class="page-heading"><span class="eyebrow">DEVELOP · TEST · TRANSFER</span><h1 id="lab-title">Emulator Lab<span class="lab-title-dot">.</span></h1><p>Виртуальный Symbian. Настоящий EKA2L1 через MGO — с вашей прошивкой и проверяемыми результатами.</p></div>
+ <div class="lab-banner"><div><span class="eyebrow">EKA2L1 / SYMBIAN</span><h2>Проверьте здесь.<br>Продолжите на Nokia.</h2><p>Приложения, игры и темы в одном рабочем процессе.</p></div><div class="lab-service"><span id="lab-service-badge" class="chip">Подключение…</span><p id="lab-status" role="status">Проверяем опциональный сервис MGO.</p><button id="lab-refresh" class="btn secondary">Обновить состояние</button></div></div>
+ <div class="lab-workspace">
+  <div class="lab-phone-panel card">
+   <div class="card-head"><h2>Виртуальный телефон</h2><span class="chip">240 × 320</span></div>
+   <label>Установленная прошивка<select id="lab-device"><option value="">Сначала загрузите прошивку</option></select></label><p id="lab-firmware-info" class="muted">Модель определяется по установленной прошивке. Совместимость E52 не предполагается автоматически.</p>
+   <div class="form-row lab-session"><button id="lab-start" class="btn primary" disabled>Запустить</button><button id="lab-reboot" class="btn secondary" disabled>Перезапуск</button><button id="lab-stop" class="btn secondary" disabled>Стоп</button></div>
+   <div id="lab-controls" class="lab-handset" tabindex="0" role="group" aria-label="Nokia E52 Silver: клавиатура виртуального телефона. Стрелки, Enter, F1/F2, F3 — меню, цифры.">
+    <img class="lab-e52-body" src="/phones/nokia-e52-silver.png" width="831" height="1893" alt="Серебристый корпус Nokia E52" draggable="false">
+    <div class="lab-screen"><img id="lab-screen" alt="Изображение из EKA2L1" width="240" height="320" hidden><div id="lab-screen-empty">Экран появится после запуска пользовательской прошивки.</div></div>
+    <button class="lab-e52-key lab-e52-lsk" data-lab-key="lsk" aria-label="Левая softkey" title="Левая softkey"><span class="sr-only">Левая softkey</span></button>
+    <button class="lab-e52-key lab-e52-rsk" data-lab-key="rsk" aria-label="Правая softkey" title="Правая softkey"><span class="sr-only">Правая softkey</span></button>
+    <button class="lab-e52-key lab-e52-applications" data-lab-key="applications" aria-label="Меню / Home" title="Меню / Home"><span class="sr-only">Меню / Home</span></button>
+    <button class="lab-e52-key lab-e52-mail" disabled aria-label="Почта: отдельная клавиша не поддерживается API EKA2L1" title="Почта: отдельная клавиша не поддерживается API EKA2L1"><span class="sr-only">Почта</span></button>
+    <button class="lab-e52-key lab-e52-call" data-lab-key="call" aria-label="Вызов" title="Вызов"><span class="sr-only">Вызов</span></button>
+    <button class="lab-e52-key lab-e52-end" data-lab-key="end" aria-label="Отбой" title="Отбой"><span class="sr-only">Отбой</span></button>
+    <button class="lab-e52-key lab-e52-up" data-lab-key="up" aria-label="Вверх" title="Вверх"><span class="sr-only">Вверх</span></button>
+    <button class="lab-e52-key lab-e52-down" data-lab-key="down" aria-label="Вниз" title="Вниз"><span class="sr-only">Вниз</span></button>
+    <button class="lab-e52-key lab-e52-left" data-lab-key="left" aria-label="Влево" title="Влево"><span class="sr-only">Влево</span></button>
+    <button class="lab-e52-key lab-e52-right" data-lab-key="right" aria-label="Вправо" title="Вправо"><span class="sr-only">Вправо</span></button>
+    <button class="lab-e52-key lab-e52-ok" data-lab-key="ok" aria-label="OK" title="OK"><span class="sr-only">OK</span></button>
+    <button class="lab-e52-key lab-e52-1" data-lab-key="1" aria-label="1" title="1"><span class="sr-only">1</span></button>
+    <button class="lab-e52-key lab-e52-2" data-lab-key="2" aria-label="2" title="2"><span class="sr-only">2</span></button>
+    <button class="lab-e52-key lab-e52-3" data-lab-key="3" aria-label="3" title="3"><span class="sr-only">3</span></button>
+    <button class="lab-e52-key lab-e52-4" data-lab-key="4" aria-label="4" title="4"><span class="sr-only">4</span></button>
+    <button class="lab-e52-key lab-e52-5" data-lab-key="5" aria-label="5" title="5"><span class="sr-only">5</span></button>
+    <button class="lab-e52-key lab-e52-6" data-lab-key="6" aria-label="6" title="6"><span class="sr-only">6</span></button>
+    <button class="lab-e52-key lab-e52-7" data-lab-key="7" aria-label="7" title="7"><span class="sr-only">7</span></button>
+    <button class="lab-e52-key lab-e52-8" data-lab-key="8" aria-label="8" title="8"><span class="sr-only">8</span></button>
+    <button class="lab-e52-key lab-e52-9" data-lab-key="9" aria-label="9" title="9"><span class="sr-only">9</span></button>
+    <button class="lab-e52-key lab-e52-star" data-lab-key="star" aria-label="*" title="*"><span class="sr-only">*</span></button>
+    <button class="lab-e52-key lab-e52-0" data-lab-key="0" aria-label="0" title="0"><span class="sr-only">0</span></button>
+    <button class="lab-e52-key lab-e52-hash" data-lab-key="hash" aria-label="#" title="#"><span class="sr-only">#</span></button>
+   </div><div class="lab-external-keys"><span class="muted">Nokia E52 · Silver</span><button class="btn ghost" data-lab-key="clear" aria-label="Удалить / Backspace">⌫ Удалить</button></div><p class="muted">Клавиша «Почта» недоступна в API EKA2L1. Удаление — Backspace или кнопка выше.</p><p id="lab-screen-status" class="muted">Нет изображения.</p><p class="muted">Кликните на телефон для клавиатуры ПК: стрелки, Enter, F1/F2 — softkeys, F3 — меню, Backspace, цифры, * и #.</p>
+  </div>
+  <div class="lab-tools">
+   <details class="card lab-firmware" open><summary>01 / Ваша прошивка</summary><p>Только ваши файлы. ROM и ключи не входят в SymPort. VPL/FPSX поддерживаются закреплённым MGO, конкретная прошивка E52 требует проверки.</p>
+    <label>Формат<select id="lab-format"><option value="rom">ROM + RPKG</option><option value="archive">Архив прошивки</option><option value="vpl">Оригинальный VPL + все FPSX</option></select></label>
+    <div id="lab-rom-fields" class="form-row"><label class="grow">ROM<input id="lab-rom" type="file"></label><label class="grow">RPKG (если есть)<input id="lab-rpkg" type="file" accept=".rpkg"></label></div>
+    <label id="lab-archive-fields" hidden>Архив, поддерживаемый EKA2L1<input id="lab-archive" type="file" accept=".zip,.7z,.rar"></label>
+    <div id="lab-vpl-fields" hidden><label>Исходный VPL и все его FPSX (имена сохраняются)<input id="lab-factory" type="file" multiple accept=".vpl,.fpsx"></label><label>Вариант VPL (индекс от 0, необязательно)<input id="lab-variant" type="number" min="0" max="65535" placeholder="Первый вариант из VPL"></label></div>
+    <p class="muted">До 2 ГиБ на файл, VPL до 4 МиБ. Не переименовывайте компоненты заводского комплекта.</p><div class="form-row"><button id="lab-upload-firmware" class="btn secondary">Загрузить файлы</button><button id="lab-install-firmware" class="btn primary" disabled>Установить прошивку</button></div><progress id="lab-upload-progress" max="100" value="0" hidden aria-label="Загрузка прошивки"></progress><p id="lab-upload-status" class="muted" role="status">Файлы пока не выбраны.</p><div id="lab-uploads" class="lab-upload-list"></div>
+   </details>
+   <div class="card"><div class="card-head"><h2>02 / Проверка пакета</h2><span class="chip">SIS · SISX</span></div>
+    <div class="form-row"><label class="grow">Источник<select id="lab-source"><option value="upload">Мой файл</option><option value="build">Сборки SymPort</option><option value="library">Библиотека тем</option><option value="catalog">Каталог приложений и игр</option></select></label><label class="grow">Сценарий<select id="lab-kind"><option value="app">Приложение / игра</option><option value="theme">Тема · применить через системное меню</option></select></label></div>
+    <label id="lab-file-field">Пакет (до 32 МиБ)<input id="lab-package" type="file" accept=".sis,.sisx,.jar,.jad"></label><label id="lab-reference-field" hidden>Пакет из SymPort<select id="lab-reference"></select></label>
+    <p class="note">SIS устанавливается в виртуальный телефон. Темы применяются вручную через меню Symbian. JAR/JAD здесь имеют статус unsupported: отдельный KEmulator в MGO не подтверждает работу Java ME на Symbian.</p><button id="lab-test" class="btn primary" disabled>Проверить в эмуляторе</button><p id="lab-test-status" class="muted" role="status">Выберите прошивку и пакет.</p>
+   </div>
+   <div class="card"><div class="card-head"><h2>03 / Результаты</h2><span class="eyebrow">EVIDENCE, NOT ASSUMPTIONS</span></div><div id="lab-reports" class="lab-report-list">Тестов ещё не было.</div><p class="muted">installed — установлен; launched — запуск подтверждён EKA2L1; failed — ошибка; unsupported — функция недоступна; not-tested — не проверено.</p></div>
+  </div>
+ </div>
+ <article id="lab-report" class="card" hidden><div class="card-head"><h2 id="lab-report-title">Отчёт</h2><button id="lab-report-export" class="btn secondary">Скачать JSON</button></div><div id="lab-report-summary"></div><div id="lab-theme-review" hidden><h3>Тема: ручная проверка в Symbian</h3><p>Откройте Меню → Средства/Параметры → Темы → Общие и примените тему. Пункты меню зависят от прошивки. Это наблюдения пользователя, запуск UID темы не выполняется.</p><div class="form-row"><label>Экран<select id="lab-observe-step"><option value="applied">Тема применена</option><option value="home">Главный экран</option><option value="menu">Главное меню</option><option value="lists">Списки</option><option value="dialogs">Диалоги</option></select></label><label>Результат<select id="lab-observe-result"><option value="pass">Пройдено</option><option value="fail">Ошибка</option><option value="not-tested">Не проверено</option><option value="unsupported">Недоступно в этой прошивке</option></select></label><button id="lab-observe" class="btn secondary">Записать наблюдение + снимок</button></div></div><div class="form-row"><button id="lab-shot" class="btn secondary">Сохранить снимок</button><button id="lab-logs" class="btn ghost">Обновить журнал</button></div><div id="lab-report-shots" class="lab-gallery"></div><details><summary>События, ошибки и логи</summary><pre id="lab-report-logs" class="lab-logs"></pre></details><div id="lab-transfer-panel" hidden><h3>Проверено в эмуляторе → Передать на телефон</h3><p>Передаются те же байты пакета с проверкой SHA-256. Установку и работоспособность на Nokia нужно проверить отдельно.</p><div class="form-row"><label class="grow">Физический телефон<select id="lab-phone" class="suite-device" data-files-only="true"></select></label><button class="btn secondary suite-discover">Найти</button><label class="grow">Путь на телефоне<input id="lab-phone-path" placeholder="package.sis"></label><button id="lab-transfer" class="btn primary">Передать пакет</button></div><p id="lab-transfer-result" role="status"></p></div></article>
+ <p class="disclaimer">Успех в эмуляторе не равен работе на настоящей Nokia E52. Поддержка оборудования, сертификатов, системных служб и прошивки ограничена EKA2L1. Сеть гостя изолирована; онлайн-функции могут быть недоступны. Звук и сенсорное управление в этом интерфейсе пока не поддерживаются.</p>
+</section>
+
 <section id="backups" class="page" aria-labelledby="backups-title"><div class="page-heading"><h1 id="backups-title">Резервные копии</h1><p>Полная файловая копия карты памяти с проверкой по SHA-256 и восстановлением без перезаписи. Контакты, SMS, календарь и прошивка не входят.</p></div>
 <div class="card"><div class="conn-row"><label class="grow">Накопитель<select id="backup-device" class="suite-device" data-files-only="true"></select></label><button class="btn secondary suite-discover">Найти</button><button id="backup-create" class="btn primary" disabled>Создать копию</button></div>
 <div id="backup-progress" class="progress-row" hidden><progress id="backup-bar" max="100" value="0" aria-label="Ход копирования"></progress><span id="backup-progress-text" class="muted"></span></div>
