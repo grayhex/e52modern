@@ -226,10 +226,13 @@ class Agent:
 
 
 def self_test(report: Path | None):
+    import base64
     from urllib.error import HTTPError
     from urllib.request import ProxyHandler, Request, build_opener
 
-    from .settings import protect
+    from symport.sis.writer import SisFile, SisPackage, build
+
+    from .settings import protect, save_config
 
     with tempfile.TemporaryDirectory(prefix="symport-bridge-check-") as tmp:
         root = Path(tmp)
@@ -238,22 +241,58 @@ def self_test(report: Path | None):
         os.environ["SYMPORT_DEVICE_ROOTS"] = "{}"
         key = load_key(root)
         assert protect(protect(b"test-owner-credential"), True) == b"test-owner-credential"
+        volume = root / "offline-files"
+        volume.mkdir()
+        save_config(
+            root, {"schema": 1, "auto_usb": False, "volumes": {"offline-files": str(volume)}}
+        )
         agent = Agent(root, key, port=0, auto=False)
         agent.start()
         base = f"http://127.0.0.1:{agent.server.server_port}"
         opener = build_opener(ProxyHandler({}))
 
-        def call(token, origin=None, host=None):
+        def call(token, origin=None, host=None, data=None):
             headers = {"Content-Type": "application/json", "X-Symport-Bridge-Key": token}
             if origin:
                 headers["Origin"] = origin
             if host:
                 headers["Host"] = host
-            request = Request(base + "/api/bridge", data=b'{"action":"discover"}', headers=headers)
+            request = Request(
+                base + "/api/bridge",
+                data=json.dumps(data or {"action": "discover"}).encode(),
+                headers=headers,
+            )
             return json.load(opener.open(request, timeout=30))
 
         try:
-            assert call(key)["devices"] == []
+            observed = call(key)["devices"]
+            assert len(observed) == 1 and observed[0]["model"] is None
+            # Text-only SIS, generated in memory solely for this offline file test.
+            # It is never installed or included as an artifact.
+            sample = build(
+                SisPackage(
+                    0xE0E52002,
+                    "OfflineCheck",
+                    "SymPort",
+                    files=[SisFile(r"c:\data\SymPortOfflineCheck.txt", b"offline text only")],
+                )
+            )
+            encoded = base64.b64encode(sample).decode()
+            call(
+                key,
+                data={
+                    "action": "software-transfer",
+                    "device": "offline-files",
+                    "path": "offline-check.sis",
+                    "content": encoded,
+                    "confirm": True,
+                },
+            )
+            copied = call(
+                key,
+                data={"action": "download", "device": "offline-files", "path": "offline-check.sis"},
+            )
+            assert copied["content"] == encoded
             for token, origin, host in [
                 ("wrong", None, None),
                 (key, "https://untrusted.invalid", None),
@@ -284,6 +323,7 @@ def self_test(report: Path | None):
                 native_ui = "dependencies-loaded"
             result = {
                 "native_ui": native_ui,
+                "sis_file_roundtrip": "passed",
                 "schema": "symport.bridge.self-test/1",
                 "version": VERSION,
                 "http_auth": "passed",

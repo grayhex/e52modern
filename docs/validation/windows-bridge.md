@@ -7,7 +7,8 @@ No physical Nokia is connected to this cloud environment.
   skipped without its extra; it runs with real websockets on the Windows CI job.
 - Windows x64 CI: actual PyInstaller windowless executable, Gammu 1.45.1 / binding
   3.5, private frozen-worker IPC, Windows DPAPI, HTTP authorization, Origin/Host
-  checks and dependency loading. No serial/Bluetooth hardware result is inferred.
+  checks, native UI dependency loading and an HTTP transfer/read-back of a generated
+  text-only SIS in an isolated folder. No serial/Bluetooth hardware result is inferred.
 - Chromium: owner pairing → loopback JSON consent endpoint → outbound relay →
   actual enrolled-folder byte read/write, JPEG thumbnail, authenticated private ZIP,
   revoke. The test injects the local approval callback explicitly; production uses
