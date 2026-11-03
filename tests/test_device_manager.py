@@ -112,7 +112,7 @@ def test_gammu_identification_is_observed_not_invented(monkeypatch):
 
     from symport.phone.local import LocalTransports
     monkeypatch.setenv('SYMPORT_GAMMU_CONFIG', '/operator/gammurc')
-    monkeypatch.setattr('symport.phone.local.subprocess.run', lambda *a, **kw:
+    monkeypatch.setattr('symport.phone.gammu_adapter.subprocess.run', lambda *a, **kw:
                         SimpleNamespace(stdout='Model : Nokia E52 (RM-469)\nFirmware : 091.004\nIMEI : private'))
     device = LocalTransports().devices()[-1]
     assert device['model'] == 'Nokia E52 (RM-469)' and device['rm'] == 'RM-469'

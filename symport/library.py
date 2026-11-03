@@ -27,7 +27,7 @@ class ThemeLibrary:
         result = []
         if self.root.exists():
             for path in sorted(self.root.glob('*.json')):
-                entry = json.loads(path.read_text())
+                entry = json.loads(path.read_text(encoding="utf-8"))
                 if entry['published']:
                     result.append(entry)
         return result
@@ -52,20 +52,20 @@ class ThemeLibrary:
         payload = self.root / (key + '.sis')
         payload.write_bytes(raw)
         os.chmod(payload, 0o600)
-        self._metadata(key).write_text(json.dumps(entry, ensure_ascii=False))
+        self._metadata(key).write_text(json.dumps(entry, ensure_ascii=False), encoding="utf-8")
         return entry
 
     def publish(self, key: str, confirm: bool) -> dict:
         if confirm is not True:
             raise ValueError('Explicit publication confirmation required')
         path = self._metadata(key)
-        entry = json.loads(path.read_text())
+        entry = json.loads(path.read_text(encoding="utf-8"))
         entry['published'] = True
-        path.write_text(json.dumps(entry, ensure_ascii=False))
+        path.write_text(json.dumps(entry, ensure_ascii=False), encoding="utf-8")
         return entry
 
     def download(self, key: str) -> tuple[str, bytes]:
-        entry = json.loads(self._metadata(key).read_text())
+        entry = json.loads(self._metadata(key).read_text(encoding="utf-8"))
         if not entry['published']:
             raise ValueError('Package has not been published')
         raw = (self.root / (key + '.sis')).read_bytes()

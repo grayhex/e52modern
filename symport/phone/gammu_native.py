@@ -14,8 +14,10 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 from datetime import datetime
+from pathlib import Path
 
 MAX_RECORDS = 5000
 DOMAINS = {
@@ -60,12 +62,14 @@ def invoke(config: str, action: str, **values) -> dict:
             "python-gammu is not installed on the PC Bridge. Use a Nokia Suite export, or install SymPort with the phone extra"
         )
     try:
+        if getattr(sys, "frozen", False):
+            return invoke_frozen(config, action, values)
         result = subprocess.run(
             [sys.executable, "-m", __name__],
             input=json.dumps(dict(values, config=config, action=action), default=encode),
             text=True,
             capture_output=True,
-            timeout=900 if action == "batch" else 180,
+            timeout=900 if action == "batch" else 20 if action == "identify" else 180,
             check=False,
         )
         if result.returncode or len(result.stdout) > 32 * 1024 * 1024:
@@ -153,6 +157,7 @@ def identity(sm, telemetry=False) -> dict:
         return value if isinstance(value, (int, float)) and 0 <= value <= 100 else None
 
     return {
+        "manufacturer": optional("GetManufacturer"),
         "model": model,
         "firmware": firmware,
         "rm": rm.group() if rm else None,
@@ -266,6 +271,9 @@ def execute(sm, data: dict) -> dict:
     if domain not in DOMAINS:
         raise PhoneOperationError("Unknown personal data store")
     current = identity(sm)
+    if action == "identify":
+        current["manufacturer"] = sm.GetManufacturer()
+        return current
     if action == "read":
         return {"identity": current, "records": read_records(sm, domain)}
     if (
@@ -332,12 +340,61 @@ def execute(sm, data: dict) -> dict:
     raise PhoneOperationError("Unsupported personal data operation")
 
 
-def main():
+def invoke_frozen(config: str, action: str, values: dict) -> dict:
+    # PyInstaller windowed applications have no stdin/stdout. Use short-lived,
+    # owner-private IPC files instead of spawning the UI recursively or logging data.
+    ipc = Path(os.environ.get("SYMPORT_BRIDGE_DATA", tempfile.gettempdir())) / "ipc"
+    ipc.mkdir(parents=True, exist_ok=True, mode=0o700)
+    with tempfile.TemporaryDirectory(prefix="symport-gammu-", dir=ipc) as temporary:
+        source, target = Path(temporary) / "request.json", Path(temporary) / "response.json"
+        with source.open("x", encoding="utf-8") as output:
+            os.chmod(source, 0o600)
+            json.dump(dict(values, config=config, action=action), output, default=encode)
+        result = subprocess.run(
+            [sys.executable, "--gammu-worker", str(source), str(target)],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=900 if action == "batch" else 20 if action == "identify" else 180,
+            check=False,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        if result.returncode or not target.is_file() or target.stat().st_size > 32 * 1024 * 1024:
+            raise PhoneOperationError(
+                "Gammu worker did not complete the request; read the phone before retrying"
+            )
+        data = json.loads(target.read_text(encoding="utf-8"), object_hook=decode)
+        if data.get("error"):
+            raise PhoneOperationError(data["error"])
+        return data
+
+
+def worker_files(source: Path, target: Path):
+    if (
+        source.parent != target.parent
+        or not source.parent.name.startswith("symport-gammu-")
+        or source.is_symlink()
+        or target.exists()
+        or source.stat().st_size > 32 * 1024 * 1024
+    ):
+        raise ValueError("Invalid private worker request")
+    data = json.loads(source.read_text(encoding="utf-8"), object_hook=decode)
+    result = process_request(data)
+    with target.open("x", encoding="utf-8") as output:
+        os.chmod(target, 0o600)
+        json.dump(result, output, default=encode)
+
+
+def process_request(data: dict) -> dict:
     sm = None
     try:
         import gammu
 
-        data = json.loads(sys.stdin.read(32 * 1024 * 1024), object_hook=decode)
+        if data.get("action") == "self-test":
+            card = gammu.EncodeVCARD({'Location': 0, 'MemoryType': 'ME', 'Entries': [{'Type': 'Text_Name', 'Value': 'Offline codec check'}, {'Type': 'Number_Mobile', 'Value': '12345'}]})
+            if 'BEGIN:VCARD' not in card or '12345' not in card:
+                raise PhoneOperationError('Offline Gammu vCard codec check failed')
+            return {"gammu": gammu.Version(), "status": "available", "vcard_codec": "passed"}
         gammu.SetDebugLevel("nothing")
         sm = gammu.StateMachine()
         sm.ReadConfig(Filename=data["config"])
@@ -357,7 +414,12 @@ def main():
                 sm.Terminate()
             except Exception:
                 pass
-    print(json.dumps(result, default=encode))
+    return result
+
+
+def main():
+    data = json.loads(sys.stdin.read(32 * 1024 * 1024), object_hook=decode)
+    print(json.dumps(process_request(data), default=encode))
 
 
 if __name__ == "__main__":

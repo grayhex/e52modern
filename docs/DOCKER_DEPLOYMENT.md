@@ -96,3 +96,32 @@ container command, published port and healthcheck agreeing; genuine SDK signatur
 HTTP; real archive inspection/key exclusion; mock phone staging/rollback; Docker image
 with no uploaded executables. The optional Windows SSH link needs the operator's actual
 PC/keys/verified host identity and has not been hardware-tested.
+
+## Windows phone connection
+
+Use **Connection → Request access** with the portable
+[Windows Bridge](WINDOWS_BRIDGE.md). The agent opens an authenticated outbound
+connection to this Workbench; inbound Windows ports and an SSH sidecar are not
+needed. The default loopback-bound deployment works through the existing browser
+SSH forward; the Windows agent must be able to reach that same localhost origin.
+If 8765 is occupied, configure `SYMPORT_HTTP_PORT` and use that same port for the
+Workbench, Docker mapping and browser SSH forward so Host validation still matches.
+The Windows agent itself listens on a separate port, 24652.
+
+For an HTTPS reverse proxy, explicitly set `SYMPORT_PUBLIC_ORIGIN` to its exact
+origin, preserve/forward that Host and Origin, require authentication for the
+Workbench UI, and **exempt only `/api/bridge-relay/poll` and
+`/api/bridge-relay/result` from proxy login redirects**. Those endpoints require
+the short-lived relay credential and never accept anonymous phone control.
+Permit long polls (at least 35 seconds), 90 MiB JSON bodies and requests up to
+15 minutes for a confirmed PIM batch. The pairing client rejects redirects.
+Never expose the internal Docker port or EKA2L1 API publicly. The public-origin
+setting is not authentication and does not replace the proxy's access controls.
+
+Linux host-local additional profiles use `SYMPORT_CONNECTIONS_FILE`; bind that
+operator-owned JSON and its referenced Gammu configs read-only into Workbench.
+The paths in JSON must name the **container** paths. Grant only the exact serial
+node you intend to use, or run the existing local Linux PC Bridge on the PC with
+the phone. Docker includes Gammu, ObexFTP, BlueZ tools and pyserial, but that alone
+does not grant access to a host's USB/Bluetooth stack. Do not use privileged mode
+or assume a remote container can discover a phone attached to a different PC.

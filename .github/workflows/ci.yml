@@ -207,6 +207,8 @@ jobs:
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_emulator_lab.cjs
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_security_workspace.cjs
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_device_workspace.cjs
+      - name: Browser pairing and outbound Windows Bridge integration
+        run: NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_bridge_ui.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

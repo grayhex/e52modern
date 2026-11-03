@@ -12,8 +12,8 @@ function suiteDevices(devices){
  for(const select of document.querySelectorAll('.suite-device')){
   const value=select.value;select.replaceChildren();
   const placeholder=el('option','','Выберите подключённый телефон');placeholder.value='';select.append(placeholder);
-  for(const device of devices.filter(d=>d.connected&&(!select.dataset.filesOnly||d.capabilities.includes('files'))&&(!select.dataset.capability||(d.capabilities.includes(select.dataset.capability)||(select.dataset.capability==='calendar-read'&&d.capabilities.includes('tasks-read')))))){
-   const option=el('option','',device.model?`${device.id} · ${device.model}`:`${device.id} · накопитель`);option.value=device.id;option.dataset.capabilities=JSON.stringify(device.capabilities);select.append(option);
+  for(const device of devices.filter(d=>(d.connected||(d.configured&&select.dataset.transferOnly))&&(!select.dataset.filesOnly||d.capabilities.includes('files'))&&(!select.dataset.transferOnly||d.capabilities.includes('transfer'))&&(!select.dataset.mediaOnly||d.capabilities.includes('media-read'))&&(!select.dataset.capability||(d.capabilities.includes(select.dataset.capability)||(select.dataset.capability==='calendar-read'&&d.capabilities.includes('tasks-read')))))){
+   const option=el('option','',(device.name||device.model||device.id)+' · '+tr(device.configured&&!device.connected?'Configured':device.connection_kind||device.transport));option.value=device.id;option.dataset.capabilities=JSON.stringify(device.capabilities);select.append(option);
   }
   if([...select.options].some(o=>o.value===value))select.value=value;
   if(!select.value&&select.options.length===2)select.selectedIndex=1;
@@ -23,9 +23,11 @@ function suiteDevices(devices){
 function chosenCapabilities(){const option=suite('contacts-device').selectedOptions[0];return JSON.parse(option?.dataset.capabilities||'[]');}
 function suiteAvailability(){
  const caps=chosenCapabilities();
- suite('contacts-send').disabled=!selectedContacts.size||!caps.some(c=>['files','contacts-import'].includes(c));
+ suite('contacts-send').disabled=!selectedContacts.size||!caps.some(c=>['contacts-stage','contacts-import'].includes(c));
  suite('contacts-read').disabled=!caps.includes('contacts-read');
- for(const kind of ['media','software'])suite(kind+'-send').disabled=!suite(kind+'-device').value;
+ for(const kind of ['media','software']){const d=dmDevices.find(d=>d.id===suite(kind+'-device').value);suite(kind+'-send').disabled=!d?.capabilities.includes('transfer');const opp=d?.capabilities.includes('opp-push');suite(kind+'-path').disabled=!!opp;if(opp)suite(kind+'-path').value='';}
+ const catalogDevice=dmDevices.find(d=>d.id===suite('catalog-device').value);if(suite('catalog-path')){const opp=catalogDevice?.capabilities.includes('opp-push');suite('catalog-path').disabled=!!opp;if(opp)suite('catalog-path').value='';}if(suite('catalog-transport-note'))suite('catalog-transport-note').textContent=tr(catalogDevice?.capabilities.includes('opp-push')?'OPP reports receiver acceptance only. Open the package in the phone inbox to install it.':catalogDevice?.capabilities.includes('files-stage')?'FTP transfers are saved in a new SymPort folder and checked by SHA-256 read-back.':'Available free space and file SHA-256 are checked where the transport supports them. Installation is confirmed on the phone.');
+ const mediaDevice=dmDevices.find(d=>d.id===suite('media-device').value);if(suite('gallery-read'))suite('gallery-read').disabled=!mediaDevice?.capabilities.includes('media-read');if(mediaDevice&&!mediaDevice.capabilities.includes('media-read'))suite('gallery-status').textContent=tr('Gallery is unavailable through this transport. Use File Manager to download exposed files.');
 }
 window.addEventListener('symport-devices',event=>suiteDevices(event.detail));
 for(const select of document.querySelectorAll('.suite-device'))select.onchange=suiteAvailability;
@@ -74,13 +76,13 @@ for(const kind of ['media','software'])suite(kind+'-send').onclick=()=>suiteBusy
  const files=[...suite(kind+'-files').files];if(!files.length)throw new Error('Выберите файлы для передачи');
  const limit=(kind==='media'?64:32)*1024*1024;for(const file of files)if(file.size>limit)throw new Error(`Файл ${file.name} превышает лимит`);
  if(!confirm(`Передать файлов: ${files.length} на ${suite(kind+'-device').value}? ${kind==='software'?'Установка будет выполнена на телефоне.':'Назначение мелодии и воспроизведение выполняются на телефоне.'}`))return;
- let completed=0;
+ let completed=0;const destinations=[];
  for(const file of files){
   suite(kind+'-result').textContent=`Передача ${completed+1} / ${files.length}: ${file.name}`;
-  try{await dmCall({action:kind==='media'?'media-upload':'software-transfer',device:suite(kind+'-device').value,path:[suite(kind+'-path').value.replace(/\/$/,''),file.name].filter(Boolean).join('/'),content:await readFileBase64(file),kind:kind==='media'?suite('media-kind').value:undefined,confirm:true});completed++;}
+  try{const sent=await dmCall({action:kind==='media'?'media-upload':'software-transfer',device:suite(kind+'-device').value,path:[suite(kind+'-path').value.replace(/\/$/,''),file.name].filter(Boolean).join('/'),content:await readFileBase64(file),kind:kind==='media'?suite('media-kind').value:undefined,confirm:true});completed++;if(sent.destination)destinations.push(sent.destination);}
   catch(error){throw new Error(`Передано ${completed} из ${files.length}. ${error.message}`);}
  }
- suite(kind+'-result').textContent=kind==='software'?`Передано пакетов: ${completed}. Откройте их на Nokia и подтвердите установку. Подтвердите установку на телефоне.`:`Передано файлов: ${completed}. Проверьте воспроизведение на телефоне.`;
+ suite(kind+'-result').textContent=kind==='software'?`Передано пакетов: ${completed}. Откройте их на Nokia и подтвердите установку. Подтвердите установку на телефоне.`:`Передано файлов: ${completed}. Проверьте воспроизведение на телефоне.`;if(destinations.length)suite(kind+'-result').append(document.createTextNode(' '+destinations.join(' · ')));
 });
 for(const zone of document.querySelectorAll('.upload-zone')){
  const input=zone.querySelector('input[type=file]');if(!input)continue;

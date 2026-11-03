@@ -35,10 +35,10 @@ class DeviceManager:
                    'contacts-read', 'contacts-import', 'media-upload', 'software-transfer',
                    'apps-inventory', 'calendar-read', 'media-list', 'media-info', 'media-chunk', 'media-thumbnail',
                    'device-details', 'device-imei', 'personal-read', 'personal-preview', 'personal-apply',
-                   'personal-calendar-import', 'personal-export', 'personal-backup', 'personal-backup-download', 'sms-send'}
+                   'personal-calendar-import', 'personal-export', 'personal-backup', 'personal-backup-download', 'sms-send', 'connection-diagnose', 'connection-status', 'connection-host'}
         if not isinstance(data.get('action'), str) or data['action'] not in allowed:
             raise ValueError('Unknown device operation')
-        if data['action'] not in ('discover', 'history'):
+        if data['action'] not in ('discover', 'history', 'connection-status', 'connection-host'):
             if not isinstance(data.get('device'), str) or not isinstance(data.get('path', ''), str):
                 raise ValueError('Device and path must be strings')
             if len(data.get('path', '')) > 1024 or not isinstance(data.get('content', ''), str):
@@ -58,7 +58,7 @@ class DeviceManager:
                         item['imei'] = '•' * max(0, len(imei) - 4) + imei[-4:]
                     item['firmware_update'] = assess(item)
                     devices.append(item)
-                return {'devices': devices, 'limitations': {
+                return {'devices': devices, 'connections': self.transport.diagnostics() if hasattr(self.transport, 'diagnostics') else [], 'limitations': {
                     'contacts': 'Импорт Google CSV / Apple vCard, передача vCard на карту или запись через Gammu с чтением для проверки',
                     'sms': 'Requires a tested Gammu or native Agent adapter',
                     'applications': 'Mounted volumes do not expose the installed application registry; apps-inventory lists SIS package files only',
@@ -66,6 +66,10 @@ class DeviceManager:
                     'backup': 'File backup covers only the selected folder, not contacts, SMS, applications or firmware',
                     'bluetooth': 'OBEX pairing and service discovery must run on the PC connected to the phone',
                 }}
+            if data.get('action') == 'connection-host':
+                return self.transport.execute(data)
+            if data.get('action') == 'connection-status':
+                return {'connections': self.transport.diagnostics() if hasattr(self.transport, 'diagnostics') else []}
             if data.get('action') == 'history':
                 with self.journal_lock:
                     if not self.journal.exists():
@@ -74,6 +78,8 @@ class DeviceManager:
             status = 'failed'
             try:
                 try:
+                    if hasattr(self, "before_execute"):
+                        self.before_execute(data)
                     result = self.transport.execute(data)
                 except zipfile.BadZipFile as exc:
                     raise ValueError('Invalid ZIP archive') from exc

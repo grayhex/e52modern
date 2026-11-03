@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "connections": [
+    {"id": "e52-usb", "name": "Nokia E52 · PC Suite", "kind": "gammu-usb", "manufacturer": "Nokia", "platform": "S60", "edition": "3rd", "config": "C:/Users/YOUR_USER/AppData/Local/SymPortBridge/e52-usb.cfg"},
+    {"id": "e52-s60", "name": "Nokia E52 · S60 Remote", "kind": "gammu-s60", "manufacturer": "Nokia", "platform": "S60", "edition": "3rd", "config": "C:/Users/YOUR_USER/AppData/Local/SymPortBridge/e52-s60.cfg"},
+    {"id": "e52-ftp", "name": "Nokia E52 · Bluetooth FTP", "kind": "obexftp", "manufacturer": "Nokia", "platform": "S60", "edition": "3rd", "transport": "bluetooth", "address": "AA:BB:CC:DD:EE:FF", "channel": 10},
+    {"id": "e52-inbox", "name": "Nokia E52 · Bluetooth inbox", "kind": "obex-opp", "manufacturer": "Nokia", "platform": "S60", "edition": "3rd", "transport": "bluetooth", "address": "AA:BB:CC:DD:EE:FF", "channel": 9}
+  ]
+}

@@ -1,0 +1,170 @@
+# Nokia S60 transports
+
+Research and implementation audit: 2026-11-03. Scope is **Nokia / S60 3rd and 5th
+Edition only**, with E52 / Symbian 9.3 / 3rd FP2 the primary manual-test target.
+No Sony Ericsson protocols, flashing, jailbreak or security changes are enabled.
+
+## Existing architecture and changes
+
+The existing `DeviceManager` is the single action/capability/journal boundary.
+`LocalTransports` still composes enrolled mounted volumes and Gammu; its Gammu
+implementation is extracted to `GammuAdapter`, shared by configured USB, Bluetooth
+and S60 Remote profiles. The existing native Gammu worker, PIM snapshots, previews,
+backups, confirmation and read-back verification are reused, not reimplemented.
+`ObexAdapter` invokes an installed ObexFTP executable. No third-party protocol code
+was copied into SymPort. The old authenticated loopback `PCBridge` remains usable
+on Linux and Windows.
+
+Windows Bridge uses that same manager in a portable tray executable. Browser pairing
+opens an **outbound** authenticated HTTPS lease; backend workflows, including Catalog,
+Inspector, Lab and media Range responses, continue through the same manager. No phone
+API is opened on the LAN/Internet. See [WINDOWS_BRIDGE.md](WINDOWS_BRIDGE.md).
+
+A profile is a connection, not another invented phone. The UI chooses among actual
+responses or explicitly configured OPP destinations. Capabilities come from store
+probes/OBEX listing, not the connection name. Host USB/Bluetooth records are shown as
+candidates; a friendly Bluetooth name is not device identity. Model-to-edition data
+is labelled a documented reference, not a measured OS version.
+
+## Source audit and licenses
+
+| Source | Audited version | Finding / reuse | License boundary |
+|---|---|---|---|
+| [Gammu](https://github.com/gammu/gammu) | `f78a98d43b713e909b4f59f69b13e0fca6e3c109` | Existing public libGammu/python API; USB serial, Bluetooth and S60 driver | libGammu GPL-2.0-or-later; python-gammu GPL-2.0-or-later. Existing MIT SymPort source is compatible; combined Windows distribution GPL-3.0-or-later with corresponding sources |
+| [Series60-Remote](https://sourceforge.net/projects/series60-remote/) | Project listing 0.4.0 / GPLv2; Gammu applet source examined | Historic desktop Python/PyQt stack is not embedded. Reuse Gammu's extended applet driver instead | SourceForge identifies GPLv2. No original desktop/app code redistributed |
+| [S60 protocol](https://docs.gammu.org/protocol/s60.html) | Gammu protocol documentation and `libgammu/phone/s60/s60phone.c` at commit above | Extended protocol is **not fully compatible** with original Series60-Remote. Read/write support depends on actual Gammu driver/app combination | Protocol implementation remains in separately licensed Gammu |
+| [ObexFTP](https://github.com/zuckschwerdt/obexftp) | `79b3a4bc8731b009f65d0705f3223bf834e4d894` | External executable; USB or Bluetooth FTP, explicit-channel OPP | Component-wise licensing: library/CLI source headers LGPL-2.0-or-later; other tools GPL-2.0-or-later. Do not assume the whole repository has one license |
+| [s60v3-obex](https://github.com/fizolas/s60v3-obex) | `de1cac245c0c906708f040fc3a12e4fe565e3ae9` | Debian wrapper around bluetoothctl/sdptool/obexfs; useful host-service discovery reference. No script execution/copy | GPL-3.0. Its sudo/rfkill toggles, mount mutation and shell loops are deliberately not incorporated |
+
+The Windows build uses official x64 python-gammu wheels; their bundled libGammu
+version is recorded by the **actual frozen worker**. ObexFTP is not bundled for
+Windows. The distribution includes own sources/build recipe, Gammu/python-gammu
+and pystray sources, GPL text and dependency metadata. No proprietary Nokia driver,
+unsigned SIS applet, Nokia SDK, firmware or signing key is packaged into Bridge.exe.
+
+## Compatibility and capability matrix
+
+All physical E52 transport rows below: **не проверено на устройстве**. Successful
+mock, host enumeration and executable checks do not change that status.
+
+| Connection | Identity / diagnostics | Files / packages | Contacts, SMS, calendar/tasks | Restrictions |
+|---|---|---|---|---|
+| Enrolled USB Mass Storage | Real accessible filesystem/free space; no model inference from drive letter | List, upload/download, safe mkdir/delete, gallery/Range/ZIP, file backup | No direct stores; Google CSV / Apple vCard preparation and vCard file staging remain available | Card only. Not internal C:/, installed-app registry, phone firmware or battery |
+| USB Serial / PC Suite + Gammu | Real model/manufacturer/firmware and supported battery/signal getters | No automatic file capability from an AT response | Each store separately probed; unsupported AT stores remain disabled | Nokia COM driver needed on Windows. Nokia Suite may hold the port. Modern driver signing/OS availability varies |
+| Bluetooth Classic + Gammu | Configured paired device / actual driver response | No file support inferred from SPP/RFCOMM | Depends on selected Gammu driver and real store probes | Pair in OS first; use discovered service/channel/COM profile. No automatic pairing or rfkill changes |
+| Bluetooth S60 Remote + Gammu | `blues60` / `bluerfs60`, extended optional on-phone applet | Gammu S60 file getters/putters are **NOTIMPLEMENTED** in audited driver | Driver implements contacts/SMS/calendar/tasks; SymPort still probes stores and read-back before claiming writes | Original applet may be incompatible; Python for S60 2.0 / PIPS / signing dependencies are obsolete/variant-dependent |
+| Bluetooth OBEX FTP | Successful actual XML folder listing | Exposed folders, regular files up to 64 MiB; staged upload, SIS/SISX/JAR transfer with SHA-256 read-back | No PIM or automatic installation | No delete, arbitrary mkdir, overwrite, streaming gallery or private/system access. Staging blocked on Z: and C:/sys, C:/private, C:/system |
+| USB OBEX FTP | Explicit ObexFTP USB interface + actual listing | Same FTP wrapper | No PIM | Requires a suitable OpenOBEX/libusb build, OS access and correct USB mode; interface indices may change |
+| Bluetooth OBEX OPP | Explicit paired address/channel; **configured**, not claimed connected | Confirmed push to inbox; receiver acknowledgement only | No phonebook import, listing, download or install result | Missing ObexFTP disables capability. No chosen destination folder; receiver consent required |
+| Gammu OBEX profile | Explicit Gammu config and actual device/store probes | Only operations exposed by the shared Gammu adapter | Only successful probes | A Gammu OBEX connection is not interchangeable with this external ObexFTP wrapper |
+| Future native E52 agent / SyncML | Extension point only | Not advertised | Not advertised | SyncML synchronization is stateful/conflict-sensitive. No working integration is claimed |
+
+JAD through OBEX is currently blocked: separate staging cannot guarantee its paired
+JAR in the same directory. Use a JAR-only package or a mounted card. Sending an SIS,
+SISX or JAR never establishes installation; confirm installation on the Nokia screen.
+Emulator success remains separate from physical-device results.
+
+## Configure connections
+
+Keep the legacy `SYMPORT_GAMMU_CONFIG` and `SYMPORT_DEVICE_ROOTS` settings if already
+working. Additional profiles are read from an operator-owned absolute path in
+`SYMPORT_CONNECTIONS_FILE` on Linux, or selected in Windows tray settings. JSON schema
+1 accepts at most 24 unique Nokia/S60 3rd/5th profiles. HTTP cannot enroll filesystem
+roots or arbitrary Gammu config paths. Invalid additional configuration leaves legacy
+Gammu/volumes available and produces a diagnostic.
+
+Copy [examples/connections.json](examples/connections.json), **remove unused profiles**,
+replace absolute paths, paired MAC addresses and SDP channels. Example channel numbers
+are not E52 defaults. Linux configuration paths use `/home/you/...` instead of Windows
+paths. An explicit USB OBEX profile uses `"transport":"usb","interface":0` and no
+Bluetooth address/channel; discover its current interface with ObexFTP before use.
+
+USB Gammu configuration:
+
+```ini
+[gammu]
+device = COM7
+connection = at
+```
+
+On Linux use the actual `/dev/serial/by-id/...` or `/dev/ttyACM...`, appropriate dialout
+permissions and a real Nokia connectivity driver. Never blindly change drivers or
+claim AT gives PIM access. Identify first with `gammu --config /path/gammurc identify`.
+
+Optional S60 Remote:
+
+```ini
+[gammu]
+device = AA:BB:CC:DD:EE:FF
+connection = blues60
+```
+
+The user separately chooses to install the Gammu-compatible S60 applet and its
+compatible runtime. Inspect source/download provenance and signatures; SymPort does
+not download or install historical unsigned binaries automatically and does not
+request jailbreak. Start the applet on the phone, allow its Bluetooth connection,
+then run identification and read-only store probes. `bluerfs60`/proxys60 support
+must be checked against the installed Gammu build/documentation. Do not replace a
+working driver merely because a profile is labelled `gammu-s60`.
+
+For OBEX on Linux install distribution `obexftp`, BlueZ tools and permissions.
+Read-only `bluetoothctl devices Paired` and `sdptool browse <paired-address>` show
+paired candidates/services. Select **File Transfer (0x1106)** for FTP or **Object
+Push (0x1105)** for inbox transfer; use the SDP-reported RFCOMM channel. This wrapper
+never selects Siemens/Sharp/SE modes and only uses FBS or explicit OPP UUID-none.
+Windows Gammu uses its available MS Bluetooth stack support; native ObexFTP requires
+a separately installed compatible Windows build. Missing binaries/services stay
+unavailable; the agent does not silently substitute another transport.
+
+## Safety and verification details
+
+- Gammu workers disable debug logs and isolate timeouts. The frozen windowless EXE
+  exchanges private IPC files instead of relying on absent stdin/stdout. Private
+  snapshots/backups are owner-local; ordinary operation journal records action/status.
+- PIM writes keep the existing preview, before-state backup, fingerprint, confirmation,
+  single-connection batch and repeat-read checks. SMS additionally requires an
+  operator-verified phone/connection profile and exact recipient/text confirmation.
+- FTP writes create a fresh random public folder, verify it is empty and perform
+  **one PUT with the complete remote destination**. A chained chdir/put can continue
+  after failed chdir in upstream CLI; this implementation avoids that failure mode.
+- Upstream ObexFTP may return **255 on success** (`exit(-ret)`); distro variants may
+  normalize to zero. Exit code alone never proves FTP success: XML, byte count and
+  SHA-256 read-back are checked. OPP reports only receiver acknowledgement.
+- No transfer resumes automatically after uncertainty. Partial staged folders can
+  remain after failure; inspect them on the phone. Folder names/results identify
+  the destination. No cleanup is attempted on an uncertain or protected remote path.
+- Gallery/streaming are not advertised by FTP/OPP. File Manager provides download
+  for FTP instead. Backend Catalog/Lab use the same transport contract and cannot
+  pretend a file is installed.
+
+## Manual Nokia E52 test protocol
+
+1. Record OS/build/driver/Gammu versions, Nokia model/RM/firmware and selected USB
+   mode privately. Do not put full IMEI, phonebook or SMS in public reports.
+2. Start with no writes. Check USB enumeration/reconnect; unknown/S40/non-Nokia
+   candidates must not become supported S60 devices. Pair Bluetooth in the OS and
+   record the actual FTP/OPP/S60 services/channels.
+3. Read identity and each personal store separately. Compare counts and one test
+   record on the phone. An empty supported store must be distinguished from an
+   unsupported/failed query. Export vCard, SMS JSON/CSV and calendar/task iCalendar.
+4. Back up accessible original data. For a disposable file: list, download, compare
+   SHA-256, stage upload, verify destination and repeat-read. FTP must not offer
+   delete/gallery/PIM; OPP must not claim connected/listing/read-back/installation.
+5. Send a trusted small SIS/JAR. Check checksum and phone inbox/folder; install only
+   with consent on the phone. Keep package transfer, installation and launch results
+   separate. Check JAR-only flow; JAD via OBEX must explain the restriction.
+6. On a disposable contact/calendar record, inspect dry-run and backup, approve locally,
+   apply once and reread. Test a stale snapshot/conflict and disconnected phone; it
+   must stop rather than overwrite or retry. Test SMS only with an explicit verified
+   profile, own test recipient and awareness of network charges.
+7. Disconnect/reconnect cable/Bluetooth; switch USB modes. Replacing a Windows drive
+   letter with another disk must block writes until the actual Nokia is re-enrolled.
+8. Revoke web access, expire lease, restart bridge and try an untrusted Origin/Host/key.
+   Confirm no operation repeats after a lost response and no private content enters logs.
+9. Save only sanitized capability/error results plus test package hashes. Mark every
+   unperformed hardware row **не проверено на устройстве**; never infer success from mocks.
+
+Further work depends on real E52 traces: tested modern Nokia driver combinations,
+per-service Bluetooth discovery/auto-selection, shared-directory OBEX batch staging,
+verified SyncML conflict handling and an optional native Symbian agent. These are
+not exposed as working capabilities today.

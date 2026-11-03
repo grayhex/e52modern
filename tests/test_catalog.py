@@ -364,3 +364,30 @@ def test_insufficient_space_never_starts_network_or_writes(tmp_path):
     job = wait_job(service, key)
     assert job["state"] == "failed" and "free space" in job["error"]
     assert all(i["stage"] == "failed" for i in job["items"])
+
+
+@pytest.mark.parametrize('capability,connected', [('files-stage', True), ('opp-push', False)])
+def test_catalog_uses_transport_receipt_without_inventing_readback(tmp_path, capability, connected):
+    catalog_fixture(tmp_path)
+    class Transport:
+        def devices(self):
+            return [{'id':'bt', 'connected':connected, 'configured':True, 'free':None, 'capabilities':['transfer', capability]}]
+        def execute(self, data):
+            assert data['action'] == 'software-transfer' and data['confirm'] is True
+            if capability == 'opp-push':
+                assert data['path'] == 'runtime.jar'
+                return {'status':'received-by-opp-not-installed','verification':'receiver-acknowledgement-only','destination':'phone inbox'}
+            return {'status':'transferred-not-installed','destination':'E:/SymPort-transfer-test/runtime.jar'}
+    service = AppCatalog(tmp_path, DeviceManager(tmp_path, Transport()))
+    def fetch(source, item):
+        path = tmp_path / item['name']
+        path.write_bytes(jar_bytes('runtime'))
+        return path, dict(item)
+    service.downloader.fetch = fetch
+    job = service.execute({'action':'transfer','ids':['runtime'],'device':'bt','path':'E:/Installs','confirm':True})
+    result = wait_job(service, job['id'])
+    assert result['state'] == 'completed'
+    item = result['items'][0]
+    assert item['stage'] == 'awaiting-installation'
+    assert item['integrity'] == ('receiver-acknowledgement-only' if capability=='opp-push' else 'sha256-read-back')
+    assert item['receipts'][0]['destination']

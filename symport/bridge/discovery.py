@@ -1,0 +1,162 @@
+"""Nokia-only host enumeration. No pairing, jailbreak, driver installation or SMS."""
+
+from __future__ import annotations
+
+import json
+import os
+import re
+import subprocess
+
+# Documented device families, not measured firmware/OS facts. Other Nokia devices
+# are reported as candidates until explicitly enrolled; S40/other vendors aren't promoted.
+from symport.phone.models import documented_model
+
+
+def serial_candidates():
+    try:
+        from serial.tools import list_ports
+    except ImportError:
+        return [], "pyserial is unavailable; configure an existing Gammu connection manually"
+    result = []
+    for port in list_ports.comports():
+        description = " ".join(
+            str(x or "") for x in (port.manufacturer, port.description, port.product)
+        )
+        if port.vid != 0x0421 and "nokia" not in description.casefold():
+            continue
+        if not isinstance(port.device, str) or not re.fullmatch(
+            r"COM[0-9]{1,4}|/dev/[A-Za-z0-9_./-]{1,120}", port.device
+        ):
+            continue
+        result.append(
+            {
+                "port": port.device,
+                "model_profile": documented_model(description),
+                "vendor": "Nokia",
+                "source": "host-serial-enumeration",
+            }
+        )
+    return result, None
+
+
+def windows_nokia_volumes():
+    if os.name != "nt":
+        return [], None
+    # CIM associations tie each logical drive to its physical Nokia USB device.
+    # Drive letters and Bluetooth names alone are never treated as phone identity.
+    script = """$ErrorActionPreference='Stop'; $items=@(); Get-CimInstance Win32_DiskDrive | Where-Object { $_.InterfaceType -eq 'USB' -and ($_.PNPDeviceID -match 'NOKIA|VID_0421' -or $_.Model -match 'Nokia') } | ForEach-Object { $disk=$_; Get-CimAssociatedInstance -InputObject $disk -Association Win32_DiskDriveToDiskPartition | ForEach-Object { Get-CimAssociatedInstance -InputObject $_ -Association Win32_LogicalDiskToPartition | Where-Object { $_.DriveType -eq 2 -and $_.DeviceID -ne $env:SystemDrive } | ForEach-Object { $items+=@{root=($_.DeviceID+'/');description=$disk.Model;identity=$disk.PNPDeviceID} } } }; ConvertTo-Json -InputObject @($items) -Compress"""
+    try:
+        result = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
+            capture_output=True,
+            text=True,
+            timeout=20,
+            check=False,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        if result.returncode or len(result.stdout) > 65536:
+            raise ValueError("Enumeration failed")
+        rows = json.loads(result.stdout)
+        rows = rows if isinstance(rows, list) else [rows]
+        return [
+            {
+                "root": r["root"],
+                "model_profile": documented_model(r.get("description", "")),
+                "source": "Nokia USB disk/CIM association",
+                "identity": __import__("hashlib")
+                .sha256(r.get("identity", "").encode())
+                .hexdigest(),
+            }
+            for r in rows
+            if isinstance(r, dict) and re.fullmatch("[D-Zd-z]:/", str(r.get("root", "")))
+        ], None
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return (
+            [],
+            "Windows Nokia disk enumeration is unavailable; enroll the memory card explicitly",
+        )
+
+
+def paired_bluetooth_candidates():
+    """Read paired host records only. Names are candidates, never phone identity."""
+    import shutil
+
+    try:
+        if os.name == "nt":
+            script = "$ErrorActionPreference='Stop'; $rows=@(Get-PnpDevice -Class Bluetooth -PresentOnly | Where-Object { $_.InstanceId -match '^BTHENUM\\\\DEV_[0-9A-F]{12}' -and $_.FriendlyName -match 'Nokia' } | Select-Object FriendlyName,InstanceId); ConvertTo-Json -InputObject @($rows) -Compress"
+            result = subprocess.run(
+                ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
+                capture_output=True,
+                text=True,
+                timeout=15,
+                check=False,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            )
+            if result.returncode or len(result.stdout) > 65536:
+                raise ValueError("Bluetooth enumeration failed")
+            rows = json.loads(result.stdout)
+            rows = rows if isinstance(rows, list) else [rows]
+            candidates = []
+            for row in rows[:128]:
+                match = re.search(r"DEV_([A-Fa-f0-9]{12})", row.get("InstanceId", ""))
+                if match:
+                    address = ":".join(match[1][i : i + 2] for i in range(0, 12, 2)).upper()
+                    candidates.append(
+                        {
+                            "name": str(row.get("FriendlyName", "Nokia"))[:100],
+                            "address": address,
+                            "model_profile": documented_model(str(row.get("FriendlyName", ""))),
+                            "source": "Windows paired PnP record",
+                            "connected": None,
+                        }
+                    )
+            return candidates, None
+        executable = shutil.which("bluetoothctl")
+        if not executable:
+            return (
+                [],
+                "Bluetooth host tools are unavailable; pair and inspect services in your operating system",
+            )
+        result = subprocess.run(
+            [executable, "devices", "Paired"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+            env={**os.environ, "LC_ALL": "C"},
+        )
+        if result.returncode or len(result.stdout) > 65536:
+            raise ValueError("Bluetooth enumeration failed")
+        rows = []
+        for line in result.stdout.splitlines()[:128]:
+            match = re.fullmatch(r"Device ((?:[A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}) (.{1,100})", line)
+            if match and "nokia" in match[2].casefold():
+                rows.append(
+                    {
+                        "name": match[2],
+                        "address": match[1],
+                        "model_profile": documented_model(match[2]),
+                        "source": "BlueZ paired record",
+                        "connected": None,
+                    }
+                )
+        return rows, None
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return (
+            [],
+            "Paired Nokia Bluetooth enumeration is unavailable; inspect pairing in the operating system",
+        )
+
+
+def host_candidates():
+    serial, serial_reason = serial_candidates()
+    bluetooth, bluetooth_reason = paired_bluetooth_candidates()
+    volumes, volume_reason = windows_nokia_volumes()
+    # Do not expose physical PNP identifiers, even hashed ones, to the browser.
+    return {
+        "serial": serial,
+        "bluetooth": bluetooth,
+        "volumes": [{k: v for k, v in r.items() if k != "identity"} for r in volumes],
+        "diagnostics": [r for r in (serial_reason, bluetooth_reason, volume_reason) if r],
+        "evidence": "Host records only; a device response or explicit enrollment is required before use",
+    }

@@ -48,13 +48,13 @@ class Catalog:
     def __init__(self, root: Path):
         self.entries = {}
         for path in sorted((root / 'apps').glob('*.json')):
-            entry = json.loads(path.read_text())
+            entry = json.loads(path.read_text(encoding="utf-8"))
             validate_entry(entry)
             if entry['id'] in self.entries:
                 raise ValueError('Duplicate catalog ID')
             self.entries[entry['id']] = entry
-        self.sources = json.loads((root / 'sources.json').read_text())
-        self.research = json.loads((root / 'research.json').read_text())
+        self.sources = json.loads((root / 'sources.json').read_text(encoding="utf-8"))
+        self.research = json.loads((root / 'research.json').read_text(encoding="utf-8"))
         for entry in self.entries.values():
             if entry['source_id'] and entry['source_id'] not in self.sources:
                 raise ValueError('Unknown curated source: ' + entry['source_id'])
