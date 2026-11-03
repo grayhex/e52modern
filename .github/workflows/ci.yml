@@ -126,3 +126,25 @@ jobs:
           docker exec e52modern-ui python -m symport theme build --variant light --json > /tmp/workbench-build.json
           docker exec e52modern-ui python -m symport theme package --variant light --backend native --json > /tmp/workbench-package.json
           python3 -c 'import json; assert json.load(open("/tmp/workbench-build.json"))["status"] == "ok"; assert json.load(open("/tmp/workbench-package.json"))["status"] == "ok"'
+
+  device-manager-container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate browser script and Compose
+        run: |
+          node --check symport/web_assets/manager.js
+          node --check symport/web_assets/library.js
+          docker compose config --quiet
+      - name: Build Device Manager image
+        run: docker build -t symport-device-manager:ci .
+      - name: Smoke test HTTP and transport dependencies
+        run: |
+          docker run -d --name device-manager -p 127.0.0.1:8765:8765 symport-device-manager:ci
+          trap 'docker logs device-manager; docker rm -f device-manager' EXIT
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8765/api/state > /tmp/state.json; then break; fi
+            sleep 1
+          done
+          python -c 'import json; assert json.load(open("/tmp/state.json"))["schema"] == "symport.web/1"'
+          docker exec device-manager sh -c 'command -v gammu && command -v obexftp'
