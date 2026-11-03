@@ -37,6 +37,24 @@ def test_invalid_profiles_rejected(tmp_path, body, msg):
 def test_additional_profiles_are_just_files(tmp_path):
     (tmp_path / "nokia-e71.toml").write_text('schema = 1\nid = "nokia-e71"\n[device]\nmodel = { value = "E71", status = "stated", source = "test" }\n')
     ids = [p.id for p in profiles.list_profiles([tmp_path, REPO / "profiles"])]
-    assert ids == ["nokia-e71", "nokia-e52"]
+    assert ids == ["nokia-e71", "nokia-e52", "nokia-e72"]
     with pytest.raises(profiles.ProfileError, match="unknown device profile"):
         profiles.get_profile("nokia-n8", [tmp_path])
+
+
+def test_e72_geometry_and_automatic_presentation():
+    from symport.phone.models import presentation
+    p = profiles.load_profile(REPO / 'profiles/nokia-e72.toml')
+    assert p.value('display.resolution') == [320, 240]
+    assert p.value('display.orientation') == 'landscape'
+    e72 = presentation('Nokia E72 (RM-530)')
+    assert e72['name'] == 'Nokia E72' and e72['screen']['width'] == 320
+    assert presentation('E52')['screen']['height'] == 320
+    assert presentation('a mounted folder') is None
+
+
+def test_e72_artwork_keeps_handset_proportions():
+    from PIL import Image
+    with Image.open(REPO/'symport/web_assets/phones/nokia-e72.png') as image:
+        left,top,right,bottom = image.getbbox()
+        assert 1.85 < (bottom-top)/(right-left) < 2.10

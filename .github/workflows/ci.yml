@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "${{ matrix.python }}" }
-      - run: sudo apt-get update && sudo apt-get install -y g++
+      - run: sudo apt-get update && sudo apt-get install -y g++ ffmpeg
       - run: pip install -e '.[dev]'
       - name: Unit, CLI and regression tests
         run: pytest -ra
@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: sudo apt-get update && sudo apt-get install -y g++
+      - run: sudo apt-get update && sudo apt-get install -y g++ ffmpeg
       - run: pip install -e '.[dev]'
       - name: Build skc and bmconv from vendored sources
         run: tools/s60/build.sh
@@ -167,6 +167,7 @@ jobs:
           node --check symport/web_assets/preferences.js
           node --check symport/web_assets/inspector.js
           node --check symport/web_assets/device-workspace.js
+          node --input-type=module --check < symport/web_assets/ringtone.js
           bash -n tools/install.sh
           SYMPORT_BRIDGE_KEY=00000000000000000000000000000000 SYMPORT_SSH_TARGET=test@example.invalid SYMPORT_SSH_KEY_FILE=/tmp/key SYMPORT_SSH_KNOWN_HOSTS=/tmp/known_hosts docker compose -f compose.yaml -f compose.bridge.yaml config --quiet
           SYMPORT_HTTP_PORT=8777 docker compose config --quiet
@@ -186,10 +187,13 @@ jobs:
           docker exec device-manager sh -c 'command -v gammu && command -v obexftp'
           docker exec device-manager python tools/check_gammu_contract.py
           docker exec device-manager python tools/check_device_container.py
+          docker run --rm --network none symport-device-manager:ci python tools/check_ringtone_container.py
 
   phone-workspace-browser:
     runs-on: ubuntu-latest
     steps:
+      - name: Audio processing dependency
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
@@ -207,6 +211,7 @@ jobs:
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_emulator_lab.cjs
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_security_workspace.cjs
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_device_workspace.cjs
+          NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_ringtone_ui.cjs
       - name: Browser pairing and outbound Windows Bridge integration
         run: NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_bridge_ui.cjs
       - uses: actions/upload-artifact@v4

@@ -20,3 +20,7 @@ Clear/Backspace is an explicitly external control, not an invented hardware key.
 Artwork identity is independent of the actual installed firmware/model and frame
 resolution, both displayed by Lab. Historical details have not been manufacturer
 certified; key legends and metal shading are an illustration.
+
+`nokia-e72.png`: original generated product illustration for the dashboard (2026-11-03).
+It depicts a silver/black QWERTY E72. Display dimensions in application profiles are
+320×240; the artwork is decorative and is not an emulator coordinate map or a photo.

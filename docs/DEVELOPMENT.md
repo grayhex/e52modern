@@ -61,3 +61,10 @@ The current transport matrix and hardware-validation boundary are in DEVICE_WORK
 SymPort is MIT. Vendored Nokia/Symbian Foundation sources use EPL-1.0 (see
 `tools/s60/vendor/NOTICE.md`). External dependencies keep their own licenses; MGO/EKA2L1
 and proprietary firmware are not copied into this repository.
+
+Ringtone Studio regression uses real local FFmpeg, not simulated audio results:
+`pytest tests/test_ringtone.py`. Browser: `node tools/check_ringtone_ui.cjs`
+(with Playwright/Chromium). It checks gallery import, WaveSurfer editing, decoded
+MP3 metadata/bytes, confirmed file transfer, temporary cleanup and E72 presentation.
+The E72 identity is an explicit test fixture; device hardware is not emulated by it.
+Vendored WaveSurfer source/version/integrity/license live under `web_assets/vendor/`.

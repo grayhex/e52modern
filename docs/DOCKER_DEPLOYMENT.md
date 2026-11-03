@@ -125,3 +125,20 @@ node you intend to use, or run the existing local Linux PC Bridge on the PC with
 the phone. Docker includes Gammu, ObexFTP, BlueZ tools and pyserial, but that alone
 does not grant access to a host's USB/Bluetooth stack. Do not use privileged mode
 or assume a remote container can discover a phone attached to a different PC.
+
+## Local installation and Ringtone Studio
+
+The checked-in `compose.yaml` publishes only `127.0.0.1`, retains build/workspace
+volumes and starts the Workbench without requiring Emulator Lab. FFmpeg/FFprobe
+are installed in that same image; no separate audio service, port or API key is
+needed. The audio worker runs with per-process CPU/memory/file/time limits.
+
+Linux/macOS: `tools/install.sh`; Windows PowerShell: `./tools/install.ps1`.
+`--check` / `-Check` validate Docker and Compose without creating `.env`, starting
+services or changing volumes. `--no-build` / `-NoBuild` skip image rebuild;
+`--emulator` / `-Emulator` enable the optional existing MGO profile. Updating uses
+`git pull` and the same installer; do not use `down -v` for updates.
+
+Audio sources, preview and exports are temporary, private and automatically expire.
+Use **Download MP3** to retain a ringtone before updating/restarting. Phone PIM
+backups and emulator firmware/results keep their existing persistent storage.

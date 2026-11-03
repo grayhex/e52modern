@@ -1,6 +1,6 @@
 "use strict";
 const token = document.querySelector('meta[name="symport-token"]').content;
-const pages = {connection:"Connection",updates:"Updates",inspector:"Certificate Inspector",jailbreak:"Jailbreak Manager",lab:"Emulator Lab",manager:"Телефон и файлы",catalog:"Каталог приложений",media:"Музыка и видео",contacts:"Контакты",calendar:"Календарь",messages:"Сообщения",backups:"Резервные копии",installed:"Приложения телефона",overview:"Обзор",themes:"Темы E52 CLEAR",apps:"Разработка",device:"Телефон и тесты",activity:"История операций"};
+const pages = {files:"Files",ringtone:"Ringtone Studio",connection:"Connection",updates:"Updates",inspector:"Certificate Inspector",jailbreak:"Jailbreak Manager",lab:"Emulator Lab",manager:"Dashboard",catalog:"Каталог приложений",media:"Музыка и видео",contacts:"Контакты",calendar:"Календарь",messages:"Сообщения",backups:"Резервные копии",installed:"Приложения телефона",overview:"Обзор",themes:"Темы E52 CLEAR",apps:"Разработка",device:"Телефон и тесты",activity:"История операций"};
 const checklistLabels = {
   identify:"Модель, RM-код и версия прошивки",
   backup:"Резервная копия и возврат к штатной теме",

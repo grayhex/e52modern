@@ -28,7 +28,7 @@ fs.mkdirSync(shots,{recursive:true});
   const page=await browser.newPage({viewport:{width:1440,height:1100},deviceScaleFactor:1});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   for(let i=0;i<30;i++){try{await page.goto('http://127.0.0.1:8771');break;}catch(e){await new Promise(r=>setTimeout(r,200));}}
   await page.locator('#manager.visible').waitFor();await page.evaluate(()=>document.fonts.ready);
-  if(await page.locator('.nav-link .asset-icon').count()!==18)throw Error('Uploaded navigation icons missing');
+  if(await page.locator('.nav-link .asset-icon').count()!==20)throw Error('Uploaded navigation icons missing');
   if(!await page.locator('.brand-lockup').evaluate(img=>img.complete&&img.naturalWidth>0))throw Error('Uploaded logo not loaded');
   await page.screenshot({path:path.join(shots,'workspace-desktop.png'),fullPage:true});
   await page.click('[data-nav="contacts"]');await page.locator('#contacts.visible').waitFor();
@@ -60,7 +60,7 @@ fs.mkdirSync(shots,{recursive:true});
   if(!fs.existsSync(path.join(volume,'test.jar')))throw Error('JAR transfer failed');
   await page.click('[data-nav="backups"]');await page.locator('#backups details.card > summary').click();
   const backupPromise=page.waitForEvent('download');await page.click('#dm-backup');const backup=await backupPromise;const archive=path.join(root,'backup.zip');await backup.saveAs(archive);
-  await page.click('[data-nav="manager"]');await page.fill('#dm-dir','restored');page.once('dialog',d=>d.accept());await page.click('#dm-mkdir');await page.waitForFunction(()=>document.getElementById('dm-files').textContent.includes('restored'));
+  await page.click('[data-nav="files"]');await page.fill('#dm-dir','restored');page.once('dialog',d=>d.accept());await page.click('#dm-mkdir');await page.waitForFunction(()=>document.getElementById('dm-files').textContent.includes('restored'));
   await page.fill('#dm-path','restored');await page.click('[data-nav="backups"]');await page.setInputFiles('#dm-archive',archive);await page.click('#dm-preview');await page.waitForFunction(()=>!document.getElementById('dm-restore').disabled);page.once('dialog',d=>d.accept());await page.click('#dm-restore');await page.waitForFunction(()=>document.getElementById('dm-restore').disabled);
   if(!fs.existsSync(path.join(volume,'restored','test.mp3')))throw Error('Restore failed');
 

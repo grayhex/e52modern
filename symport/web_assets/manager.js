@@ -1,6 +1,7 @@
 "use strict";
 const dm = id => document.getElementById('dm-'+id);
 function dmSupports(device,cap){if(!device)return false;const caps=device.capabilities||[];if(caps.includes(cap))return true;if(device.transport==='obexftp'||device.transport==='obex-opp')return cap==='files-upload'&&caps.includes('files-stage');return caps.includes('files')&&['files-list','files-download','files-upload','files-delete','files-mkdir','files-backup','contacts-stage'].includes(cap);}
+const dmFileDevice=()=>document.getElementById('files-device').value;
 const dmCall = async data => request('POST','/api/manager', data);
 let dmDevices=[];
 const dmPath = name => [dm('path').value.replace(/\/$/,''),name].filter(Boolean).join('/');
@@ -8,7 +9,7 @@ async function dmRun(fn){
   try { await fn(); } catch(e) {dm('status').textContent=e.message;notify(e.message);}
 }
 async function dmList(){
-  const r=await dmCall({action:'list',device:dm('device').value,path:dm('path').value});
+  const r=await dmCall({action:'list',device:dmFileDevice(),path:dm('path').value});
   dm('files').replaceChildren();
   for(const item of r.entries){
     const row=el('div','form-row');
@@ -16,16 +17,16 @@ async function dmList(){
     const open=el('button','btn ghost',item.directory?'Открыть':'Скачать');
     open.onclick=()=>dmRun(async()=>{
       if(item.directory){dm('path').value=dmPath(item.name);await dmList();return;}
-      const file=await dmCall({action:'download',device:dm('device').value,path:dmPath(item.name)});
+      const file=await dmCall({action:'download',device:dmFileDevice(),path:dmPath(item.name)});
       const bytes=Uint8Array.from(atob(file.content),c=>c.charCodeAt(0));
       const url=URL.createObjectURL(new Blob([bytes]));
       const a=el('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
     });
     const del=el('button','btn ghost','Удалить');
     del.onclick=()=>dmRun(async()=>{if(!confirm('Удалить '+item.name+'? Каталог должен быть пустым.'))return;
-      await dmCall({action:'delete',device:dm('device').value,path:dmPath(item.name),confirm:true});await dmList();});
+      await dmCall({action:'delete',device:dmFileDevice(),path:dmPath(item.name),confirm:true});await dmList();});
     if(!item.directory&&/\.sisx?$/i.test(item.name)){const inspect=el('button','btn ghost','Certificate Inspector');inspect.onclick=()=>inspectChoose('device',null,null,dm('device').value,dmPath(item.name));row.append(inspect);}
-    del.disabled=!dmSupports(dmDevices.find(d=>d.id===dm('device').value),'files-delete');row.append(open,del);dm('files').append(row);
+    del.disabled=!dmSupports(dmDevices.find(d=>d.id===dmFileDevice()),'files-delete');row.append(open,del);dm('files').append(row);
   }
 }
 dm('list').onclick=()=>dmRun(dmList);
@@ -44,16 +45,16 @@ async function dmUpload(action){
  if(file.size>8*1024*1024)throw new Error('Максимальный размер — 8 МиБ');
  if(!confirm('Передать '+file.name+'? Это не установка приложения.'))return;
  const bytes=new Uint8Array(await file.arrayBuffer());let raw='';for(const b of bytes)raw+=String.fromCharCode(b);
- const r=await dmCall({action,device:dm('device').value,path:dmPath(file.name),content:btoa(raw),confirm:true});
- dm('status').textContent=tr(r.status)+(r.destination?' · '+r.destination:'');if(dmSupports(dmDevices.find(d=>d.id===dm('device').value),'files-list'))await dmList();
+ const r=await dmCall({action,device:dmFileDevice(),path:dmPath(file.name),content:btoa(raw),confirm:true});
+ dm('status').textContent=tr(r.status)+(r.destination?' · '+r.destination:'');if(dmSupports(dmDevices.find(d=>d.id===dmFileDevice()),'files-list'))await dmList();
 }
 dm('send').onclick=()=>dmRun(()=>dmUpload('upload'));
 dm('sis').onclick=()=>dmRun(()=>dmUpload('transfer'));
-dm('mkdir').onclick=()=>dmRun(async()=>{if(!confirm('Создать каталог?'))return;await dmCall({action:'mkdir',device:dm('device').value,path:dmPath(dm('dir').value),confirm:true});await dmList();});
+dm('mkdir').onclick=()=>dmRun(async()=>{if(!confirm('Создать каталог?'))return;await dmCall({action:'mkdir',device:dmFileDevice(),path:dmPath(dm('dir').value),confirm:true});await dmList();});
 dm('history').onclick=()=>dmRun(async()=>{const r=await dmCall({action:'history'});dm('log').replaceChildren(...r.operations.reverse().map(x=>el('p','',`${x.time} · ${x.action} · ${x.status}`)));});
 let dmRestore=null;
 dm('backup').onclick=()=>dmRun(async()=>{
- const file=await dmCall({action:'backup',device:dm('device').value,path:dm('path').value});
+ const file=await dmCall({action:'backup',device:dmFileDevice(),path:dm('path').value});
  const url=URL.createObjectURL(new Blob([Uint8Array.from(atob(file.content),c=>c.charCodeAt(0))],{type:'application/zip'}));
  const link=el('a');link.href=url;link.download=file.name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
@@ -61,7 +62,7 @@ dm('preview').onclick=()=>dmRun(async()=>{
  dmRestore=null;dm('restore').disabled=true;
  const file=dm('archive').files[0];if(!file||file.size>8*1024*1024)throw new Error('Выберите ZIP до 8 МиБ');
  let raw='';for(const b of new Uint8Array(await file.arrayBuffer()))raw+=String.fromCharCode(b);
- const data={device:dm('device').value,path:dm('path').value,content:btoa(raw)};
+ const data={device:dmFileDevice(),path:dm('path').value,content:btoa(raw)};
  const preview=await dmCall({...data,action:'restore-preview'});
  dm('changes').textContent=JSON.stringify(preview.changes,null,2);
  dmRestore={...data,preview_sha256:preview.sha256};
@@ -74,12 +75,12 @@ dm('restore').onclick=()=>dmRun(async()=>{
 
 function dmSelection(){
  window.dispatchEvent(new CustomEvent('symport-devices',{detail:dmDevices}));
- const device=dmDevices.find(d=>d.id===dm('device').value);
+ const device=dmDevices.find(d=>d.id===dmFileDevice());
  for(const [name,cap] of Object.entries({list:'files-list',send:'files-upload',sis:'transfer',mkdir:'files-mkdir',backup:'files-backup',preview:'files-backup'}))dm(name).disabled=!dmSupports(device,cap);
  dm('path').disabled=!!device?.capabilities.includes('opp-push');if(dm('path').disabled)dm('path').value='';
  dm('files').replaceChildren();
  dm('info').replaceChildren();
- if(window.renderPhoneDashboard){renderPhoneDashboard(device);return;}
+ if(window.renderPhoneDashboard){renderPhoneDashboard(dmDevices.find(d=>d.id===dm('device').value));return;}
  if(!device)return;
  const details=el('div','kv-row');
  const fields=[['Подключение',device.connected?'Доступно':'Отключено'],['Транспорт',device.transport],['Модель',device.model||'не определена'],['RM',device.rm||'не определён'],['Прошивка',device.firmware||'не определена'],['Батарея',device.battery??'нет данных'],['Свободно',device.free===null||device.free===undefined?'нет данных':(device.free/1024/1024).toFixed(0)+' МиБ']];
@@ -87,4 +88,5 @@ function dmSelection(){
  dm('info').append(details);dm('files').replaceChildren();
 }
 dm('device').onchange=dmSelection;
+document.getElementById('files-device').addEventListener('change',dmSelection);
 dmSelection();

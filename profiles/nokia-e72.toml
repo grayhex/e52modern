@@ -1,0 +1,32 @@
+schema = 1
+id = "nokia-e72"
+
+[device]
+manufacturer = { value = "Nokia", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E72" }
+model = { value = "E72", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E72" }
+product_code = { value = "", status = "unknown", source = "Read from the connected phone" }
+
+[platform]
+symbian_version = { value = "9.3", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E72" }
+s60_version = { value = "3rd Edition, Feature Pack 2", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E72" }
+kernel = { value = "eka2", status = "documented", source = "Symbian OS 9.3 / EKA2 platform" }
+installer_format = { value = "sis9", status = "documented", source = "Symbian OS 9.x SIS format" }
+
+[display]
+resolution = { value = [320, 240], status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E72" }
+orientation = { value = "landscape", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E72" }
+
+[input]
+method = { value = "hardware-qwerty", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E72" }
+touch = { value = false, status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E72" }
+
+[cpu]
+target_abi = { value = "armv5", status = "documented", source = "Nokia E72 ARM11 / Symbian 9.3 platform" }
+
+[firmware]
+version = { value = "", status = "unknown", source = "Read from connected handset; model reference is not measured firmware" }
+rom_dlls = { value = [], status = "unknown", source = "Requires user-owned firmware profile" }
+
+[packaging]
+platform_dependency = { value = "0x101f7961", status = "documented", source = "Series60v3 compatibility UID" }
+signing_policy = { value = "", status = "unknown", source = "Depends on the physical phone" }
