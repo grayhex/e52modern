@@ -1592,7 +1592,8 @@
     "Disabled": "Отключено",
     "Keypad": "Клавиатура",
     "Sound settings": "Настройки звука",
-    "Advanced audio settings": "Дополнительные настройки звука"
+    "Advanced audio settings": "Дополнительные настройки звука",
+    "completed": "Готово"
   },
   "patterns": [
     {
