@@ -24,12 +24,12 @@ function tr(text){
 }
 function uiTranslateNode(node){
  if(node.nodeType===Node.TEXT_NODE){
-  if(!node.parentElement||node.parentElement.closest('script,style,pre,code,[data-i18n-skip],textarea,svg,#inspect-facts dd,#calendar-events,#calendar-todos,#inspect-reports,#jb-history'))return;
+  if(!node.parentElement||node.parentElement.closest('script,style,pre,code,[data-i18n-skip],textarea,svg,#inspect-facts dd,#lab-report-summary dd,.project-row strong,.package-row strong,#library-items a,.catalog-app h3,#calendar-events,#calendar-todos,#inspect-reports,#jb-history'))return;
   const value=node.nodeValue;let record=uiOriginal.get(node);
   if(!record||record.last!==value)record={source:value,last:value};
   const next=tr(record.source);record.last=next;uiOriginal.set(node,record);if(next!==value)node.nodeValue=next;
  }else if(node.nodeType===Node.ELEMENT_NODE){
-  if(node.matches('script,style,pre,code,[data-i18n-skip],textarea,svg,#inspect-facts dd,#calendar-events,#calendar-todos,#inspect-reports,#jb-history'))return;
+  if(node.matches('script,style,pre,code,[data-i18n-skip],textarea,svg,#inspect-facts dd,#lab-report-summary dd,.project-row strong,.package-row strong,#library-items a,.catalog-app h3,#calendar-events,#calendar-todos,#inspect-reports,#jb-history'))return;
   for(const attribute of ['placeholder','title','aria-label','alt'])if(node.hasAttribute(attribute)){
    const holder=node.getAttributeNode(attribute),value=holder.value;let record=uiOriginal.get(holder);
    if(!record||record.last!==value)record={source:value,last:value};const next=tr(record.source);record.last=next;uiOriginal.set(holder,record);if(value!==next)holder.value=next;

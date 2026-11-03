@@ -90,3 +90,9 @@ volumes. Do not copy private uploads into the source tree or image.
 Use `docker compose ps`, `docker compose logs workbench`, optional `logs mgo-symbian`
 and `logs bridge-tunnel`. A missing transport is shown as unavailable, not a fake device.
 No successful physical E52 unlock, full rollback or firmware compatibility is claimed.
+
+Validated locally: installer preflight; isolated installation on custom port 8778 with
+container command, published port and healthcheck agreeing; genuine SDK signature via
+HTTP; real archive inspection/key exclusion; mock phone staging/rollback; Docker image
+with no uploaded executables. The optional Windows SSH link needs the operator's actual
+PC/keys/verified host identity and has not been hardware-tested.
