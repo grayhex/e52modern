@@ -16,6 +16,8 @@ def load_profiles(filename: str | None) -> list[dict]:
     if source.is_symlink() or source.stat().st_size > 64 * 1024:
         raise ValueError("Invalid connection configuration")
     document = json.loads(source.read_text(encoding="utf-8"))
+    if not isinstance(document, dict):
+        raise ValueError("Connection configuration must be a JSON object")
     profiles = document.get("connections")
     if document.get("schema") != 1 or not isinstance(profiles, list) or len(profiles) > 24:
         raise ValueError("Connection configuration requires schema 1 and at most 24 profiles")

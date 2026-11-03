@@ -97,6 +97,9 @@ def test_profiles_strict_nokia_scope(tmp_path):
             load_profiles(str(path))
     assert documented_model('Nokia E52 (RM-469)')['s60'] == '3rd FP2'
     assert documented_model('Nokia 6300') is None
+    path.write_text('[]')
+    with pytest.raises(ValueError, match='JSON object'):
+        load_profiles(str(path))
 
 
 def test_obex_upstream_255_success_and_error_output(monkeypatch):
