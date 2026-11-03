@@ -10,3 +10,12 @@ workspace
 tools/s60/bin
 tools/s60/.build
 *.pyc
+# Never bake user firmware or signing material into Workbench.
+*.rom
+*.rpkg
+*.vpl
+*.fpsx
+*.key
+*.pem
+firmware
+roms

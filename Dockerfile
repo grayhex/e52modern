@@ -17,7 +17,8 @@ RUN --mount=type=secret,id=proxy_ca \
     if [ -f /run/secrets/proxy_ca ]; then export PIP_CERT=/run/secrets/proxy_ca; fi \
     && pip install --no-cache-dir -e '.[theme]' \
     && tools/s60/build.sh \
-    && mkdir -p build workspace \
+    && mkdir -p build workspace /symbian-auth \
+    && chown 10001:10001 /symbian-auth \
     && chown -R 10001:10001 /srv/e52modern
 
 USER 10001:10001

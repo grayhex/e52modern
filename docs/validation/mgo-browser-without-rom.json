@@ -1,0 +1,9 @@
+{
+  "engine": "EKA2L1 master-e04eb03+mgo-vpl2",
+  "install": "failed",
+  "launch": "not-tested",
+  "errorCode": "vpl_invalid",
+  "physical_device": "not-tested",
+  "screenshots": 0,
+  "firmware_devices": 0
+}

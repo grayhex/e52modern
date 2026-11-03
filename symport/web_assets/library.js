@@ -29,6 +29,6 @@ function renderLibrary(snapshot){
    const response=await fetch(a.href);if(!response.ok)throw new Error('Не удалось скачать пакет');
    let raw='';for(const b of new Uint8Array(await response.arrayBuffer()))raw+=String.fromCharCode(b);
    await dmCall({action:'transfer',device:dm('device').value,path:dmPath(p.name),content:btoa(raw),confirm:true});notify('Пакет передан. Завершите установку на телефоне.');
-  });row.append(send);lib('items').append(row);
+  });const test=el('button','btn secondary','Проверить в эмуляторе');test.onclick=()=>labChoose('library',p.id,'theme');row.append(send,test);lib('items').append(row);
  }
 }

@@ -82,14 +82,6 @@ for(const kind of ['media','software'])suite(kind+'-send').onclick=()=>suiteBusy
  }
  suite(kind+'-result').textContent=kind==='software'?`Передано пакетов: ${completed}. Откройте их на Nokia и подтвердите установку. Статус установки не проверен.`:`Передано файлов: ${completed}. Проверьте воспроизведение на телефоне.`;
 });
-// Consistent line icons; decorative glyphs do not substitute accessible link labels.
-const paths={catalog:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',manager:'M8 2h8v20H8z M11 18h2',contacts:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M13 3a4 4 0 0 1 0 8 M20 21v-2a4 4 0 0 0-3-4 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8',calendar:'M3 5h18v16H3z M3 9h18 M8 3v4 M16 3v4',messages:'M21 15a3 3 0 0 1-3 3H7l-5 4V5a3 3 0 0 1 3-3h13a3 3 0 0 1 3 3z M6 7h10 M6 12h7',media:'M9 18V5l12-3v13 M9 8l12-3 M9 18a3 3 0 1 1-3-3h3 M21 15a3 3 0 1 1-3-3h3',backups:'M3 7l9-5 9 5v12H3z M3 7l9 5 9-5 M12 12v10',installed:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',themes:'M12 3a9 9 0 1 0 0 18h2a2 2 0 0 0 0-4h-1a1 1 0 0 1 0-3h3a5 5 0 0 0 0-10z M7 8h.01 M11 6h.01 M16 8h.01 M6 13h.01',apps:'M8 7l-5 5 5 5 M16 7l5 5-5 5 M14 4l-4 16',device:'M9 12l2 2 4-4 M5 3h14v18H5z',overview:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M12 2v3 M12 19v3 M2 12h3 M19 12h3 M5 5l2 2 M17 17l2 2 M5 19l2-2 M17 7l2-2',activity:'M4 5h16 M4 12h16 M4 19h10'};
-for(const link of document.querySelectorAll('[data-nav]')){
- const span=link.querySelector('span');if(!span)continue;span.replaceChildren();
- const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');for(const [k,v] of Object.entries({viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','stroke-width':'1.6','stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':'true'}))svg.setAttribute(k,v);
- const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',paths[link.dataset.nav]||paths.installed);svg.append(path);span.append(svg);
-}
-
 for(const zone of document.querySelectorAll('.upload-zone')){
  const input=zone.querySelector('input[type=file]');if(!input)continue;
  const prompt=el('span','upload-prompt','Выберите файл или перетащите сюда');input.before(prompt);

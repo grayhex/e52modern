@@ -15,6 +15,8 @@ SymPort — прежде всего веб-среда работы с телеф
 * `symport/phone/gammu_contacts.py` — чтение книги, добавление без удаления и проверка чтением обратно;
 * `symport/phone/service.py` — диспетчер операций и журнал без содержимого данных;
 * `catalog/`, `symport/catalog/` — курируемые метаданные и одобренные источники, безопасный downloader, зависимости, очередь и пакетная передача;
+* `symport/lab/client.py` — ограниченный внутренний HTTP-клиент существующего агента MGO, bearer key из общего тома;
+* `symport/lab/service.py` — потоковая загрузка прошивки, оркестрация SIS/тем, постоянные отчёты и передача тех же байтов через Device Manager;
 * `symport/library.py` — проверка, импорт, явная локальная публикация и выдача SIS;
 * `symport/web.py`, `symport/web_assets/` — HTTP API и веб-интерфейс;
 * `symport/theme`, `application`, `analysis`, `backends` — средства разработки;
@@ -104,3 +106,25 @@ success_marker = "regex"
 
 Переменные окружения: `SYMPORT_REPO`, `SYMPORT_PROFILES`, `SYMPORT_MAKESIS`, `SYMPORT_SIGNSIS`,
 `SYMPORT_SIGN_PASSPHRASE`, `SYMPORT_SYMBIAN`, `SYMPORT_EKA2L1`.
+
+## Emulator Lab / MGO
+
+```mermaid
+flowchart LR
+    Browser[Браузер через localhost/SSH] -->|Host/Origin/session token| SymPort
+    SymPort -->|Bearer key, внутренний HTTP| MGO[mgo-symbian: готовый агент MGO]
+    MGO -->|Только loopback| EKA[EKA2L1]
+    MGO --> Firmware[(Прошивки и saves)]
+    SymPort --> Reports[(Пакеты, SHA-256, JSON и PNG)]
+    SymPort -->|Подтверждённая передача| DM[Device Manager / PC Bridge]
+    DM --> Nokia[Физическая Nokia]
+```
+
+Профиль Compose `emulator` добавляет закреплённый образ MGO в `internal` сеть без
+опубликованных портов. Firmware/test jobs выполняются асинхронно; одновременно
+разрешена одна операция. Ошибка/restart не повторяет опасные операции автоматически.
+Установка SIS и запуск приложения фиксируются раздельно; UID темы не запускается.
+Наблюдения о применении темы вводятся пользователем и сопровождаются снимком.
+Java остаётся `unsupported`, без подмены ядром KEmulator. API не принимает
+произвольный URL агента, маршрут control API или путь файла сервера от браузера.
+[Контракт, хранение, проверка и ограничения](EMULATOR_LAB.md).
