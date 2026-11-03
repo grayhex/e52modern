@@ -31,7 +31,7 @@ class MountedVolumes:
                            "total": usage.total if usage else None,
                            "storage_scope": "enrolled-filesystem", "signal": None, "usb_mode": None,
                            "imei": None, "evidence": "Operator-enrolled volume; phone identity unavailable",
-                           "capabilities": ["files", "transfer", "media-read"] if connected else []})
+                           "capabilities": ["files", "transfer", "media-read", "contacts-stage", "files-delete", "files-mkdir", "files-upload"] if connected else []})
         return result
 
     def _path(self, device: str, value: str) -> Path:

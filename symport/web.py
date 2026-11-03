@@ -30,6 +30,7 @@ from symport.lab import EmulatorLab
 from symport.library import ThemeLibrary
 from symport.phone import DeviceManager
 from symport.phone.backups import BackupStore, BackupStoreError, default_root
+from symport.phone.bridge_security import host_allowed
 from symport.phone.contacts import parse_export, vcards
 from symport.phone.contracts import LIMIT
 from symport.phone.media_downloads import MediaDownloads, byte_range
@@ -169,6 +170,9 @@ class Workbench:
     def __init__(self, repo: Path):
         self.repo = repo
         self.devices = DeviceManager(repo)
+        self.local_transport = self.devices.transport
+        self.bridge_relay = None
+        self.connection_lock = threading.Lock()
         self.media = MediaDownloads(repo, self.devices)
         self.catalog = AppCatalog(repo, self.devices)
         self.library = ThemeLibrary(repo)
@@ -383,9 +387,8 @@ def make_handler(state: Workbench):
             return  # avoid logging private URL parameters
 
         def _host_ok(self) -> bool:
-            return self.headers.get("Host", "") in {
-                f"localhost:{self.server.server_port}",
-                f"127.0.0.1:{self.server.server_port}"}
+            public = os.getenv("SYMPORT_PUBLIC_ORIGIN", "")
+            return len(self.headers.get_all("Host", [])) == 1 and (host_allowed(self.headers.get("Host", ""), self.server.server_port) or (public.startswith("https://") and self.headers.get("Host") == urlsplit(public).netloc))
 
         def _send(self, content: bytes, mime: str, status: int = 200,
                   filename: str | None = None, session: bool = False) -> None:
@@ -399,7 +402,7 @@ def make_handler(state: Workbench):
             self.send_header(
                 "Content-Security-Policy",
                 "default-src 'self'; img-src 'self' data:; media-src 'self'; script-src 'self'; "
-                "style-src 'self'; connect-src 'self'; object-src 'none'; "
+                "style-src 'self'; connect-src 'self' http://127.0.0.1:8765; object-src 'none'; "
                 "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
             if session:
                 self.send_header("Set-Cookie", f"symport_media={state.token}; HttpOnly; SameSite=Strict; Path=/api/media/")
@@ -424,6 +427,7 @@ def make_handler(state: Workbench):
                 "/device-workspace.js": ("device-workspace.js", "text/javascript; charset=utf-8"),
                 "/device-workspace.css": ("device-workspace.css", "text/css; charset=utf-8"),
                 "/manager.js": ("manager.js", "text/javascript; charset=utf-8"),
+                "/connection.js": ("connection.js", "text/javascript; charset=utf-8"),
                 "/library.js": ("library.js", "text/javascript; charset=utf-8"),
                 "/suite.js": ("suite.js", "text/javascript; charset=utf-8"),
                 "/catalog.js": ("catalog.js", "text/javascript; charset=utf-8"),
@@ -567,8 +571,32 @@ def make_handler(state: Workbench):
             origin = self.headers.get("Origin", "")
             allowed = {f"http://localhost:{self.server.server_port}",
                        f"http://127.0.0.1:{self.server.server_port}"}
-            if origin and origin not in allowed:
+            public = os.getenv("SYMPORT_PUBLIC_ORIGIN", "")
+            if public.startswith("https://"):
+                allowed.add(public)
+            if len(self.headers.get_all("Origin", [])) > 1 or (origin and origin not in allowed):
                 return self._json({"error": "Origin not allowed"}, 403)
+            if self.path.startswith('/api/bridge-relay/'):
+                relay = state.bridge_relay
+                if not relay or not relay.authorized(self.headers.get('X-Symport-Relay-Key', '')):
+                    return self._json({'error': 'Bridge lease unavailable'}, 403)
+                try:
+                    length = int(self.headers.get('Content-Length', '0'))
+                    if self.headers.get('Transfer-Encoding') or len(self.headers.get_all('Content-Length', [])) != 1 or not 0 < length <= 90 * 1024 * 1024:
+                        raise ValueError('Invalid relay length')
+                    if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
+                        raise ValueError('JSON required')
+                    self.connection.settimeout(30)
+                    data = json.loads(self.rfile.read(length))
+                    if not isinstance(data, dict):
+                        raise ValueError('Expected JSON object')
+                    if self.path.endswith('/poll'):
+                        return self._json(relay.poll())
+                    if self.path.endswith('/result'):
+                        return self._json(relay.complete(data))
+                    raise ValueError('Unknown relay operation')
+                except (ValueError, OSError):
+                    return self._json({'error': 'Bridge request rejected'}, 400)
             bridge_key = os.getenv("SYMPORT_BRIDGE_KEY", "")
             authorized = (len(bridge_key) >= 32 and secrets.compare_digest(
                 self.headers.get("X-Symport-Bridge-Key", ""), bridge_key)
@@ -599,6 +627,25 @@ def make_handler(state: Workbench):
                 body = json.loads(self.rfile.read(length))
                 if not isinstance(body, dict):
                     raise ValueError("Expected JSON object")
+                if self.path == '/api/connection':
+                    with state.connection_lock:
+                        if body.get('action') == 'enable':
+                            from symport.phone.relay import BrowserBridgeRelay
+                            if state.bridge_relay:
+                                state.bridge_relay.close()
+                            relay = BrowserBridgeRelay()
+                            state.bridge_relay = relay
+                            # Closing the old lease unblocks an in-flight operation.
+                            with state.devices.lock:
+                                state.devices.transport = relay
+                            return self._json({'relay_token': relay.token, **relay.status()})
+                        if body.get('action') == 'disconnect':
+                            if state.bridge_relay:
+                                state.bridge_relay.close()
+                            with state.devices.lock:
+                                state.devices.transport = state.local_transport
+                            state.bridge_relay = None
+                        return self._json(state.bridge_relay.status() if state.bridge_relay else {'mode': 'direct', 'connected': True})
                 if self.path == '/api/inspector':
                     return self._json(state.inspector.execute(body))
                 if self.path == '/api/jailbreak':

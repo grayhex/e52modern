@@ -1,0 +1,323 @@
+"""Compact local Windows/Linux bridge; all phone operations reuse DeviceManager."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import sys
+import tempfile
+import threading
+import time
+from pathlib import Path
+
+from symport.phone import DeviceManager, gammu_native
+from symport.phone.connections import load_profiles
+from symport.phone.local import LocalTransports
+
+from . import VERSION
+from .discovery import documented_model, serial_candidates, windows_nokia_volumes
+from .server import BridgeServer
+from .settings import data_directory, load_config, load_key
+
+
+class Agent:
+    def __init__(self, root: Path, key: str, port=8765, approve=None, auto=True):
+        self.root = root
+        root.mkdir(parents=True, exist_ok=True, mode=0o700)
+        os.environ["SYMPORT_BRIDGE_DATA"] = str(root)
+        os.environ["SYMPORT_BRIDGE_URL"] = ""  # this endpoint always owns local hardware
+        self.manager = DeviceManager(root)
+        self.config = load_config(root)
+        self.stop = threading.Event()
+        self.last_refresh = None
+        self.status = {"state": "starting", "connected": 0, "candidates": 0, "diagnostics": []}
+        self._signature = None
+        self._ports = None
+        self._auto_profiles = []
+        self._auto_roots = {}
+        self._last_scan = 0
+        self.server = BridgeServer(self.manager, key, port, self.config.get("origins", []), approve)
+        self.auto = auto
+        self.events = None
+        self.relay = None
+        self._volume_identities = {}
+        self._enrolled_roots = {}
+        self._enrolled_identities = {}
+        self.manager.before_execute = self.guard_volume
+        self.refresh_config()
+        self.server.pair = self.pair
+
+    def guard_volume(self, data):
+        identifier = data.get("device")
+        if identifier not in self._enrolled_roots or data.get("action") in (
+            "list",
+            "download",
+            "backup",
+            "restore-preview",
+            "media-list",
+            "media-info",
+            "media-chunk",
+            "media-thumbnail",
+            "apps-inventory",
+            "connection-diagnose",
+        ):
+            return
+        rows, reason = windows_nokia_volumes()
+        expected = self._enrolled_identities.get(identifier)
+        if (
+            reason
+            or not expected
+            or not any(
+                r["root"] == self._enrolled_roots[identifier] and r["identity"] == expected
+                for r in rows
+            )
+        ):
+            raise ValueError(
+                "The Nokia memory card identity changed. Reconnect and discover the phone before writing."
+            )
+
+    def revoke(self):
+        if self.relay:
+            self.relay.stop.set()
+            self.relay = None
+
+    def pair(self, origin, token):
+        if not self.server.approve or not self.server.approve(
+            {
+                "action": "Connect SymPort at "
+                + origin
+                + " for up to two hours. Phone data will be sent to this server."
+            }
+        ):
+            return False
+        from .relay import OutboundRelay
+
+        self.revoke()
+        self.relay = OutboundRelay(self, origin, token)
+        self.relay.thread.start()
+        return True
+
+    def refresh_config(self):
+        config = load_config(self.root)
+        profiles = load_profiles(config.get("connections_file"))
+        profiles += self._auto_profiles
+        roots = {**config.get("volumes", {}), **self._auto_roots}
+        signature = hashlib.sha256(
+            json.dumps([config, profiles, roots], sort_keys=True).encode()
+        ).hexdigest()
+        if signature != self._signature:
+            with self.manager.lock:
+                self.config = config
+                os.environ["SYMPORT_DEVICE_ROOTS"] = json.dumps(roots)
+                os.environ["SYMPORT_GAMMU_CONFIG"] = config.get("gammu_config", "")
+                generated = self.root / "connections.json"
+                temporary = self.root / "connections.tmp"
+                with temporary.open("w", encoding="utf-8") as file:
+                    os.chmod(temporary, 0o600)
+                    json.dump({"schema": 1, "connections": profiles}, file)
+                temporary.replace(generated)
+                os.environ["SYMPORT_CONNECTIONS_FILE"] = str(generated)
+                self.manager.transport = LocalTransports(self.root)
+                self._enrolled_roots = dict(self._auto_roots)
+                self._enrolled_identities = dict(self._volume_identities)
+                self.server.origins = set(config.get("origins", []))
+                self._signature = signature
+                self.last_refresh = None
+
+    def scan(self):
+        candidates, reason = serial_candidates()
+        ports = tuple(c["port"] for c in candidates)
+        if ports == self._ports and time.monotonic() - self._last_scan < 30:
+            return
+        self._ports = ports
+        self._last_scan = time.monotonic()
+        profiles = []
+        if self.config.get("auto_usb", True) and not self.config.get("gammu_config"):
+            for candidate in candidates:
+                name = "auto-usb-" + hashlib.sha256(candidate["port"].encode()).hexdigest()[:8]
+                config = self.root / (name + ".cfg")
+                with config.open("w", encoding="utf-8") as file:
+                    os.chmod(config, 0o600)
+                    file.write("[gammu]\ndevice = " + candidate["port"] + "\nconnection = at\n")
+                try:
+                    with self.manager.lock:
+                        observed = gammu_native.invoke(str(config), "identify")
+                    profile = documented_model(str(observed.get("model") or ""))
+                    if str(observed.get("manufacturer", "")).casefold() != "nokia" or not profile:
+                        continue
+                    profiles.append(
+                        {
+                            "id": name,
+                            "name": "Nokia " + profile["model"] + " · USB",
+                            "kind": "gammu-usb",
+                            "config": str(config),
+                            "manufacturer": "Nokia",
+                            "platform": "S60",
+                            "edition": profile["edition"],
+                        }
+                    )
+                except (ValueError, OSError):
+                    continue
+        volumes, disk_reason = (
+            windows_nokia_volumes() if self.config.get("auto_usb", True) else ([], None)
+        )
+        roots = {}
+        self._volume_identities = {}
+        for item in volumes:
+            if item["model_profile"]:
+                identifier = "auto-card-" + item["root"][0].lower()
+                roots[identifier] = item["root"]
+                self._volume_identities[identifier] = item["identity"]
+        self._auto_profiles, self._auto_roots = profiles, roots
+        self.status["candidates"] = len(candidates) + len(volumes)
+        self.status["diagnostics"] = [r for r in (reason, disk_reason) if r]
+        self.refresh_config()
+
+    def monitor(self):
+        while not self.stop.is_set():
+            try:
+                if self.auto:
+                    self.scan()
+                else:
+                    self.refresh_config()
+                if self.last_refresh is None or time.monotonic() - self.last_refresh >= 30:
+                    data = self.manager.execute({"action": "discover"})
+                    self.status.update(
+                        state="ready",
+                        connected=sum(d.get("connected") is True for d in data["devices"]),
+                    )
+                    self.last_refresh = time.monotonic()
+            except (ValueError, OSError):
+                self.status.update(state="connection-error", connected=0)
+            self.stop.wait(3)
+
+    def start(self):
+        if self.config.get("websocket", False):
+            from .events import start_events
+
+            self.events = start_events(self, self.server.key, self.server.server_port + 2)
+        threading.Thread(target=self.server.serve_forever, daemon=True, name="bridge-http").start()
+        threading.Thread(target=self.monitor, daemon=True, name="bridge-discovery").start()
+
+    def close(self):
+        self.stop.set()
+        self.revoke()
+        self.server.shutdown()
+        self.server.server_close()
+        if self.events:
+            self.events.shutdown()
+
+
+def self_test(report: Path | None):
+    from urllib.error import HTTPError
+    from urllib.request import ProxyHandler, Request, build_opener
+
+    from .settings import protect
+
+    with tempfile.TemporaryDirectory(prefix="symport-bridge-check-") as tmp:
+        root = Path(tmp)
+        os.environ["SYMPORT_GAMMU_CONFIG"] = ""
+        os.environ["SYMPORT_CONNECTIONS_FILE"] = ""
+        os.environ["SYMPORT_DEVICE_ROOTS"] = "{}"
+        key = load_key(root)
+        assert protect(protect(b"test-owner-credential"), True) == b"test-owner-credential"
+        agent = Agent(root, key, port=0, auto=False)
+        agent.start()
+        base = f"http://127.0.0.1:{agent.server.server_port}"
+        opener = build_opener(ProxyHandler({}))
+
+        def call(token, origin=None, host=None):
+            headers = {"Content-Type": "application/json", "X-Symport-Bridge-Key": token}
+            if origin:
+                headers["Origin"] = origin
+            if host:
+                headers["Host"] = host
+            request = Request(base + "/api/bridge", data=b'{"action":"discover"}', headers=headers)
+            return json.load(opener.open(request, timeout=30))
+
+        try:
+            assert call(key)["devices"] == []
+            for token, origin, host in [
+                ("wrong", None, None),
+                (key, "https://untrusted.invalid", None),
+                (key, None, "rebind.invalid"),
+            ]:
+                try:
+                    call(token, origin, host)
+                    raise AssertionError("Denied request accepted")
+                except HTTPError as exc:
+                    assert exc.code == 403
+            worker = (
+                gammu_native.invoke("", "self-test")
+                if gammu_native.available()
+                else {"status": "unavailable"}
+            )
+            result = {
+                "schema": "symport.bridge.self-test/1",
+                "version": VERSION,
+                "http_auth": "passed",
+                "origin": "passed",
+                "dns_rebinding": "passed",
+                "credential_protection": "passed",
+                "gammu": worker,
+                "physical_device": "not-tested",
+            }
+            if report:
+                report.write_text(json.dumps(result, indent=2), encoding="utf-8")
+            elif sys.stdout:
+                print(json.dumps(result))
+        finally:
+            agent.close()
+
+
+def main(argv=None):
+    if len(sys.argv) == 4 and sys.argv[1] == "--gammu-worker":
+        gammu_native.worker_files(Path(sys.argv[2]), Path(sys.argv[3]))
+        return
+    parser = argparse.ArgumentParser(description="SymPort local Nokia S60 Bridge")
+    parser.add_argument("--headless", action="store_true")
+    parser.add_argument("--data-dir", type=Path)
+    parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--report", type=Path)
+    args = parser.parse_args(argv)
+    if args.self_test:
+        return self_test(args.report)
+    root = (args.data_dir or data_directory()).absolute()
+    key = load_key(root)
+
+    def approve(data):
+        if os.name != "nt":
+            return False
+        import ctypes
+
+        return (
+            ctypes.windll.user32.MessageBoxW(
+                None,
+                "SymPort requests: "
+                + str(data["action"])
+                + "\nApprove this operation on the connected phone?",
+                "SymPort Bridge",
+                0x124,
+            )
+            == 6
+        )
+
+    agent = Agent(root, key, args.port, approve=None if args.headless else approve)
+    agent.start()
+    try:
+        if args.headless:
+            while not agent.stop.wait(1):
+                pass
+        else:
+            from .tray import run_tray
+
+            run_tray(agent, key)
+    finally:
+        agent.close()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,30 @@
+name: Windows Bridge
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portable:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: x64
+      - run: python -m pip install -e ".[phone,bridge,bridge-build,dev]"
+      - name: Windows adapter and security tests
+        run: python -m pytest tests/test_windows_bridge.py tests/test_transports.py
+      - name: Build and execute real portable EXE
+        run: python tools/windows/build_bridge.py
+      - name: Assemble source and license notices
+        run: python tools/windows/package_bridge.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SymPortBridge-Windows-x64
+          path: |
+            build/windows/portable/
+            build/windows/self-test.json
+          if-no-files-found: error

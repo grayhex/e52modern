@@ -16,6 +16,7 @@
   <script src="/preferences.js" defer></script>
   <script src="/app.js" defer></script>
   <script src="/manager.js" defer></script>
+  <script src="/connection.js" defer></script>
   <script src="/library.js" defer></script>
   <script src="/suite.js" defer></script>
   <script src="/catalog.js" defer></script>
@@ -37,6 +38,7 @@
     <div class="nav-label">МОЙ ТЕЛЕФОН</div>
     <nav aria-label="Телефон">
       <a href="#manager" class="nav-link" data-nav="manager"><svg class="asset-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><g fill="none" stroke="#0F172A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="11" y="5" width="23" height="38" rx="4"/><path d="M19 10h7M20 38h5"/><path d="M7 23h14l3 4h14v13H7z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="3"/><path d="M9 27h12l3 3h13v9H9z"/></g></svg> Телефон и файлы</a>
+      <a href="#connection" class="nav-link" data-nav="connection"><span aria-hidden="true">↔</span> Connection</a>
       <a href="#contacts" class="nav-link" data-nav="contacts"><svg class="asset-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><g fill="none" stroke="#0F172A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="9" width="36" height="30" rx="4"/><circle cx="18" cy="20" r="4"/><path d="M11 32c1-5 4-7 7-7s6 2 7 7M29 19h8M29 25h8M29 31h5"/></g></svg> Контакты</a>
       <a href="#calendar" class="nav-link" data-nav="calendar"><svg class="asset-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><g fill="none" stroke="#0F172A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="11" width="34" height="30" rx="4"/><path d="M7 20h34M16 7v8M32 7v8M16 28h5M27 28h5M16 35h5"/></g></svg> Календарь</a>
       <a href="#messages" class="nav-link" data-nav="messages"><svg class="asset-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><g fill="none" stroke="#0F172A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10h29a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H20L9 43v-7a4 4 0 0 1-4-4V14a4 4 0 0 1 4-4Z"/><path d="M14 20h20M14 27h14"/></g></svg> Сообщения</a>
@@ -82,6 +84,15 @@
 <details class="card"><summary>Журнал устройства</summary><div class="form-row"><button id="dm-history" class="btn secondary">Обновить</button></div><div id="dm-log" class="scroll-y"></div></details>
 </div>
 </div>
+</section>
+<section id="connection" class="page" aria-labelledby="connection-title">
+<div class="page-heading"><span class="eyebrow">SYMPORT BRIDGE</span><h1 id="connection-title">Connection</h1><p>Your Nokia, connected to your workspace.</p></div>
+<div class="card"><div class="card-head"><h2>Background service</h2><span id="connection-badge" class="chip" role="status">Disconnected</span></div><p>A lightweight Windows app connects your local phone to SymPort. It runs in the system tray and keeps phone operations in this interface.</p><div class="form-row"><button id="connection-status" class="btn secondary">Check connection</button><button id="connection-disconnect" class="btn ghost">Disconnect Bridge</button></div><p id="connection-result" role="status" aria-live="polite"></p></div>
+<div class="grid-2"><div class="card"><span class="chip">1</span><h2>Download and start</h2><p>Download the Windows x64 portable bundle, extract it to a permanent folder and run SymPortBridge.exe. Open its tray settings to enable automatic startup.</p><a class="btn primary" href="https://github.com/grayhex/e52modern/actions/workflows/windows-bridge.yml" target="_blank" rel="noopener noreferrer">Download Windows Bridge</a><p class="note">Open the latest successful build and download SymPortBridge-Windows-x64. The executable is currently unsigned. Nokia USB drivers are installed separately.</p></div>
+<div class="card"><span class="chip">2</span><h2>Allow access</h2><p>Allow this browser to access the local network when prompted. Then approve this SymPort address in the Windows Bridge confirmation window.</p><button id="connection-pair" class="btn primary">Request access</button><p class="note">Access expires after two hours or when Bridge exits. Disconnect here or revoke web access from the tray at any time.</p></div></div>
+<div class="card"><span class="chip">3</span><h2>Connect your Nokia</h2><p>Connect USB and select PC Suite on the phone. Mass Storage exposes the memory card only. Pair Bluetooth in Windows before selecting a configured Bluetooth connection.</p><button id="connection-find" class="btn secondary">Find phone</button><a class="btn ghost" href="#manager">Open Device Manager</a><p class="note">Close Nokia Suite while using the same COM port. SMS, contacts and calendar depend on the selected driver or an optional S60 Remote applet.</p></div>
+<div class="card"><h2>Direct connection</h2><p>If the phone is connected to the computer running SymPort, use its existing local transports directly. Nokia S60 does not expose a supported browser-only WebHID/WebUSB management protocol.</p><button id="connection-direct" class="btn secondary">Use local SymPort transports</button></div>
+<div class="card"><div class="card-head"><h2>Connections and capabilities</h2><button id="connection-refresh" class="btn secondary">Refresh diagnostics</button></div><div id="connection-list"></div><p class="note">Capabilities come from the selected transport. Sending a package does not install it on the phone.</p></div>
 </section>
 <section id="inspector" class="page" aria-labelledby="inspector-title">
  <div class="page-heading"><h1 id="inspector-title">Certificate & Compatibility Inspector</h1><p>Read-only SIS/SISX analysis. Certificate validity, mathematical signatures and phone trust are separate checks.</p></div>
