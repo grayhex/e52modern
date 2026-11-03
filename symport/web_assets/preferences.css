@@ -5,3 +5,5 @@
 #inspector .card,#jailbreak .card{min-width:0}#inspector input,#inspector select,#jailbreak input,#jailbreak select{max-width:100%;min-width:0}#inspect-facts .device-details{grid-template-columns:160px minmax(0,1fr)}#jb-files label{align-items:flex-start}#jb-summary p{overflow-wrap:anywhere}
 @media(max-width:540px){#inspector .form-row>label,#jailbreak .form-row>label{width:100%}#inspect-facts .device-details{grid-template-columns:1fr}}
 #jb-history .btn,#inspect-reports .btn{max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:left;justify-content:flex-start}
+
+[data-theme=dark] .btn.secondary:hover:enabled,[data-theme=dark] .btn.ghost:hover:enabled{background:#164c68;color:#f0f9ff}[data-theme=dark] .chip.success{background:#145044;color:#b7f7da}

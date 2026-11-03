@@ -58,8 +58,32 @@ def load_config(root: Path) -> dict:
     if path.is_symlink() or path.stat().st_size > 65536:
         raise ValueError("Invalid settings")
     result = json.loads(path.read_text(encoding="utf-8"))
-    if result.get("schema") != 1 or not isinstance(result.get("volumes", {}), dict):
+    if (
+        not isinstance(result, dict)
+        or result.get("schema") != 1
+        or not isinstance(result.get("volumes", {}), dict)
+    ):
         raise ValueError("Invalid settings")
+    from symport.phone.bridge_security import origin_allowed
+
+    origins = result.get("origins", [])
+    if (
+        not isinstance(origins, list)
+        or len(origins) > 8
+        or any(not isinstance(o, str) or not origin_allowed(o, {o}) for o in origins)
+    ):
+        raise ValueError("Invalid allowed origins")
+    for key in ("auto_usb", "websocket"):
+        if key in result and type(result[key]) is not bool:
+            raise ValueError("Invalid boolean setting")
+    for key in ("gammu_config", "connections_file"):
+        if key in result and not isinstance(result[key], str):
+            raise ValueError("Invalid configuration path")
+    if any(
+        not isinstance(k, str) or not isinstance(v, str) or not Path(v).is_absolute()
+        for k, v in result.get("volumes", {}).items()
+    ):
+        raise ValueError("Use operator-owned absolute volume paths")
     return result
 
 

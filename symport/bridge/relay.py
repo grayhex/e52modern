@@ -18,7 +18,15 @@ class NoRedirect(HTTPRedirectHandler):
 
 def validate_origin(origin):
     try:
+        if (
+            not isinstance(origin, str)
+            or len(origin) > 256
+            or any(ord(c) <= 32 or ord(c) > 126 for c in origin)
+        ):
+            raise ValueError("Invalid origin")
         value = urlsplit(origin)
+        if value.port is not None and not 1 <= value.port <= 65535:
+            raise ValueError("Invalid port")
         valid = value.scheme == "https" or (
             value.scheme == "http" and value.hostname in ("127.0.0.1", "localhost")
         )

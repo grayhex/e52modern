@@ -20,3 +20,6 @@ window.addEventListener('symport-devices',event=>connectionDiagnostics(event.det
 connectionStatus().catch(()=>{});
 
 connection('host').onclick=()=>connectionAction(async()=>{const result=await dmCall({action:'connection-host'});const root=connection('candidates');root.replaceChildren();for(const kind of ['serial','bluetooth','volumes'])for(const candidate of result[kind]||[])root.append(el('p','',kind+' · '+(candidate.name||candidate.port||candidate.root)+' · '+(candidate.address||candidate.source)));for(const diagnostic of result.diagnostics||[])root.append(el('p','note',tr(diagnostic)));root.append(el('p','note',tr('Host records are candidates. Choose an enrolled connection to verify phone capabilities.')));});
+
+window.addEventListener('hashchange',()=>{if(location.hash==='#connection')connectionStatus().catch(()=>{});});
+setInterval(()=>{if(location.hash==='#connection'&&!connectionBusy)connectionStatus().catch(()=>{});},20000);
