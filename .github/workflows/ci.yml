@@ -135,6 +135,7 @@ jobs:
         run: |
           node --check symport/web_assets/manager.js
           node --check symport/web_assets/library.js
+          node --check symport/web_assets/suite.js
           docker compose config --quiet
       - name: Build Device Manager image
         run: docker build -t symport-device-manager:ci .
@@ -148,3 +149,24 @@ jobs:
           done
           python -c 'import json; assert json.load(open("/tmp/state.json"))["schema"] == "symport.web/1"'
           docker exec device-manager sh -c 'command -v gammu && command -v obexftp'
+
+  phone-workspace-browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: pip install -e '.[dev]'
+      - name: Install browser test tools outside the checkout
+        run: |
+          npm install --prefix "$RUNNER_TEMP/symport-browser" playwright@1.62.1
+          "$RUNNER_TEMP/symport-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Exercise contacts, files, media, packages and theme library
+        run: NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_web_ui.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phone-workspace-screenshots
+          path: build/screenshots/

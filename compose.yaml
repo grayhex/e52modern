@@ -16,6 +16,7 @@ services:
       - symport-workspace:/srv/e52modern/workspace
     environment:
       # Enroll only explicitly mounted phone volumes. Never mount the host root.
+      SYMPORT_GAMMU_CONFIG: ${SYMPORT_GAMMU_CONFIG:-}
       SYMPORT_DEVICE_ROOTS: "${SYMPORT_DEVICE_ROOTS:-{}}"
       SYMPORT_BRIDGE_URL: ${SYMPORT_BRIDGE_URL:-}
       SYMPORT_BRIDGE_KEY: ${SYMPORT_BRIDGE_KEY:-}

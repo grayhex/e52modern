@@ -5,11 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "symport"
 version = "0.1.0"
-description = "SymPort: toolkit for building, packaging, analysing and testing Symbian S60 themes and applications (part of E52Modern)"
+description = "SymPort Phone Workspace: contacts, files, media, local themes and development tools for Symbian S60"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-dependencies = []
+dependencies = ["vobject>=0.9.9,<1"]
 
 [project.optional-dependencies]
 theme = ["pillow>=10"]
@@ -22,7 +22,7 @@ symport = "symport.cli:main"
 include = ["symport*"]
 
 [tool.setuptools.package-data]
-symport = ["web_assets/*.html", "web_assets/*.css", "web_assets/*.js"]
+symport = ["web_assets/*.html", "web_assets/*.css", "web_assets/*.js", "web_assets/fonts/*.ttf", "web_assets/fonts/*.txt"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

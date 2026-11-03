@@ -70,6 +70,7 @@ dm('restore').onclick=()=>dmRun(async()=>{
 });
 
 function dmSelection(){
+ window.dispatchEvent(new CustomEvent('symport-devices',{detail:dmDevices}));
  const device=dmDevices.find(d=>d.id===dm('device').value);
  for(const name of ['list','send','sis','mkdir','backup','preview'])dm(name).disabled=!device?.capabilities.includes('files');
  dm('info').replaceChildren();

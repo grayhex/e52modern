@@ -11,6 +11,8 @@ SymPort — прежде всего веб-среда работы с телеф
 * `symport/phone/files.py` — доступ к зарегистрированному накопителю и файловые копии;
 * `symport/phone/local.py` — локальные источники, включая Gammu identify;
 * `symport/phone/bridge.py` — авторизованный PC Bridge через локальный SSH-туннель;
+* `symport/phone/contacts.py` — Google CSV / vCard, нормализация, выбор и безопасный экспорт;
+* `symport/phone/gammu_contacts.py` — чтение книги, добавление без удаления и проверка чтением обратно;
 * `symport/phone/service.py` — диспетчер операций и журнал без содержимого данных;
 * `symport/library.py` — проверка, импорт, явная локальная публикация и выдача SIS;
 * `symport/web.py`, `symport/web_assets/` — HTTP API и веб-интерфейс;

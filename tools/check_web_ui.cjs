@@ -1,0 +1,56 @@
+const {chromium}=require('playwright');
+const {spawn,spawnSync}=require('child_process');
+const fs=require('fs'),os=require('os'),path=require('path');
+const repo=path.resolve(__dirname,'..');
+const python=process.env.SYMPORT_PYTHON||'python3';
+const shots=process.env.SYMPORT_SCREENSHOTS_DIR||path.join(repo,'build','screenshots');
+fs.mkdirSync(shots,{recursive:true});
+(async()=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'symport-browser-'));
+ for(const name of ['theme','tools','profiles'])fs.cpSync(path.join(repo,name),path.join(root,name),{recursive:true});
+ const volume=path.join(root,'test-volume');fs.mkdirSync(volume);
+ const server=spawn(python,['-m','symport.web','--repo',root,'--port','8771'],{env:{...process.env,SYMPORT_DEVICE_ROOTS:JSON.stringify({'test-volume':volume}),SYMPORT_BRIDGE_URL:'',SYMPORT_GAMMU_CONFIG:''},stdio:'ignore'});
+ let browser;
+ try{
+  browser=await chromium.launch({headless:true,...(process.env.SYMPORT_BROWSER_EXECUTABLE?{executablePath:process.env.SYMPORT_BROWSER_EXECUTABLE}:{}),args:['--no-sandbox']});
+  const page=await browser.newPage({viewport:{width:1440,height:1100},deviceScaleFactor:1});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  for(let i=0;i<30;i++){try{await page.goto('http://127.0.0.1:8771');break;}catch(e){await new Promise(r=>setTimeout(r,200));}}
+  await page.locator('#manager.visible').waitFor();await page.evaluate(()=>document.fonts.ready);
+  await page.screenshot({path:path.join(shots,'workspace-desktop.png'),fullPage:true});
+  await page.click('[data-nav="contacts"]');await page.locator('#contacts.visible').waitFor();
+  await page.screenshot({path:path.join(shots,'contacts-desktop.png'),fullPage:true});
+  await page.click('[data-nav="media"]');await page.locator('#media.visible').waitFor();
+  await page.screenshot({path:path.join(shots,'media-desktop.png'),fullPage:true});
+  await page.click('[data-nav="themes"]');await page.locator('#themes.visible').waitFor();
+  await page.screenshot({path:path.join(shots,'themes-desktop.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});await page.goto('http://127.0.0.1:8771/#contacts');await page.locator('#contacts.visible').waitFor();
+  await page.screenshot({path:path.join(shots,'contacts-mobile.png'),fullPage:true});
+  if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Mobile horizontal overflow');
+  await page.setViewportSize({width:1440,height:1100});
+  const csv=path.join(root,'test-google.csv');fs.writeFileSync(csv,'Name,Phone 1 - Value,E-mail 1 - Value\nBrowser test,+123456789,test@example.test\n');
+  await page.setInputFiles('#contacts-file',csv);await page.click('#contacts-preview');await page.locator('#contacts-workspace:not([hidden])').waitFor();
+  if(await page.locator('#contacts-rows tr').count()!==1)throw Error('Contacts preview missing');
+  await page.fill('#contacts-search','absent');if(await page.locator('#contacts-rows tr').count()!==0)throw Error('Search failed');await page.fill('#contacts-search','');
+  const downloadPromise=page.waitForEvent('download');await page.click('#contacts-export');const download=await downloadPromise;if(download.suggestedFilename()!=='contacts.vcf')throw Error('Export filename');
+  await page.click('#contacts .suite-discover');await page.waitForFunction(()=>!!document.getElementById('contacts-device').value);
+  page.once('dialog',d=>d.accept());await page.click('#contacts-send');await page.waitForFunction(()=>document.getElementById('contacts-result').textContent.includes('Передано vCard: 1'));
+  const folder=fs.readdirSync(volume).find(x=>x.startsWith('Contacts-import-'));if(!folder||!fs.readFileSync(path.join(volume,folder,'contact-0001.vcf'),'utf8').includes('Browser test'))throw Error('Contacts not transferred');
+  const log=fs.readFileSync(path.join(root,'build/symport/device-manager/operations.jsonl'),'utf8');if(log.includes('Browser test')||log.includes('+123456789'))throw Error('Private contacts in journal');
+  await page.click('[data-nav="media"]');const audio=path.join(root,'test.mp3');fs.writeFileSync(audio,'synthetic test bytes; not a playable codec fixture');await page.setInputFiles('#media-files',audio);page.once('dialog',d=>d.accept());await page.click('#media-send');await page.waitForFunction(()=>document.getElementById('media-result').textContent.includes('Передано файлов: 1'));
+  if(fs.readFileSync(path.join(volume,'test.mp3'),'utf8')!==fs.readFileSync(audio,'utf8'))throw Error('Audio bytes changed');
+  await page.click('[data-nav="installed"]');const jar=path.join(root,'test.jar');const result=spawnSync(python,['-c',"import zipfile,sys; z=zipfile.ZipFile(sys.argv[1],'w');z.writestr('META-INF/MANIFEST.MF','MIDlet-Name: Test\\nMIDlet-1: Test,,Main\\n');z.close()",jar]);if(result.status!==0)throw Error(result.stderr.toString());await page.setInputFiles('#software-files',jar);page.once('dialog',d=>d.accept());await page.click('#software-send');await page.waitForFunction(()=>document.getElementById('software-result').textContent.includes('Передано пакетов: 1'));
+  if(!fs.existsSync(path.join(volume,'test.jar')))throw Error('JAR transfer failed');
+  await page.click('[data-nav="backups"]');
+  const backupPromise=page.waitForEvent('download');await page.click('#dm-backup');const backup=await backupPromise;const archive=path.join(root,'backup.zip');await backup.saveAs(archive);
+  await page.click('[data-nav="manager"]');await page.fill('#dm-dir','restored');page.once('dialog',d=>d.accept());await page.click('#dm-mkdir');await page.waitForFunction(()=>document.getElementById('dm-files').textContent.includes('restored'));
+  await page.fill('#dm-path','restored');await page.click('[data-nav="backups"]');await page.setInputFiles('#dm-archive',archive);await page.click('#dm-preview');await page.waitForFunction(()=>!document.getElementById('dm-restore').disabled);page.once('dialog',d=>d.accept());await page.click('#dm-restore');await page.waitForFunction(()=>document.getElementById('dm-restore').disabled);
+  if(!fs.existsSync(path.join(volume,'restored','test.mp3')))throw Error('Restore failed');
+  await page.click('[data-nav="themes"]');
+  const sis=path.join(root,'test-theme.sis');const generated=spawnSync(python,['-c',"from pathlib import Path; from symport.sis import writer; from tests.test_sis import pkg; import sys; Path(sys.argv[1]).write_bytes(writer.build(pkg()))",sis],{cwd:repo});if(generated.status!==0)throw Error(generated.stderr.toString());
+  await page.setInputFiles('#library-upload',sis);await page.click('#library-import');await page.waitForFunction(()=>!document.getElementById('library-publish').disabled);page.once('dialog',d=>d.accept());await page.click('#library-publish');await page.locator('#library-items a').waitFor();
+  const themeDownloadPromise=page.waitForEvent('download');await page.locator('#library-items a').click();const themeDownload=await themeDownloadPromise;if(themeDownload.suggestedFilename()!=='test-theme.sis')throw Error('Published download failed');
+  await page.click('[data-nav="contacts"]');await page.click('#contacts-clear');if(!await page.locator('#contacts-workspace').isHidden())throw Error('Clear contacts failed');
+  if(errors.length)throw Error(errors.join('\n'));
+  console.log('Chromium passed (including theme publication and file backup/restore): desktop/mobile, Google CSV preview/search/export, confirmed vCard staging, audio/JAR transfer, contact privacy and clear. Screenshots show empty states, not simulated hardware.');
+ }finally{if(browser)await browser.close();server.kill();fs.rmSync(root,{recursive:true,force:true});}
+})().catch(e=>{console.error(e);process.exit(1)});
