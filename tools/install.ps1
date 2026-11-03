@@ -19,9 +19,9 @@ if (-not $NoBuild) { $up += '--build' }
 Docker-Checked $up
 $ready = $false
 for ($attempt = 0; $attempt -lt 60; $attempt++) {
-    & docker compose exec -T workbench python -c 'import os,urllib.request; urllib.request.urlopen("http://127.0.0.1:"+os.getenv("SYMPORT_HTTP_PORT","8765")+"/api/state", timeout=2).read()' 2>$null | Out-Null
+    & docker compose exec -T workbench python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.getenv('SYMPORT_HTTP_PORT','8765')+'/api/state', timeout=2).read()" 2>$null | Out-Null
     if ($LASTEXITCODE -eq 0) { $ready = $true; break }
     Start-Sleep -Seconds 1
 }
 if (-not $ready) { throw 'Workbench is not ready. Inspect docker compose logs workbench.' }
-Docker-Checked @('compose','exec','-T','workbench','python','-c','import os; print("SymPort: http://127.0.0.1:"+os.getenv("SYMPORT_HTTP_PORT","8765"))')
+Docker-Checked @('compose','exec','-T','workbench','python','-c',"import os; print('SymPort: http://127.0.0.1:'+os.getenv('SYMPORT_HTTP_PORT','8765'))")
