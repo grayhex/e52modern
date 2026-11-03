@@ -212,3 +212,20 @@ def test_bad_zip_returns_a_controlled_error(security):
     _,manager,_=security
     with pytest.raises(ValueError,match='ZIP'):
         manager.execute({'action':'import','content':base64.b64encode(b'invalid ZIP').decode()})
+
+
+def test_inspector_preserves_theme_scenario_in_emulator(security):
+    import time
+    inspector,_,_=security
+    inspector.resolver=lambda data: ('theme.sis',sis(True),'theme')
+    report=inspector.execute({'action':'analyze','source':'library'})
+    assert report['kind']=='theme'
+    started=inspector.execute({'action':'emulate','id':report['id'],'code':'mock-device','confirm':True})
+    deadline=time.monotonic()+5
+    while time.monotonic()<deadline:
+        evidence=inspector.lab.report(started['id'])
+        if not evidence['running']:
+            break
+        time.sleep(.01)
+    assert evidence['kind']=='theme' and evidence['install']=='installed' and evidence['launch']=='unsupported'
+    assert not any(path.endswith('/launch') for _,path,_ in inspector.lab.agent.calls)

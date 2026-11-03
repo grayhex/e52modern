@@ -67,7 +67,7 @@ class Inspector:
             if data.get('confirm') is not True:
                 raise ValueError('Explicit confirmation required')
             if action == 'emulate':
-                result = self.lab.execute({'action': 'test', 'source': 'upload', 'name': report['name'], 'content': base64.b64encode(raw).decode(), 'kind': data.get('kind', 'app'), 'code': data.get('code'), 'confirm': True})
+                result = self.lab.execute({'action': 'test', 'source': 'upload', 'name': report['name'], 'content': base64.b64encode(raw).decode(), 'kind': report.get('kind', 'app'), 'code': data.get('code'), 'confirm': True})
                 report['emulator_report'] = result['id']
                 save(self.root / (report['id']+'.json'), report)
                 return result
@@ -86,7 +86,7 @@ class Inspector:
             return result
         if action != 'analyze':
             raise ValueError('Unknown inspector operation')
-        name, raw, _ = self.resolver(data)
+        name, raw, hint = self.resolver(data)
         validate_package(name, raw)
         if Path(name).suffix.lower() not in ('.sis', '.sisx'):
             raise ValueError('Certificate Inspector supports SIS/SISX, not JAR/JAD')
@@ -100,6 +100,7 @@ class Inspector:
         is_e52 = bool(re.search(r'\bE52\b', target['model'], re.I))
         report = {'schema': 'symport.inspector/1', 'id': secrets.token_hex(16), 'name': name,
                   'sha256': hashlib.sha256(raw).hexdigest(), 'size': len(raw), 'package': info['package'],
+                  'kind': 'theme' if hint == 'theme' or data.get('kind') == 'theme' else 'app',
                   'signatures': signatures, 'sis_checksums': {k:info[k] for k in ('uid_checksum_ok','controller_crc_ok','data_crc_ok')}, 'target': target, 'target_evidence': 'user-selected profile; not device attestation',
                   'dependencies': signatures['dependencies'], 'binaries': [], 'capabilities': [], 'issues': [],
                   'compatibility': 'unknown', 'emulator': 'not-tested', 'physical_device': 'not-tested',
