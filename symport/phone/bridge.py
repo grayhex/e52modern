@@ -9,8 +9,6 @@ import json
 import urllib.request
 from urllib.parse import urlsplit
 
-from .contracts import LIMIT
-
 
 class PCBridge:
     """Use an operator-configured loopback SSH tunnel, never a client-supplied URL."""
@@ -33,7 +31,7 @@ class PCBridge:
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         timeout = {'contacts-import': 420, 'contacts-read': 150, 'media-upload': 300}.get(data.get('action'), 30)
         with opener.open(req, timeout=timeout) as response:
-            return json.loads(response.read(LIMIT * 2))
+            return json.loads(response.read(90 * 1024 * 1024))
 
     def devices(self) -> list[dict]:
         return self.execute({'action': 'discover'})['devices']

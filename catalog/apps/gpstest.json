@@ -1,0 +1,46 @@
+{
+  "id": "gpstest",
+  "name": "GPSTest",
+  "category": "maps",
+  "developer": "shinovon",
+  "description": "Проверка Location API и получения GPS-координат на телефоне.",
+  "version": "1.0.1",
+  "release_date": "2025-09-26",
+  "release_tag": "v1.0.1",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.1"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/shinovon/GPSTest",
+  "license": "not-specified",
+  "redistribution": "not-reviewed; original-author download only",
+  "delivery": "manual",
+  "manual_url": "https://github.com/shinovon/GPSTest/releases/tag/v1.0.1",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Требуется JSR-179 и разрешение геолокации. Лицензия в репозитории не указана.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/shinovon/GPSTest",
+    "https://github.com/shinovon/GPSTest/releases/tag/v1.0.1"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "gpstest",
+  "limitations": [
+    "Требуется JSR-179 и разрешение геолокации. Лицензия в репозитории не указана.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline"
+  ],
+  "delivery_reason": "Нет однозначной лицензии на автоматическое кэширование; получите пакет непосредственно у автора.",
+  "requirements": [
+    "Требуется JSR-179 и разрешение геолокации. Лицензия в репозитории не указана."
+  ]
+}

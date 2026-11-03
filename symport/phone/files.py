@@ -139,8 +139,8 @@ class MountedVolumes:
                 raise
             return {'status': 'restored-files-only', 'count': len(written)}
         if action == 'download':
-            if not path.is_file() or path.stat().st_size > LIMIT:
-                raise ValueError('Only regular files up to 8 MiB can be downloaded')
+            if not path.is_file() or path.stat().st_size > 64 * 1024 * 1024:
+                raise ValueError('Only regular files up to 64 MiB can be downloaded')
             return {'name': path.name, 'content': base64.b64encode(path.read_bytes()).decode()}
         if action in ('delete', 'upload', 'mkdir', 'transfer', 'media-upload', 'software-transfer'):
             if data.get('confirm') is not True:
@@ -156,30 +156,16 @@ class MountedVolumes:
                 path.mkdir()
             else:
                 content = base64.b64decode(data.get('content', ''), validate=True)
-                if len(content) > (64 * 1024 * 1024 if action == 'media-upload' else LIMIT):
+                if len(content) > (64 * 1024 * 1024 if action == 'media-upload' else 32 * 1024 * 1024 if action in ('transfer', 'software-transfer') else LIMIT):
                     raise ValueError('File exceeds transfer limit')
                 if action == 'media-upload':
                     allowed = {'audio': {'.mp3', '.aac', '.m4a', '.wav', '.mid', '.midi', '.amr'},
                                'video': {'.mp4', '.3gp'}}
                     if path.suffix.lower() not in allowed.get(data.get('kind'), set()):
                         raise ValueError('Неподдерживаемое расширение медиафайла')
-                if action == 'software-transfer' and path.suffix.lower() in ('.jar', '.jad'):
-                    if path.suffix.lower() == '.jar':
-                        with zipfile.ZipFile(io.BytesIO(content)) as archive:
-                            if 'META-INF/MANIFEST.MF' not in archive.namelist():
-                                raise ValueError('JAR не содержит манифест MIDlet')
-                            entry = archive.getinfo('META-INF/MANIFEST.MF')
-                            if entry.file_size > 65536 or b'MIDlet-' not in archive.read(entry):
-                                raise ValueError('JAR не содержит манифест MIDlet')
-                    elif b'MIDlet-Jar-URL:' not in content or b'MIDlet-Name:' not in content:
-                        raise ValueError('Некорректный дескриптор JAD')
-                elif action in ('transfer', 'software-transfer'):
-                    from symport.sis.reader import inspect
-                    info = inspect(content)
-                    if path.suffix.lower() not in ('.sis', '.sisx') or not all(
-                        info[k] for k in ('controller_crc_ok', 'data_crc_ok', 'uid_checksum_ok')
-                    ):
-                        raise ValueError('Invalid SIS/SISX package')
+                if action in ('transfer', 'software-transfer'):
+                    from symport.catalog.packages import validate_package
+                    validate_package(path.name, content)
                 # Exclusive creation prevents accidental replacement of phone data.
                 created = False
                 try:

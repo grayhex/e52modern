@@ -29,7 +29,8 @@ def test_java_package_requires_manifest_and_is_only_staged(tmp_path):
     transport = MountedVolumes({'phone': str(tmp_path)})
     raw = io.BytesIO()
     with zipfile.ZipFile(raw, 'w') as jar:
-        jar.writestr('META-INF/MANIFEST.MF', 'MIDlet-Name: Test\nMIDlet-1: Test,,Main\n')
+        jar.writestr('Main.class', b'\xca\xfe\xba\xbe')
+        jar.writestr('META-INF/MANIFEST.MF', 'MIDlet-Name: Test\nMIDlet-Version: 1.0\nMIDlet-Vendor: Test\nMIDlet-1: Test,,Main\n')
     result = transport.execute(data(raw.getvalue(), 'game.jar', 'software-transfer'))
     assert result['status'] == 'transferred-not-installed'
     with pytest.raises(ValueError):

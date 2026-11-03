@@ -14,6 +14,7 @@ SymPort — прежде всего веб-среда работы с телеф
 * `symport/phone/contacts.py` — Google CSV / vCard, нормализация, выбор и безопасный экспорт;
 * `symport/phone/gammu_contacts.py` — чтение книги, добавление без удаления и проверка чтением обратно;
 * `symport/phone/service.py` — диспетчер операций и журнал без содержимого данных;
+* `catalog/`, `symport/catalog/` — курируемые метаданные и одобренные источники, безопасный downloader, зависимости, очередь и пакетная передача;
 * `symport/library.py` — проверка, импорт, явная локальная публикация и выдача SIS;
 * `symport/web.py`, `symport/web_assets/` — HTTP API и веб-интерфейс;
 * `symport/theme`, `application`, `analysis`, `backends` — средства разработки;

@@ -136,6 +136,7 @@ jobs:
           node --check symport/web_assets/manager.js
           node --check symport/web_assets/library.js
           node --check symport/web_assets/suite.js
+          node --check symport/web_assets/catalog.js
           docker compose config --quiet
       - name: Build Device Manager image
         run: docker build -t symport-device-manager:ci .
@@ -164,7 +165,9 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/symport-browser" playwright@1.62.1
           "$RUNNER_TEMP/symport-browser/node_modules/.bin/playwright" install --with-deps chromium
       - name: Exercise contacts, files, media, packages and theme library
-        run: NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_web_ui.cjs
+        run: |
+          NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_web_ui.cjs
+          NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_app_catalog.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
