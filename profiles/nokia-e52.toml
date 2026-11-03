@@ -46,3 +46,22 @@ skin_support_dependencies = { value = ["0xA00000EB", "0x10207113"], status = "do
 theme_install_dirs = { value = ["!:\\resource\\skins\\<uid>", "!:\\private\\10207114\\import\\<uid>"], status = "documented", source = "reference/05_REAL_NOKIA_PKG_REFERENCE.txt" }
 test_uid_range = { value = [0xE0000000, 0xEFFFFFFF], status = "documented", source = "Symbian experimental UID range as used by https://github.com/hpnkv/symbian-platform doc/docs/guides/packaging.md" }
 signing_policy = { value = "", status = "unknown", source = "install policy for unsigned/self-signed SIS on the tested E52 not verified" }
+
+[usb]
+modes = { value = ["mass-storage", "pc-suite", "connect-pc-to-web", "image-transfer"], status = "stated", source = "Nokia E52 User Guide text quoted by third-party copies (nokia-e52.helpdoc.net, manualslib), found by web search 2026-11-03; not verified on a device" }
+mass_storage_requires_card = { value = true, status = "stated", source = "same E52 user guide text: 'insert a memory card ... select Mass storage'; not verified on a device" }
+media_transfer_mode = { value = "", status = "unknown", source = "not confirmed for the E52 in the sources found" }
+pc_suite_host = { value = "Windows only (Nokia PC Suite)", status = "stated", source = "same E52 user guide copies" }
+
+[storage]
+card = { value = "microSDHC, up to 16 GB", status = "stated", source = "manualshive.com quoting Nokia material; spec aggregators; third-party, not verified" }
+internal_memory = { value = "", status = "unknown", source = "sources disagree (60 MB most often, 256 MB once)" }
+staging_dir = { value = "Installs", status = "documented", source = "symbian-platform doc/docs/guides/device.md stages packages in Installs/ on a mounted volume" }
+
+[media]
+audio_playback = { value = ["mp3", "aac", "eaac+", "wma", "amr"], status = "stated", source = "phone-spec aggregators (GSMArena, Softpedia and others) via web search 2026-11-03; exact profiles/bitrates not verified" }
+video_playback = { value = ["3gp", "mpeg-4", "h.264"], status = "stated", source = "same aggregators; one lists WMV/H.263/RealVideo as well; not verified" }
+camera_still = { value = "3.2 MP (2048x1536)", status = "stated", source = "spec aggregators; one lists 3 MP; not verified" }
+
+[connectivity]
+gammu_support = { value = "", status = "unknown", source = "no E52 entry could be confirmed in the Gammu phone database; Gammu lists many Nokia models generically" }

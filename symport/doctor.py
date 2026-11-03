@@ -129,6 +129,8 @@ def survey(repo: Path | None = None) -> Report:
     emu = eka2l1.locate()
     tool("eka2l1", emu.executable, "emulator list/test", False,
          "install EKA2L1 and set SYMPORT_EKA2L1 (GPL-3.0, https://github.com/EKA2L1/EKA2L1)")
+    tool("gammu", shutil.which("gammu"), "phone contacts/calendar through Gammu (GPL-2.0, optional)", False,
+         "install the official Gammu package and verify `gammu --config <file> identify`")
     openssl = shutil.which("openssl")
     tool("openssl", openssl, "signing identities via symbian-platform", False, "install openssl")
     wine = shutil.which("wine")
@@ -142,6 +144,8 @@ def survey(repo: Path | None = None) -> Report:
         "theme package (makesis)": bool(cfg) and names.get("makesis", False),
         "theme package (native, experimental)": bool(cfg),
         "app build/package (symbian-platform)": names.get("symbian", False),
+        "phone backup/restore/inventory/stage (mounted volume)": bool(cfg),
+        "phone contacts/calendar (gammu)": names.get("gammu", False),
         "emulator test": names.get("eka2l1", False),
         "device stage": names.get("symbian", False),
     }

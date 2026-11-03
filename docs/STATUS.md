@@ -30,6 +30,7 @@
 | `app analyze/inspect` для E32 | да (заголовки, импорты, capabilities, `--cross-check`) | да (реальный образ SDK + синтетические) | — | — |
 | `app build --mode toolchain`, `app package` | адаптер к `symbian-platform` | с поддельным `symbian` | не проверялось | не проверялось |
 | `app init`, `app build --mode app` | адаптер | с поддельным `symbian` | — | не проверялось; требуют установленного нативного SDK, которого в среде нет |
+| `phone backup/apps/stage/calendar` (том, SIS, Gammu) | да | да (временные каталоги, поддельный Gammu) | — | **не проверялось** |
 | `emulator list/test` | адаптер, команда задаётся пользователем | с поддельным эмулятором | реальный EKA2L1 не запускался | — |
 | `device list/info/stage` | адаптер к `symbian device` | с поддельным `symbian` | — | **не проверялось** |
 | Установка/запуск на E52, TRK, скриншоты по USB | **не реализовано** | — | — | — |
