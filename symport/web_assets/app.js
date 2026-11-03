@@ -18,6 +18,7 @@ const statuses = [["pending","Не проверено"],["pass","Пройден�
 let state = {packages:[],projects:[],jobs:[]};
 let checklistInitialized = false;
 let activeJob = null;
+const expandedJobs = new Set();
 let toastTimeout;
 
 function el(tag, classes, text){
@@ -182,7 +183,8 @@ function renderJobs(){
                 el("span","status "+job.status,job.status));
     card.append(head,el("p","",job.started+(job.exit_code===null?" · выполняется":" · код "+job.exit_code)));
     const details=el("details");
-    if(job.id===activeJob && job.status!=="running")details.open=true;
+    details.open=expandedJobs.has(job.id)||(job.id===activeJob && job.status!=="running");
+    details.addEventListener("toggle",()=>{if(details.open)expandedJobs.add(job.id);else expandedJobs.delete(job.id)});
     const summary=el("summary","",job.status==="running"?"Выполняется…":"Отчёт и вывод команды");
     const pre=el("pre","",job.output||"Нет сообщений от инструмента.");
     details.append(summary,pre);
