@@ -37,6 +37,10 @@ Tray **Settings**: automatic Nokia USB discovery (default on), optional current-
 Windows sign-in autostart (default off), Gammu configuration and connection-profile
 JSON. **Diagnostics** shows state/candidate counts. Operation logs contain action,
 time and status only. Settings/private backups live in `%LOCALAPPDATA%\SymPortBridge`.
+Full-volume backup jobs in the development tools still operate on volumes enrolled
+on the server. For Bridge use the existing selected-folder backup and PIM backups;
+Mass Storage never provides SMS or phonebook access.
+
 The long-term SSH bridge key is protected with current-user Windows DPAPI and is
 copied only by the explicit **Copy Bridge key** action.
 
@@ -97,3 +101,6 @@ The agent uses port **24652**, distinct from the Workbench default 8765. For the
 legacy SSH route with this packaged agent, forward to Windows 24652 and set
 `SYMPORT_BRIDGE_AGENT_PORT=24652` on the backend; the existing Linux bridge keeps
 its default 8765. No port change is needed for browser pairing/outbound access.
+
+Tray exit waits for an already confirmed write to finish. Revocation stops new
+operations and private result delivery; it cannot undo bytes already written.

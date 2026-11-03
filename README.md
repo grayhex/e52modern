@@ -22,6 +22,8 @@ USB PC Suite, доступная карта памяти и настроенны
 передача SIS/JAR остаётся отдельной от установки на телефоне.
 [Инструкция Windows](docs/WINDOWS_BRIDGE.md) · [Транспорты и совместимость](docs/TRANSPORTS.md).
 
+![Подключение Windows Bridge в SymPort](docs/screenshots/windows-bridge-dark-en.png)
+
 ## Возможности
 
 | Раздел | Что можно делать |
