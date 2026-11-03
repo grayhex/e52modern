@@ -20,7 +20,7 @@ class BridgeServer(ThreadingHTTPServer):
     daemon_threads = False
     request_queue_size = 8
 
-    def __init__(self, manager, key: str, port=8765, origins=(), approve=None):
+    def __init__(self, manager, key: str, port=24652, origins=(), approve=None):
         if len(key) < 32:
             raise ValueError("Bridge key must contain at least 32 characters")
         self.manager, self.key, self.origins = manager, key, set(origins)

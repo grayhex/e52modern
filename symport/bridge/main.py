@@ -23,7 +23,7 @@ from .settings import data_directory, load_config, load_key
 
 
 class Agent:
-    def __init__(self, root: Path, key: str, port=8765, approve=None, auto=True):
+    def __init__(self, root: Path, key: str, port=24652, approve=None, auto=True):
         self.root = root
         root.mkdir(parents=True, exist_ok=True, mode=0o700)
         os.environ["SYMPORT_BRIDGE_DATA"] = str(root)
@@ -279,7 +279,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="SymPort local Nokia S60 Bridge")
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--data-dir", type=Path)
-    parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--port", type=int, default=24652)
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--report", type=Path)
     args = parser.parse_args(argv)

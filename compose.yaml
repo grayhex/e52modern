@@ -18,6 +18,8 @@ services:
       - mgo-symbian-auth:/symbian-auth:ro
     environment:
       SYMPORT_HTTP_PORT: ${SYMPORT_HTTP_PORT:-8765}
+      SYMPORT_PUBLIC_ORIGIN: ${SYMPORT_PUBLIC_ORIGIN:-}
+      SYMPORT_CONNECTIONS_FILE: ${SYMPORT_CONNECTIONS_FILE:-}
       # Enroll only explicitly mounted phone volumes. Never mount the host root.
       SYMPORT_MGO_URL: http://mgo-symbian:8766
       SYMPORT_MGO_TOKEN_FILE: /symbian-auth/agent-token

@@ -402,7 +402,7 @@ def make_handler(state: Workbench):
             self.send_header(
                 "Content-Security-Policy",
                 "default-src 'self'; img-src 'self' data:; media-src 'self'; script-src 'self'; "
-                "style-src 'self'; connect-src 'self' http://127.0.0.1:8765; object-src 'none'; "
+                "style-src 'self'; connect-src 'self' http://127.0.0.1:24652; object-src 'none'; "
                 "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
             if session:
                 self.send_header("Set-Cookie", f"symport_media={state.token}; HttpOnly; SameSite=Strict; Path=/api/media/")

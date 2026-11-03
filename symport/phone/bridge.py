@@ -6,6 +6,7 @@ No symlinks, recursive deletion, shell execution or implicit installation.
 from __future__ import annotations
 
 import json
+import os
 import urllib.request
 from urllib.parse import urlsplit
 
@@ -26,7 +27,7 @@ class PCBridge:
     def execute(self, data: dict) -> dict:
         req = urllib.request.Request(self.url, data=json.dumps(data).encode(), headers={
             'Content-Type': 'application/json', 'X-Symport-Bridge-Key': self.token,
-            'Host': '127.0.0.1:8765',
+            'Host': '127.0.0.1:' + str(int(os.getenv('SYMPORT_BRIDGE_AGENT_PORT', '8765'))),
         })
         # Never send the local bridge key through an inherited Internet proxy.
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))

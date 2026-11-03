@@ -57,7 +57,7 @@ be tested on the host; no universal Windows USB/Bluetooth compatibility is promi
 
 ## API and security
 
-HTTP binds `127.0.0.1:8765` only. Existing `/api/bridge` RPC requires the long-term
+HTTP binds `127.0.0.1:24652` only. Existing `/api/bridge` RPC requires the long-term
 key, strict Host and enrolled Origin. Browser pairing requires JSON, a valid HTTPS
 Origin (or local HTTP), exact origin matching and native default-No operator approval;
 it returns no long-term key. Pairing is bounded and rate limited. Outbound relay
@@ -67,7 +67,7 @@ transient memory, never relay logs or URLs. Delete, restore, PIM writes and SMS 
 frontend confirmation plus independent local approval. Headless mode denies them.
 
 Optional `"websocket": true` in settings enables authenticated status events at
-`ws://127.0.0.1:8767/api/bridge/events`; first frame is `{"token":"..."}`.
+`ws://127.0.0.1:24654/api/bridge/events`; first frame is `{"token":"..."}`.
 Host/Origin are checked; only status counts, never phone data, are emitted. HTTP RPC
 remains authoritative. The old Linux PC Bridge and SSH route remain supported.
 
@@ -92,3 +92,8 @@ procedure in TRANSPORTS.md before relying on personal-data writes.
 OBEX staging creates a new folder per transfer. JAD transfer is blocked through
 this adapter because it cannot preserve the accompanying JAR in that same folder;
 choose a JAR-only package or a mounted card. The catalog uses the same restriction.
+
+The agent uses port **24652**, distinct from the Workbench default 8765. For the
+legacy SSH route with this packaged agent, forward to Windows 24652 and set
+`SYMPORT_BRIDGE_AGENT_PORT=24652` on the backend; the existing Linux bridge keeps
+its default 8765. No port change is needed for browser pairing/outbound access.

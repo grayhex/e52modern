@@ -75,3 +75,88 @@ def windows_nokia_volumes():
             [],
             "Windows Nokia disk enumeration is unavailable; enroll the memory card explicitly",
         )
+
+
+def paired_bluetooth_candidates():
+    """Read paired host records only. Names are candidates, never phone identity."""
+    import shutil
+
+    try:
+        if os.name == "nt":
+            script = "$ErrorActionPreference='Stop'; $rows=@(Get-PnpDevice -Class Bluetooth -PresentOnly | Where-Object { $_.InstanceId -match '^BTHENUM\\\\DEV_[0-9A-F]{12}' -and $_.FriendlyName -match 'Nokia' } | Select-Object FriendlyName,InstanceId); ConvertTo-Json -InputObject @($rows) -Compress"
+            result = subprocess.run(
+                ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
+                capture_output=True,
+                text=True,
+                timeout=15,
+                check=False,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            )
+            if result.returncode or len(result.stdout) > 65536:
+                raise ValueError("Bluetooth enumeration failed")
+            rows = json.loads(result.stdout)
+            rows = rows if isinstance(rows, list) else [rows]
+            candidates = []
+            for row in rows[:128]:
+                match = re.search(r"DEV_([A-Fa-f0-9]{12})", row.get("InstanceId", ""))
+                if match:
+                    address = ":".join(match[1][i : i + 2] for i in range(0, 12, 2)).upper()
+                    candidates.append(
+                        {
+                            "name": str(row.get("FriendlyName", "Nokia"))[:100],
+                            "address": address,
+                            "model_profile": documented_model(str(row.get("FriendlyName", ""))),
+                            "source": "Windows paired PnP record",
+                            "connected": None,
+                        }
+                    )
+            return candidates, None
+        executable = shutil.which("bluetoothctl")
+        if not executable:
+            return (
+                [],
+                "Bluetooth host tools are unavailable; pair and inspect services in your operating system",
+            )
+        result = subprocess.run(
+            [executable, "devices", "Paired"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+            env={**os.environ, "LC_ALL": "C"},
+        )
+        if result.returncode or len(result.stdout) > 65536:
+            raise ValueError("Bluetooth enumeration failed")
+        rows = []
+        for line in result.stdout.splitlines()[:128]:
+            match = re.fullmatch(r"Device ((?:[A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}) (.{1,100})", line)
+            if match and "nokia" in match[2].casefold():
+                rows.append(
+                    {
+                        "name": match[2],
+                        "address": match[1],
+                        "model_profile": documented_model(match[2]),
+                        "source": "BlueZ paired record",
+                        "connected": None,
+                    }
+                )
+        return rows, None
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return (
+            [],
+            "Paired Nokia Bluetooth enumeration is unavailable; inspect pairing in the operating system",
+        )
+
+
+def host_candidates():
+    serial, serial_reason = serial_candidates()
+    bluetooth, bluetooth_reason = paired_bluetooth_candidates()
+    volumes, volume_reason = windows_nokia_volumes()
+    # Do not expose physical PNP identifiers, even hashed ones, to the browser.
+    return {
+        "serial": serial,
+        "bluetooth": bluetooth,
+        "volumes": [{k: v for k, v in r.items() if k != "identity"} for r in volumes],
+        "diagnostics": [r for r in (serial_reason, bluetooth_reason, volume_reason) if r],
+        "evidence": "Host records only; a device response or explicit enrollment is required before use",
+    }

@@ -81,6 +81,9 @@ class LocalTransports:
         return reports
 
     def execute(self, data: dict) -> dict:
+        if data.get('action') == 'connection-host':
+            from symport.bridge.discovery import host_candidates
+            return host_candidates()
         adapter = self.adapters.get(data.get("device"))
         if adapter is not None:
             if data["action"] == "connection-diagnose":
