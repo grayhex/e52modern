@@ -38,7 +38,7 @@ async function checkSidebar(page){
  await page.reload();await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.documentElement.dataset.theme==='dark');
  if(await page.evaluate(()=>tr('Удалить Контакты.sis? Каталог должен быть пустым.'))!=='Delete Контакты.sis? The directory must be empty.')throw Error('Dialog translation changed filename or kept Russian UI');
  // Surface untranslated UI text for review. User content and raw evidence are intentionally excluded.
- const untranslated={};for(const id of ['manager','contacts','calendar','messages','media','backups','catalog','installed','themes','apps','device','overview','activity','lab','inspector','jailbreak']){
+ const untranslated={};for(const id of ['manager','updates','contacts','calendar','messages','media','backups','catalog','installed','themes','apps','device','overview','activity','lab','inspector','jailbreak']){
   await page.evaluate(id=>location.hash='#'+id,id);await page.locator('#'+id+'.visible').waitFor();await page.waitForTimeout(80);
   const text=await page.locator('#'+id).evaluate(element=>{const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT),out=[];while(walker.nextNode()){const n=walker.currentNode;if(!n.parentElement.closest('pre,code,svg,script,[data-i18n-skip]')&&/[А-Яа-яЁё]/.test(n.nodeValue))out.push(n.nodeValue.trim());}return out.filter(Boolean);});if(text.length)untranslated[id]=text;
  }

@@ -1,0 +1,23 @@
+{
+  "schema": "symport.firmware-reference/1",
+  "reviewed": "2026-11-03",
+  "scope": "Latest versions listed in this model-level reference; product-code and regional availability are not established",
+  "models": [
+    {
+      "model": "E52",
+      "latest_known": "091.004",
+      "sources": [
+        "https://forum.gsmhosting.com/vbb/f299/i-need-nokia-e52-rm-469-flash-file-091-004-a-2062052/",
+        "https://www.youtube.com/watch?v=2jw_w15R2s0"
+      ]
+    },
+    {
+      "model": "E72",
+      "latest_known": "091.004",
+      "sources": [
+        "https://www.reddit.com/r/symbian/comments/hd7vmz/nokia_e72_firmware/",
+        "https://www.reddit.com/r/symbian/comments/ctx8au/nokia_e72_stock_firmware_help/"
+      ]
+    }
+  ]
+}

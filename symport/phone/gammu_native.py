@@ -14,6 +14,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from datetime import datetime
 
 MAX_RECORDS = 5000
@@ -23,6 +24,10 @@ DOMAINS = {
     "tasks": ("GetNextToDo", {}, "GetToDoStatus", {}),
     "sms": ("GetNextSMS", {"Folder": 0}, "GetSMSStatus", {}),
 }
+
+
+class PhoneOperationError(ValueError):
+    """A static, privacy-safe adapter diagnostic."""
 
 
 def encode(value):
@@ -51,7 +56,7 @@ def available() -> bool:
 
 def invoke(config: str, action: str, **values) -> dict:
     if not available():
-        raise ValueError(
+        raise PhoneOperationError(
             "python-gammu is not installed on the PC Bridge. Use a Nokia Suite export, or install SymPort with the phone extra"
         )
     try:
@@ -60,19 +65,19 @@ def invoke(config: str, action: str, **values) -> dict:
             input=json.dumps(dict(values, config=config, action=action), default=encode),
             text=True,
             capture_output=True,
-            timeout=180,
+            timeout=900 if action == "batch" else 180,
             check=False,
         )
         if result.returncode or len(result.stdout) > 32 * 1024 * 1024:
-            raise ValueError(
+            raise PhoneOperationError(
                 "Gammu connection failed; reconnect and read the phone before retrying"
             )
         data = json.loads(result.stdout, object_hook=decode)
         if data.get("error"):
-            raise ValueError(data["error"])
+            raise PhoneOperationError(data["error"])
         return data
     except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError) as exc:
-        raise ValueError(
+        raise PhoneOperationError(
             "Gammu did not complete the operation. Read the phone again before retrying a write"
         ) from exc
 
@@ -93,7 +98,7 @@ def read_records(sm, domain: str) -> list[dict]:
         else sum(status.get(k, 0) for k in ("SIMUsed", "PhoneUsed", "TemplatesUsed"))
     )
     if domain == "sms" and not any(k in status for k in ("SIMUsed", "PhoneUsed", "TemplatesUsed")):
-        raise ValueError("SMS count is unavailable")
+        raise PhoneOperationError("SMS count is unavailable")
     if count == 0:
         return []
     result, seen, location = [], set(), None
@@ -112,16 +117,18 @@ def read_records(sm, domain: str) -> list[dict]:
             raise
         records = value if isinstance(value, list) else [value]
         if not records:
-            raise ValueError("Empty iteration response")
+            raise PhoneOperationError("Empty iteration response")
         last = records[-1].get("Location")
         if last is None or last in seen or len(result) + len(records) > MAX_RECORDS:
-            raise ValueError("Phone data exceeds the safe read limit or iteration did not advance")
+            raise PhoneOperationError(
+                "Phone data exceeds the safe read limit or iteration did not advance"
+            )
         seen.add(last)
         result.extend(records)
         location = last
 
 
-def identity(sm) -> dict:
+def identity(sm, telemetry=False) -> dict:
     def optional(method):
         try:
             return getattr(sm, method)()
@@ -130,9 +137,13 @@ def identity(sm) -> dict:
 
     model, firmware, imei = optional("GetModel"), optional("GetFirmware"), optional("GetIMEI")
     battery, signal, fs = (
-        optional("GetBatteryCharge"),
-        optional("GetSignalQuality"),
-        optional("GetFileSystemStatus"),
+        (
+            optional("GetBatteryCharge"),
+            optional("GetSignalQuality"),
+            optional("GetFileSystemStatus"),
+        )
+        if telemetry
+        else (None, None, None)
     )
     model = " / ".join(str(v) for v in model if v) if isinstance(model, (list, tuple)) else model
     firmware = firmware[0] if isinstance(firmware, (tuple, list)) and firmware else firmware
@@ -152,8 +163,12 @@ def identity(sm) -> dict:
         "storage_scope": "gammu-filesystem",
         "imei": ("•" * max(0, len(imei) - 4) + imei[-4:]) if isinstance(imei, str) else None,
         "fingerprint": digest([model, firmware, imei]),
-        "write_identity": bool(isinstance(imei, str) and re.fullmatch(r"[0-9]{14,17}", imei)),
+        "write_identity": bool(
+            isinstance(imei, str) and re.fullmatch(r"[0-9]{14,17}", imei) and len(set(imei)) > 1
+        ),
         "usb_mode": None,
+        "life_timer_hours": None,
+        "life_timer_reason": "The selected adapter does not expose the handset lifetime counter",
     }
 
 
@@ -173,10 +188,57 @@ def sms_verified(sm, current: dict) -> bool:
         return False
 
 
+def verified_entry(expected: dict, actual: dict) -> bool:
+    if any(
+        expected.get(k) != actual.get(k)
+        for k in ("Type", "Priority", "MemoryType")
+        if k in expected
+    ):
+        return False
+
+    def stable(record):
+        return [
+            {k: e[k] for k in ("Type", "Value", "Location", "PictureType") if k in e}
+            for e in record.get("Entries", [])
+            if e.get("Type") not in ("LastModified", "LAST_MODIFIED")
+        ]
+
+    remaining = stable(actual)
+    for entry in stable(expected):
+        if entry not in remaining:
+            return False
+        remaining.remove(entry)
+    return True
+
+
+def write_entry(sm, data: dict) -> dict:
+    domain = data["domain"]
+    record = data["record"]
+    method = {"contacts": "Memory", "calendar": "Calendar", "tasks": "ToDo"}[domain]
+    location = record.get("Location")
+    if location:
+        before = getattr(sm, "Get" + method)(
+            **(
+                {"Type": "ME", "Location": location}
+                if domain == "contacts"
+                else {"Location": location}
+            )
+        )
+        if digest(before) != data.get("before_hash"):
+            raise PhoneOperationError("Record changed on the phone; preview again")
+        getattr(sm, "Set" + method)(record)
+    else:
+        location = getattr(sm, "Add" + method)(record)
+    after = getattr(sm, "Get" + method)(
+        **({"Type": "ME", "Location": location} if domain == "contacts" else {"Location": location})
+    )
+    return {"record": after, "location": location}
+
+
 def execute(sm, data: dict) -> dict:
     action = data["action"]
     if action == "details":
-        result = identity(sm)
+        result = identity(sm, telemetry=True)
         result["sms_send_verified"] = sms_verified(sm, result)
         try:
             result["connection"] = sm.GetConfig(0).get("Connection")
@@ -198,11 +260,11 @@ def execute(sm, data: dict) -> dict:
         return result
     if action == "imei":
         if data.get("confirm") is not True:
-            raise ValueError("Confirm revealing the private device identifier")
+            raise PhoneOperationError("Confirm revealing the private device identifier")
         return {"imei": sm.GetIMEI()}
     domain = data.get("domain")
     if domain not in DOMAINS:
-        raise ValueError("Unknown personal data store")
+        raise PhoneOperationError("Unknown personal data store")
     current = identity(sm)
     if action == "read":
         return {"identity": current, "records": read_records(sm, domain)}
@@ -211,36 +273,37 @@ def execute(sm, data: dict) -> dict:
         or data.get("fingerprint") != current["fingerprint"]
         or not current["write_identity"]
     ):
-        raise ValueError("Phone identity changed; read it again")
+        raise PhoneOperationError("Phone identity changed; read it again")
     if action == "write" and domain != "sms":
-        record = data["record"]
-        method = {"contacts": "Memory", "calendar": "Calendar", "tasks": "ToDo"}[domain]
-        location = record.get("Location")
-        if location:
-            before = getattr(sm, "Get" + method)(
-                **(
-                    {"Type": "ME", "Location": location}
-                    if domain == "contacts"
-                    else {"Location": location}
-                )
-            )
-            if digest(before) != data.get("before_hash"):
-                raise ValueError("Record changed on the phone; preview again")
-            getattr(sm, "Set" + method)(record)
-        else:
-            location = getattr(sm, "Add" + method)(record)
-        after = getattr(sm, "Get" + method)(
-            **(
-                {"Type": "ME", "Location": location}
-                if domain == "contacts"
-                else {"Location": location}
-            )
-        )
-        return {"record": after, "location": location}
+        return write_entry(sm, data)
+    if action == "batch" and domain != "sms":
+        changes = data.get("changes")
+        if not isinstance(changes, list) or not 1 <= len(changes) <= 500:
+            raise PhoneOperationError("A sync batch must contain 1 to 500 entries")
+        if digest(read_records(sm, domain)) != data.get("before_store_hash"):
+            raise PhoneOperationError("The phone changed; preview a new plan")
+        verified, started = 0, time.monotonic()
+        for change in changes:
+            if time.monotonic() - started > 600:
+                break
+            try:
+                result = write_entry(sm, dict(change, domain=domain))
+                if not verified_entry(change["record"], result["record"]):
+                    break
+                verified += 1
+            except Exception:
+                break  # Never expose private Gammu exception text or retry a write.
+        return {
+            "status": "verified-by-readback"
+            if verified == len(changes)
+            else "partial-or-unverified",
+            "verified": verified,
+            "requested": len(changes),
+        }
     if action == "send" and domain == "sms":
         # Operator-enrolled exact device/driver validation, never enabled by a UI checkbox.
         if not sms_verified(sm, current):
-            raise ValueError(
+            raise PhoneOperationError(
                 "SMS sending requires an operator-verified profile for this phone and connection"
             )
         number, text = data.get("number"), data.get("text")
@@ -250,7 +313,9 @@ def execute(sm, data: dict) -> dict:
             or not isinstance(text, str)
             or not 1 <= len(text.encode("utf-16-be")) // 2 <= 70
         ):
-            raise ValueError("Use a valid phone number and one SMS of at most 70 UTF-16 units")
+            raise PhoneOperationError(
+                "Use a valid phone number and one SMS of at most 70 UTF-16 units"
+            )
         reference = sm.SendSMS(
             {
                 "Number": number,
@@ -259,8 +324,12 @@ def execute(sm, data: dict) -> dict:
                 "Coding": "Unicode_No_Compression",
             }
         )
+        if type(reference) is not int or reference < 0:
+            raise PhoneOperationError(
+                "The SMS submission result is unknown; read the phone before retrying"
+            )
         return {"status": "submitted-to-network", "reference": reference, "delivery": "unknown"}
-    raise ValueError("Unsupported personal data operation")
+    raise PhoneOperationError("Unsupported personal data operation")
 
 
 def main():
@@ -275,6 +344,8 @@ def main():
         sm.SetDebugLevel("nothing")
         sm.Init()
         result = execute(sm, data)
+    except PhoneOperationError as exc:
+        result = {"error": str(exc)}
     except Exception as exc:
         code = error_code(exc)
         result = {

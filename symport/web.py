@@ -466,7 +466,7 @@ def make_handler(state: Workbench):
                     value = cookie['symport_media'].value if 'symport_media' in cookie else ''
                 except Exception:
                     value = ''
-                if not secrets.compare_digest(value, state.token) or self.headers.get('Sec-Fetch-Site') == 'cross-site':
+                if not secrets.compare_digest(value.encode(), state.token.encode()) or self.headers.get('Sec-Fetch-Site') == 'cross-site':
                     return self._json({'error': 'Open SymPort before viewing private media'}, 403)
                 sent = False
                 archive = None
@@ -515,6 +515,8 @@ def make_handler(state: Workbench):
                         self.wfile.write(chunk)
                     if archive:
                         archive.unlink(missing_ok=True)
+                    if archive or parse_qs(url.query).get("download") == ["1"]:
+                        state.devices.record("media-download", "success")
                 except (ValueError, OSError, KeyError):
                     if sent:
                         self.close_connection = True

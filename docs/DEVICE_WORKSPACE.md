@@ -15,8 +15,10 @@ same path on Windows and Linux. The remote server cannot discover a phone attach
 | SyncML / native E52 Agent | Extension point in the existing transport contract | An implemented or automatically enabled service |
 
 The dashboard shows only returned values. Missing RM/firmware, battery, signal, USB mode
-and capacity are `unknown`. Filesystem free space is explicitly labelled as the enrolled
+and capacity remain unknown in the API; the dashboard renders them as neutral “No data” badges with icons and captions. Filesystem free space is explicitly labelled as the enrolled
 filesystem: a host directory is not evidence of internal phone-memory capacity.
+The lifetime counter is displayed only if a transport reports it; Gammu currently has no mapped life-timer API. It is never calculated from connection uptime. Nokia call-time counters and powered-on time are different measurements.
+
 IMEI is masked. Revealing it requires confirmation; it disappears after 30 seconds or
 window blur. Discovery and ordinary operation logs never contain the full identifier.
 
@@ -109,7 +111,7 @@ Symlinks, traversal and access outside enrolled roots are rejected.
    ambiguous empty response, incomplete enumeration or stalled iterator produces an error.
 4. Search/filter in the browser, export or create a private backup.
 
-Contacts: search/edit a normalized view, inspect exact duplicate groups, import Google CSV
+Contacts (Gammu phone memory `ME`; SIM contacts are not implicitly combined): search/edit a normalized view, inspect exact duplicate groups, import Google CSV
 or Apple/Google vCard, export selected basic fields or the original phone vCard. Basic cloud
 import covers names/numbers/email; the original Gammu vCard and private JSON backup preserve
 additional returned fields. A vCard staged on a card must be opened and saved on the phone.
@@ -143,7 +145,7 @@ use file export/import on the phone instead.
   contact imports skip exact duplicates. No phone record is deleted.
 - Confirm the displayed plan. Re-reading the original store detects changed records or a different
   phone before any write. A private JSON backup of the original native records is saved first.
-- Each native write is followed by reading that location and comparing supported fields. Unknown
+- A batch keeps one Gammu connection open; each native write is followed by reading that location and comparing supported fields. Unknown
   entry fields and existing phone-number labels are retained during edits.
 - A plan is single-use. A timeout, driver error or read-back mismatch stops the batch and reports
   a partial/unverified result. Read again before another plan; do not automatically retry.
@@ -199,3 +201,17 @@ A future native E52 Agent should implement the same capability-based `Transport`
 snapshots and native record identities, use authenticated PC Bridge enrollment, and provide explicit
 read/write/verification results. It must not extend Mass Storage into protected phone access or
 advertise unimplemented features. No placeholder Agent service is deployed.
+
+## Firmware reference and Updates
+
+The read-only `symport/phone/firmware_reference.json` contains E52/E72 model-level
+reference versions and their public sources (currently 091.004). Numeric comparison
+accepts padded versions such as 91.004/091.004 and distinguishes older, equal, newer
+and unknown values. An unidentified model or ambiguous version is never marked outdated.
+The reference is reviewed with repository updates; it is not a live Nokia update service.
+
+Older versions are highlighted on the dashboard and link to **Updates** in the left menu.
+Updates is intentionally a placeholder: it shows the current/reference version and sources,
+and its install button is disabled. A regional/product-code/RM-specific firmware match,
+verified recovery procedure and actual flasher are prerequisites for future installation.
+No firmware images, executable downloaders or ROM modifications are part of this feature.

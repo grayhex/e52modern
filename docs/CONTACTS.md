@@ -1,5 +1,7 @@
 # Контакты Google и Apple → Symbian
 
+For the current direct phone read/edit/sync workflow, original vCard export, duplicate groups, private backups and verified native writes, see [Device Workspace](DEVICE_WORKSPACE.md). The file-import formats below also remain supported.
+
 Прямого входа в Google или Apple нет. SymPort принимает **файл экспорта**, показывает
 его содержимое и передаёт только выбранные контакты после подтверждения.
 

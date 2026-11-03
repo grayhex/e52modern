@@ -87,9 +87,11 @@ class MediaDownloads:
                         with archive.open(meta["path"], "w", force_zip64=True) as entry:
                             for raw in self.chunks(request, 0, meta["size"] - 1):
                                 entry.write(raw)
+            self.devices.record("media-export", "success")
             return {"url": f"/api/media/export/{key}", "count": len(items), "size": total}
         except Exception:
             target.unlink(missing_ok=True)
+            self.devices.record("media-export", "failed")
             raise
 
     def archive(self, key: str) -> Path:

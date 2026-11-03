@@ -6,3 +6,15 @@
 @keyframes device-enter{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.phone-dashboard{animation:none}}@media(max-width:1100px){.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.phone-dashboard{grid-template-columns:52px minmax(0,1fr);gap:12px}.dashboard-phone{width:48px;max-height:130px}.dashboard-title h2{font-size:18px}.dashboard-grid{gap:8px}.dashboard-metric{padding:8px}.media-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.pim-editor{grid-template-columns:1fr}}
 
 .media-open video{pointer-events:none}
+/* Dashboard controls share one height, including file inputs and icon buttons. */
+#manager .conn-row>.btn,#manager .inline-form>.btn,#manager .form-row>.btn{height:36px;min-height:36px;padding:0 12px;line-height:1.2}
+#manager input,#manager select{height:36px;min-height:36px;padding-top:0;padding-bottom:0}
+#manager input[type=file]{padding:3px 8px;line-height:26px}
+.dashboard-metric.firmware-older{border-color:#d97706;background:#fffbeb}.dashboard-update{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:7px;font-size:11px}.dashboard-update a{color:var(--blue,#0e74e9);text-decoration:underline}.dashboard-update a:focus-visible{outline-offset:2px}[data-theme=dark] .dashboard-metric.firmware-older{border-color:#b98536;background:#3c321e}[data-theme=dark] .dashboard-update a{color:#67e8f9}
+.device-value{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:6px;font-size:11px;font-weight:500;line-height:1.4;white-space:nowrap;vertical-align:middle}
+.device-value svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.device-value.value-state--unknown,.device-value.value-state--disconnected{color:#526176;background:#edf1f5}.device-value.value-state--connected{color:#16704b;background:#e2f5ec}.device-value.value-state--available{color:#096484;background:#e3f4fb}.device-value.value-state--warning{color:#8a530e;background:#fff0d6}
+.dashboard-service{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.dashboard-identifier{display:inline-flex;align-items:center}.device-reading{color:var(--text)}
+[data-theme=dark] .device-value.value-state--unknown,[data-theme=dark] .device-value.value-state--disconnected{color:#abc0d0;background:#183c52}[data-theme=dark] .device-value.value-state--connected{color:#83e1b9;background:#123f3b}[data-theme=dark] .device-value.value-state--available{color:#80dded;background:#103e54}[data-theme=dark] .device-value.value-state--warning{color:#f5cc80;background:#493820}
+#dm-info .device-value>span{color:inherit}
+#dm-info .device-reading{color:var(--text)}

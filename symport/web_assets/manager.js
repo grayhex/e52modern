@@ -30,7 +30,7 @@ async function dmList(){
 dm('list').onclick=()=>dmRun(dmList);
 dm('discover').onclick=()=>dmRun(async()=>{
   const previous=dm('device').value;const r=await dmCall({action:'discover'});dmDevices=r.devices;dm('device').replaceChildren();
-  for(const d of r.devices){const opt=el('option','',d.id+(d.connected?' · подключён':' · отключён'));opt.value=d.id;dm('device').append(opt);}
+  for(const d of r.devices){const opt=el('option','',d.id+' · '+tr(d.connected?'Connected':'Disconnected'));opt.value=d.id;dm('device').append(opt);}
   const preferred=r.devices.find(d=>d.id===previous)||r.devices.find(d=>d.connected&&d.capabilities.includes('personal-data'))||r.devices[0];if(preferred)dm('device').value=preferred.id;
   dm('status').textContent=r.devices.length?'Список обновлён.':'Телефон не подключён. Подключите карту памяти или настройте PC Bridge на ПК с телефоном по инструкции подключения.';
   dmSelection();

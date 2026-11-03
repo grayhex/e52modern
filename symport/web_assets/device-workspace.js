@@ -1,19 +1,38 @@
 "use strict";
 const dw=id=>document.getElementById(id),humanBytes=n=>Number.isFinite(n)?(n>=1024**3?(n/1024**3).toFixed(1)+' GiB':n>=1024**2?(n/1024**2).toFixed(1)+' MiB':n>=1024?(n/1024).toFixed(1)+' KiB':n+' B'):'unknown';
+const missingValue=value=>value===null||value===undefined||/^(unknown|unavailable|none|null|n\/a|undefined)?$/i.test(String(value).trim());
+function dashboardBadge(state,label){
+ const badge=el('span','device-value value-state--'+state),ns='http://www.w3.org/2000/svg',icon=document.createElementNS(ns,'svg');
+ icon.setAttribute('viewBox','0 0 16 16');icon.setAttribute('aria-hidden','true');icon.setAttribute('focusable','false');
+ const circle=document.createElementNS(ns,'circle');circle.setAttribute('cx','8');circle.setAttribute('cy','8');circle.setAttribute('r','6');icon.append(circle);
+ const path=document.createElementNS(ns,'path');path.setAttribute('d',state==='connected'||state==='available'?'m5 8 2 2 4-4':state==='disconnected'?'m6 6 4 4m0-4-4 4':state==='warning'?'M8 4.5v4M8 11h.01':'M6.5 6a1.5 1.5 0 1 1 2.2 1.3c-.7.4-.7.8-.7 1.2M8 11h.01');icon.append(path);
+ badge.append(icon,el('span','',tr(label)));return badge;
+}
+function dashboardValue(value){return missingValue(value)?dashboardBadge('unknown','No data'):el('span','device-reading',String(value));}
 let imeiTimer;
 window.renderPhoneDashboard=function(device){
  clearTimeout(imeiTimer);const host=dm('info');host.replaceChildren();
  const d=device||{},card=el('div','phone-dashboard'),phone=el('img','dashboard-phone');phone.src='/phones/nokia-e52-silver.png';phone.alt='Nokia E52';phone.width=76;phone.height=174;
- const content=el('div'),title=el('div','dashboard-title');title.append(el('h2','',d.model||'Symbian phone'),el('span','chip',d.connected?'Connected':'Disconnected'));content.append(title);
- const metrics=el('dl','dashboard-grid');
- for(const [label,value,percent] of [['RM',d.rm],['Firmware',d.firmware],['Battery',d.battery===null||d.battery===undefined?'unknown':d.battery+'%',d.battery],['Signal',d.signal===null||d.signal===undefined?'unknown':d.signal+'%',d.signal],['Transport',[d.transport,d.connection].filter(Boolean).join(' · ')||'unknown'],['USB mode',d.usb_mode],[(d.storage_scope==='enrolled-filesystem'?'Enrolled filesystem free':'Phone filesystem free'),humanBytes(d.free)],['Capacity',humanBytes(d.total)]]){
-  const box=el('div','dashboard-metric'),v=el('dd','',String(value??'unknown'));v.dataset.i18nSkip='';box.append(el('dt','',label),v);
-  if(Number.isFinite(percent)&&percent>=0&&percent<=100){const bar=el('progress');bar.max=100;bar.value=percent;bar.setAttribute('aria-label',tr(label));box.append(bar);}metrics.append(box);
+ const content=el('div'),title=el('div','dashboard-title');title.append(el('h2','',missingValue(d.model)?tr(d.transport==='mounted-volume'?'Mounted drive':'Symbian phone'):d.model),dashboardBadge(device?(d.connected?'connected':'disconnected'):'unknown',device?(d.connected?(d.transport==='mounted-volume'?'Drive available':'Connected'):'Disconnected'):'No device'));content.append(title);
+ const metrics=el('dl','dashboard-grid'),transportNames={'mounted-volume':'Mounted drive','gammu':'Gammu','pc-bridge':'PC Bridge'};
+ for(const [label,value,percent] of [['RM',d.rm],['Firmware',d.firmware],['Battery',Number.isFinite(d.battery)?d.battery+'%':null,d.battery],['Signal',Number.isFinite(d.signal)?d.signal+'%':null,d.signal],['Transport',[tr(transportNames[d.transport]||d.transport||''),d.connection].filter(Boolean).join(' · ')],['USB mode',d.usb_mode],[(d.storage_scope==='enrolled-filesystem'?'Enrolled filesystem free':'Phone filesystem free'),humanBytes(d.free)],['Capacity',humanBytes(d.total)]]){
+  const box=el('div','dashboard-metric'),v=el('dd');v.dataset.i18nSkip='';v.append(['Transport','USB mode'].includes(label)&&!missingValue(value)?dashboardBadge('available',String(value)):dashboardValue(value));if(missingValue(value))v.title=tr(d.transport==='mounted-volume'?'A mounted drive provides files only. Select Gammu to read phone details.':'The selected adapter did not return this value.');box.append(el('dt','',label),v);
+  if(Number.isFinite(percent)&&percent>=0&&percent<=100){const bar=el('progress');bar.max=100;bar.value=percent;bar.setAttribute('aria-label',tr(label));box.append(bar);}
+  if(label==='Firmware'&&d.firmware_update?.status==='older'){
+   box.classList.add('firmware-older');const notice=el('div','dashboard-update');notice.append(dashboardBadge('warning','Update listed'),el('span','',d.firmware_update.latest_known));const link=el('a','','Updates →');link.href='#updates';link.onclick=()=>{if([...dw('updates-device').options].some(o=>o.value===d.id))dw('updates-device').value=d.id;renderUpdates();};notice.append(link);box.append(notice);
+  }
+  metrics.append(box);
  }
- const privateRow=el('div','dashboard-private'),imei=el('code','',d.imei||'unknown');imei.dataset.i18nSkip='';privateRow.append(el('span','muted','IMEI'),imei);
- if(d.capabilities?.includes('device-details')){const reveal=el('button','btn ghost','Reveal IMEI');reveal.onclick=()=>dmRun(async()=>{if(!confirm(tr('Reveal the private IMEI for 30 seconds?')))return;const result=await dmCall({action:'device-imei',device:d.id,confirm:true});imei.textContent=result.imei||'unknown';reveal.disabled=true;imeiTimer=setTimeout(()=>{imei.textContent=d.imei||'unknown';reveal.disabled=false;},30000);window.addEventListener('blur',()=>{imei.textContent=d.imei||'unknown';reveal.disabled=false;},{once:true});});privateRow.append(reveal);}
- const capabilities=el('div','dashboard-capabilities');for(const c of d.capabilities||[])capabilities.append(el('span','chip',c));
- const services=el('details'),summary=el('summary','','Connection services');services.append(summary);for(const [name,status]of Object.entries(d.capability_status||{}))services.append(el('p','',name+' · '+status.status+' · '+(status.reason||'')));content.append(metrics,privateRow,capabilities,services);card.append(phone,content);host.append(card);
+ const privateRow=el('div','dashboard-private'),imei=el('span','dashboard-identifier');imei.dataset.i18nSkip='';const maskImei=()=>{imei.replaceChildren(missingValue(d.imei)?dashboardBadge('unknown','No data'):el('code','',d.imei));};maskImei();privateRow.append(el('span','muted','IMEI'),imei);
+ if(d.capabilities?.includes('device-details')){
+  const reveal=el('button','btn ghost','Reveal IMEI');reveal.onclick=()=>dmRun(async()=>{if(!confirm(tr('Reveal the private IMEI for 30 seconds?')))return;const result=await dmCall({action:'device-imei',device:d.id,confirm:true});imei.replaceChildren(missingValue(result.imei)?dashboardBadge('unknown','No data'):el('code','',result.imei));reveal.disabled=true;imeiTimer=setTimeout(()=>{maskImei();reveal.disabled=false;},30000);window.addEventListener('blur',()=>{maskImei();reveal.disabled=false;},{once:true});});privateRow.append(reveal);
+ }
+ const life=dashboardValue(Number.isFinite(d.life_timer_hours)&&d.life_timer_hours>=0?d.life_timer_hours.toFixed(1)+' h':null);life.title=tr(d.life_timer_reason||'The selected adapter does not expose the handset lifetime counter');privateRow.append(el('span','muted','Life timer'),life);
+ const capabilities=el('div','dashboard-capabilities'),capabilityLabels={'files':'Files','transfer':'File transfer','media-read':'Gallery','personal-data':'Personal data','contacts-read':'Contacts','calendar-read':'Calendar','tasks-read':'Tasks','sms-read':'SMS','device-details':'Device info'};
+ for(const c of d.capabilities||[])capabilities.append(dashboardBadge('available',capabilityLabels[c]||c));
+ content.append(metrics,privateRow,capabilities);
+ if(Object.keys(d.capability_status||{}).length){const services=el('details'),summary=el('summary','','Connection services');services.append(summary);for(const [name,status]of Object.entries(d.capability_status)){const row=el('p','dashboard-service');row.append(el('span','',tr({'contacts':'Contacts','calendar':'Calendar','tasks':'Tasks','sms':'SMS'}[name]||name)),dashboardBadge(status.status==='available'?'available':'warning',status.status==='available'?'Available':'Unavailable'));if(status.reason)row.append(el('span','muted',status.reason));services.append(row);}content.append(services);}
+ card.append(phone,content);host.append(card);
 };
 renderPhoneDashboard(dmDevices.find(d=>d.id===dm('device').value));
 let galleryVideoObserver;
@@ -29,7 +48,7 @@ function galleryPreview(item){
 }
 function galleryRender(){
  galleryVideoObserver?.disconnect();const generation=galleryGeneration,render=++galleryRenderGeneration,items=galleryVisible(),visible=items.slice(0,galleryPage*gallerySize);dw('gallery-grid').replaceChildren();dw('gallery-more').hidden=visible.length>=items.length;
- const thumbs=[];galleryVideoObserver=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){const video=e.target;video.src=video.dataset.preview;video.preload='metadata';galleryVideoObserver.unobserve(video);}},{rootMargin:'100px'});
+ const thumbs=[];galleryVideoObserver=new IntersectionObserver((entries,observer)=>{for(const e of entries)if(e.isIntersecting&&e.target.isConnected){const video=e.target;video.src=video.dataset.preview;video.preload='metadata';observer.unobserve(video);}},{rootMargin:'100px'});
  for(const item of visible){
   const card=el('article','media-item'+(gallerySelected.has(item.path)?' selected':'')),check=el('input');check.type='checkbox';check.checked=gallerySelected.has(item.path);check.setAttribute('aria-label',tr('Select')+' '+item.name);check.onchange=()=>{check.checked?gallerySelected.add(item.path):gallerySelected.delete(item.path);card.classList.toggle('selected',check.checked);galleryCount();};
   const open=el('button','media-open'),art=el('div','media-art',item.kind==='photo'?'▧':item.kind==='video'?'▷':'♫'),copy=el('span','media-copy',item.name);copy.append(el('small','',humanBytes(item.size)+' · '+new Date(item.modified*1000).toLocaleDateString()));open.append(art,copy);open.onclick=()=>galleryPreview(item);card.append(check,open);dw('gallery-grid').append(card);if(item.kind==='photo')thumbs.push({item,art,copy});else if(item.kind==='video'){const poster=el('video','media-art');poster.muted=true;poster.playsInline=true;poster.preload='none';poster.dataset.preview=mediaUrl(item);poster.setAttribute('aria-hidden','true');poster.onloadedmetadata=()=>{if(poster.videoWidth){item.dimensions=poster.videoWidth+'×'+poster.videoHeight;copy.querySelector('small').append(document.createTextNode(' · '+item.dimensions));}if(Number.isFinite(poster.duration)&&poster.duration>0)poster.currentTime=Math.min(.1,poster.duration/2);};poster.onerror=()=>{poster.removeAttribute('src');art.title=tr('This browser cannot generate a video thumbnail. Download the original file.');poster.replaceWith(art);};art.replaceWith(poster);galleryVideoObserver.observe(poster);}
@@ -37,7 +56,7 @@ function galleryRender(){
  galleryCount();
  // Four concurrent thumbnail requests; originals stay on the PC and are never
  // downloaded into the grid. A new folder/device invalidates outstanding results.
- let index=0;async function worker(){while(index<thumbs.length&&generation===galleryGeneration&&render===galleryRenderGeneration){const {item,art,copy}=thumbs[index++];try{const result=await dmCall({action:'media-thumbnail',device:galleryContext.device,path:item.path,revision:item.revision});if(result.status==='available'&&generation===galleryGeneration&&art.isConnected){const image=el('img','media-art');image.alt=item.name;image.loading='lazy';image.src='data:image/jpeg;base64,'+result.content;item.dimensions=result.width+'×'+result.height;art.replaceWith(image);copy.querySelector('small').append(document.createTextNode(' · '+item.dimensions));}else if(art.isConnected){art.title=tr(result.reason||'Thumbnail unavailable. Download the original file.');}}catch{if(art.isConnected)art.title=tr('Thumbnail unavailable. Download the original file.');}}}for(let i=0;i<4;i++)worker();
+ let index=0;async function worker(){while(index<thumbs.length&&generation===galleryGeneration&&render===galleryRenderGeneration){const {item,art,copy}=thumbs[index++];try{const result=await dmCall({action:'media-thumbnail',device:galleryContext.device,path:item.path,revision:item.revision});if(result.status==='available'&&generation===galleryGeneration&&art.isConnected){const image=el('img','media-art');image.alt=item.name;image.loading='lazy';image.src='data:image/jpeg;base64,'+result.content;item.dimensions=result.width+'×'+result.height;art.replaceWith(image);copy.querySelector('small').append(document.createTextNode(' · '+item.dimensions));}else if(art.isConnected){art.title=tr(result.reason||'Thumbnail unavailable. Download the original file.');}}catch(error){if(art.isConnected)art.title=error.message||tr('Thumbnail unavailable. Download the original file.');}}}for(let i=0;i<4;i++)worker();
 }
 function galleryReset(){galleryVideoObserver?.disconnect();galleryGeneration++;galleryItems=[];gallerySelected.clear();galleryContext=null;dw('gallery-grid').replaceChildren();galleryCount();dw('gallery-preview').close();}
 dw('gallery-read').onclick=()=>suiteBusy(dw('gallery-read'),dw('gallery-status'),async()=>{
@@ -97,8 +116,8 @@ for(const id of ['sms-search','sms-filter','sms-thread'])dw(id).oninput=()=>{sms
 for(const format of ['json','csv'])dw('sms-'+format).onclick=()=>suiteBusy(dw('sms-'+format),dw('sms-status'),()=>pimExport(phoneSms.device,phoneSms.snapshot,format));
 dw('sms-backup').onclick=()=>suiteBusy(dw('sms-backup'),dw('sms-status'),()=>pimBackup(phoneSms.device,phoneSms.snapshot));
 dw('sms-send').onclick=()=>suiteBusy(dw('sms-send'),dw('sms-status'),async()=>{
- const number=dw('sms-number').value.trim(),text=dw('sms-text').value;if(!phoneSms||!confirm(tr('Send this SMS? Charges may apply.')+'\n'+number+'\n\n'+text))return;
- const snapshot=phoneSms;phoneSms=null;updatePimAvailability();const result=await pimAction(snapshot.device,'sms-send',{snapshot:snapshot.snapshot,number,text,confirm:true});dw('sms-status').textContent=tr('Submitted to the network. Delivery status is unknown. Read SMS again before sending another message.');await backupAfterWrite(snapshot.device,result);
+ const number=dw('sms-number').value.trim(),text=dw('sms-text').value;if(!/^\+?[0-9]{3,20}$/.test(number)||!text.length||text.length>70)throw Error(tr('Use a valid phone number and one SMS of at most 70 UTF-16 units'));if(!phoneSms||!confirm(tr('Send this SMS? Charges may apply.')+'\n'+number+'\n\n'+text))return;
+ const snapshot=phoneSms;phoneSms=null;updatePimAvailability();const result=await pimAction(snapshot.device,'sms-send',{snapshot:snapshot.snapshot,number,text,confirm:true});dw('sms-status').textContent=tr(result.status==='submitted-to-network'?'Submitted to the network. Delivery status is unknown. Read SMS again before sending another message.':'The send result is unknown. Read the phone before retrying');await backupAfterWrite(snapshot.device,result);
 });
 const legacyCalendarRead=dw('calendar-read').onclick;
 function calendarDomain(){return dw('pim-calendar-domain').value;}
@@ -131,3 +150,11 @@ window.addEventListener('symport-devices',()=>setTimeout(()=>{
  for(const [domain,snapshot]of Object.entries(phoneCalendars))if(snapshot.device!==dw('calendar-device').value||deviceById(snapshot.device)?.fingerprint!==snapshot.fingerprint){delete phoneCalendars[domain];calendarData=null;calendarPlan=null;dw('calendar-workspace').hidden=true;dw('pim-calendar-editor').hidden=true;dw('pim-calendar-plan').hidden=true;dw('pim-calendar-apply').hidden=true;}
  updatePimAvailability();
 },0));
+
+function renderUpdates(){
+ const device=deviceById(dw('updates-device').value),info=device?.firmware_update,summary=dw('updates-summary');summary.replaceChildren();
+ const values=el('dl','dashboard-grid');for(const [label,value]of [['Model',device?.model||'unknown'],['RM',device?.rm||'unknown'],['Firmware',device?.firmware||'unknown'],['Latest in reference',info?.latest_known||'unknown']]){const item=el('div','dashboard-metric');const reading=el('dd');reading.append(dashboardValue(value));item.append(el('dt','',label),reading);values.append(item);}summary.append(values);
+ const messages={'older':'A newer firmware version is listed in the reference. Installation is coming later.','current-in-reference':'This version matches the local reference.','newer-than-reference':'The phone reports a newer version than the local reference.','unknown':'Read an identifiable E52/E72 and its firmware to compare versions.'};summary.append(el('p','',tr(messages[info?.status||'unknown'])));
+ dw('updates-sources').replaceChildren();for(const url of info?.sources||[]){const p=el('p'),a=el('a','text-link',url);a.href=url;a.target='_blank';a.rel='noopener noreferrer';p.append(a);dw('updates-sources').append(p);}
+}
+dw('updates-device').addEventListener('change',renderUpdates);window.addEventListener('symport-devices',()=>setTimeout(renderUpdates,0));window.addEventListener('symport-language',renderUpdates);renderUpdates();

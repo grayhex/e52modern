@@ -13,7 +13,7 @@ r=Path(sys.argv[1]);v=r/'volume';(v/'Images').mkdir(parents=True);Image.new('RGB
 with wave.open(str(v/'sample.wav'),'wb') as f:f.setnchannels(1);f.setsampwidth(2);f.setframerate(8000);f.writeframes(bytes(16000))
 os.environ.update(SYMPORT_DEVICE_ROOTS=json.dumps({'test-volume':str(v)}),SYMPORT_GAMMU_CONFIG='mock-only',SYMPORT_MGO_URL='',SYMPORT_BRIDGE_URL='')
 w=Workbench(r);local=LocalTransports(r);phone=MockPhone();local.personal.invoke=phone.invoke
-local.devices=lambda: local.files.devices()+[dict(phone.identity,id='gammu',transport='gammu',connected=True,model='Mock transport',firmware='test fixture',capabilities=['device-details','personal-data','contacts-read','calendar-read','tasks-read','sms-read'],capability_status={k:{'status':'available'} for k in phone.records},sms_send_verified=False)]
+local.devices=lambda: local.files.devices()+[dict(phone.identity,id='gammu',transport='gammu',connected=True,model='Nokia E52 (mock transport)',firmware='081.003',capabilities=['device-details','personal-data','contacts-read','calendar-read','tasks-read','sms-read'],capability_status={k:{'status':'available'} for k in phone.records},sms_send_verified=False)]
 w.devices.transport=local
 ThreadingHTTPServer(('127.0.0.1',8779),make_handler(w)).serve_forever()`;
 const server=spawn(python,['-c',script,root],{cwd:repo,env:process.env,stdio:['ignore','ignore','inherit']});
@@ -22,8 +22,10 @@ const server=spawn(python,['-c',script,root],{cwd:repo,env:process.env,stdio:['i
  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  for(let i=0;i<50;i++){try{await page.goto('http://127.0.0.1:8779');break;}catch{await new Promise(r=>setTimeout(r,200));}}
  await page.waitForFunction(()=>Object.keys(uiTranslations.en).length>100);await page.selectOption('#ui-language','en');await page.selectOption('#ui-theme','dark');
- await page.click('#dm-discover');await page.waitForFunction(()=>dmDevices.length===2);await page.selectOption('#dm-device','test-volume');
- if(!(await page.locator('.phone-dashboard').innerText()).includes('unknown'))throw Error('Unknown device fields hidden or invented');
+ await page.click('#dm-discover');await page.waitForFunction(()=>dmDevices.length===2);await page.selectOption('#dm-device','gammu');await page.locator('.firmware-older a').click();await page.locator('#updates.visible').waitFor();if(!(await page.locator('#updates-summary').innerText()).includes('091.004')||!await page.locator('#updates button.primary').isDisabled())throw Error('Firmware reference/placeholder failed');await page.click('[data-nav="manager"]');await page.selectOption('#dm-device','test-volume');
+ for(const [input,button]of [['dm-device','dm-discover'],['dm-path','dm-list'],['dm-upload','dm-send'],['dm-dir','dm-mkdir']]){const a=await page.locator('#'+input).boundingBox(),b=await page.locator('#'+button).boundingBox();if(Math.abs(a.height-b.height)>1)throw Error('Dashboard control height mismatch: '+input+'/'+button);}
+ if(!await page.locator('.device-reading').first().evaluate(n=>getComputedStyle(n).color===getComputedStyle(document.body).color))throw Error('Dashboard readings lost foreground contrast');
+ if(await page.locator('.phone-dashboard .value-state--unknown').count()<4)throw Error('Unknown device fields hidden or invented');
  await page.waitForTimeout(150);await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(shots,'device-dashboard-dark.png'),fullPage:true,animations:"disabled"});
  await page.click('[data-nav="media"]');await page.click('#gallery-read');await page.waitForFunction(()=>document.querySelectorAll('.media-item').length===2);await page.locator('.media-item img').waitFor();
  await page.fill('#gallery-search','sample.jpg');if(await page.locator('.media-item').count()!==1)throw Error('Media search failed');await page.fill('#gallery-search','');
@@ -43,7 +45,7 @@ const server=spawn(python,['-c',script,root],{cwd:repo,env:process.env,stdio:['i
  await page.selectOption('#pim-calendar-domain','tasks');await page.waitForFunction(()=>document.querySelectorAll('#calendar-todos tr').length===1);await page.click('#pim-calendar-new');await page.fill('#pim-cal-summary','New task');await page.fill('#pim-cal-end','2030-01-03T12:00');await page.locator('#pim-calendar-editor button[type="submit"]').click();await page.locator('#pim-calendar-apply:not([hidden])').waitFor();
  // Destructive privacy check: ordinary operation journal must contain no phone content.
  const log=fs.readFileSync(path.join(root,'build/symport/device-manager/operations.jsonl'),'utf8');if(/PRIVATE-SMS|123456789|987654321|Private appointment|private@example|Updated through/.test(log))throw Error('Private content in ordinary journal');
- await page.setViewportSize({width:390,height:844});for(const id of ['manager','media','contacts','messages','calendar']){await page.evaluate(id=>location.hash='#'+id,id);await page.locator('#'+id+'.visible').waitFor();if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Mobile overflow: '+id);}
+ await page.setViewportSize({width:390,height:844});for(const id of ['manager','updates','media','contacts','messages','calendar']){await page.evaluate(id=>location.hash='#'+id,id);await page.locator('#'+id+'.visible').waitFor();if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Mobile overflow: '+id);}
  await page.screenshot({path:path.join(shots,'device-workspace-mobile.png'),fullPage:true,animations:"disabled"});if(errors.length)throw Error(errors.join('\n'));
  console.log('PASS: real thumbnails/ranged WAV/ZIP, dashboard unknown values, contact edit/preview/backup/readback, SMS search/thread/CSV/disabled send, calendar edit/task preview, privacy and mobile layout. Gammu is a stateful mock.');
 }finally{if(browser)await browser.close();server.kill();fs.rmSync(root,{recursive:true,force:true});}})().catch(e=>{console.error(e);process.exitCode=1;});

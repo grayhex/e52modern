@@ -91,6 +91,23 @@ class MockPhone:
             return copy.deepcopy({"identity": self.identity, "records": self.records[domain]})
         if action == "imei":
             return {"imei": "000000000000000"}
+        if action == "batch":
+            assert native.digest(self.records[domain]) == data["before_store_hash"]
+            verified = 0
+            for change in data["changes"]:
+                try:
+                    result = self.invoke(config, "write", domain=domain, **change)
+                    if not native.verified_entry(change["record"], result["record"]):
+                        break
+                    verified += 1
+                except ValueError:
+                    break
+            return {
+                "status": "verified-by-readback"
+                if verified == len(data["changes"])
+                else "partial-or-unverified",
+                "verified": verified,
+            }
         if action == "write":
             self.writes += 1
             if self.fail:
@@ -365,3 +382,173 @@ def test_ranges_and_cookie_authorization(http_server, tmp_path):  # noqa: F811
     for value in ("bytes=1-2,4-5", "bytes=-0", "bytes=5-1"):
         with pytest.raises(ValueError):
             byte_range(value, 10)
+
+
+def test_native_sms_profile_confirmation_and_exact_connection(tmp_path, monkeypatch):
+    class SM:
+        def GetModel(self):
+            return ("test", "test")
+
+        def GetFirmware(self):
+            return ("fixture", "", "")
+
+        def GetIMEI(self):
+            return "490154203237518"
+
+        def GetConfig(self, index):
+            return {"Connection": self.connection}
+
+        def SendSMS(self, value):
+            self.sent.append(value)
+            return 42
+
+        connection = "blues60"
+        sent = []
+
+    sm = SM()
+    identity = native.identity(sm)
+    data = {
+        "action": "send",
+        "domain": "sms",
+        "fingerprint": identity["fingerprint"],
+        "confirm": True,
+        "number": "+123456789",
+        "text": "Test",
+    }
+    monkeypatch.delenv("SYMPORT_VERIFIED_SMS_PROFILE", raising=False)
+    with pytest.raises(ValueError, match="verified"):
+        native.execute(sm, data)
+    proof = tmp_path / "sms-profile.json"
+    proof.write_text(
+        json.dumps(
+            {
+                "fingerprint": identity["fingerprint"],
+                "connection": "blues60",
+                "sms_send_verified": True,
+            }
+        )
+    )
+    monkeypatch.setenv("SYMPORT_VERIFIED_SMS_PROFILE", str(proof))
+    with pytest.raises(ValueError):
+        native.execute(sm, dict(data, confirm=False))
+    assert not sm.sent
+    assert native.execute(sm, data)["status"] == "submitted-to-network" and len(sm.sent) == 1
+    sm.connection = "at"
+    with pytest.raises(ValueError, match="verified"):
+        native.execute(sm, data)
+    assert len(sm.sent) == 1
+
+
+def test_old_contact_row_cannot_be_rebound_to_a_new_snapshot(personal):
+    workspace, _ = personal
+    old = read(workspace)
+    new = read(workspace)
+    with pytest.raises(ValueError, match="another read snapshot"):
+        preview(workspace, new, [dict(old["rows"][0], name="Changed")])
+
+
+def test_all_day_cancelled_and_unsupported_categories_are_not_silently_imported():
+    raw = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nSUMMARY:Do not convert\r\nDTSTART;VALUE=DATE:20300102\r\nSTATUS:CANCELLED\r\nCATEGORIES:Custom\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+    row = calendar_import(raw)[0]
+    assert set(row["unsupported"]) == {"all-day", "categories", "status"}
+    with pytest.raises(ValueError):
+        update_record(None, row, "calendar")
+
+
+def test_native_batch_reuses_session_and_stops_before_next_write_on_bad_readback():
+    class SM:
+        def __init__(self):
+            record = MockPhone().records["contacts"][0]
+            self.records = {i: dict(copy.deepcopy(record), Location=i) for i in (1, 2, 3)}
+            self.written = []
+
+        def GetModel(self):
+            return ("test", "test")
+
+        def GetFirmware(self):
+            return ("fixture", "", "")
+
+        def GetIMEI(self):
+            return "490154203237518"
+
+        def GetMemoryStatus(self, Type):
+            return {"Used": len(self.records)}
+
+        def GetNextMemory(self, Type, Start=False, Location=None):
+            following = [i for i in self.records if Start or i > Location]
+            if not following:
+                raise ERR_EMPTY()
+            return copy.deepcopy(self.records[min(following)])
+
+        def GetMemory(self, Type, Location):
+            return copy.deepcopy(self.records[Location])
+
+        def SetMemory(self, record):
+            location = record["Location"]
+            self.written.append(location)
+            self.records[location] = copy.deepcopy(record)
+            if location == 2:
+                self.records[location]["Entries"] = []
+
+    sm = SM()
+    changes = []
+    for record in sm.records.values():
+        after = copy.deepcopy(record)
+        after["Entries"][0]["Value"] = "Edited"
+        changes.append({"record": after, "before_hash": native.digest(record)})
+    result = native.execute(
+        sm,
+        {
+            "action": "batch",
+            "domain": "contacts",
+            "changes": changes,
+            "before_store_hash": native.digest(list(sm.records.values())),
+            "fingerprint": native.identity(sm)["fingerprint"],
+            "confirm": True,
+        },
+    )
+    assert result["status"] == "partial-or-unverified" and result["verified"] == 1
+    assert sm.written == [1, 2] and sm.records[3]["Entries"][0]["Value"] == "Private Contact"
+
+
+def test_sms_failure_returns_backup_and_cannot_replay(personal):
+    workspace, _ = personal
+    result = read(workspace, "sms")
+    args = {
+        "action": "sms-send",
+        "snapshot": result["snapshot"],
+        "confirm": True,
+        "number": "+123456789",
+        "text": "Test",
+    }
+    sent = workspace.execute("test", args)
+    assert sent["status"] == "partial-or-unverified"
+    assert (workspace.root / (sent["backup"] + ".json")).is_file()
+    with pytest.raises(ValueError, match="already attempted"):
+        workspace.execute("test", args)
+
+
+def test_firmware_reference_numeric_comparison_and_unknown_models():
+    from symport.phone.firmware import assess, reference
+
+    assert {m["model"] for m in reference()["models"]} == {"E52", "E72"}
+    for model in ("Nokia E52", "E72 / RM-530"):
+        old = assess({"model": model, "firmware": "081.003"})
+        assert old["status"] == "older" and old["latest_known"] == "091.004"
+        assert not old["install_available"] and not old["variant_verified"]
+        assert assess({"model": model, "firmware": "91.004"})["status"] == "current-in-reference"
+        assert assess({"model": model, "firmware": "100.001"})["status"] == "newer-than-reference"
+        assert assess({"model": model, "firmware": None})["status"] == "unknown"
+    for model in ("E71", "E52 E72", "", None):
+        assert assess({"model": model, "firmware": "081.003"})["status"] == "unknown"
+
+
+def test_discovery_masks_identifiers_from_all_transports(tmp_path):
+    class Transport:
+        def devices(self):
+            return [
+                {"id": "phone", "model": "E52", "firmware": "081.003", "imei": "123456789012345"}
+            ]
+
+    device = DeviceManager(tmp_path, Transport()).execute({"action": "discover"})["devices"][0]
+    assert device["imei"] == "•••••••••••2345" and device["firmware_update"]["status"] == "older"

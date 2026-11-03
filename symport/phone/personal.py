@@ -14,7 +14,7 @@ import json
 import os
 import secrets
 import time
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 import vobject
@@ -60,18 +60,18 @@ def public(record: dict, domain: str) -> dict:
     if domain == "sms":
         return {
             "native_id": identifier + f":{record.get('Folder', 0)}",
-            "number": record.get("Number", ""),
-            "text": record.get("Text", ""),
+            "number": str(record.get("Number") or ""),
+            "text": str(record.get("Text") or ""),
             "date": text(record.get("DateTime")),
-            "state": record.get("State", "unknown"),
+            "state": record.get("State") or "unknown",
             "folder": record.get("Folder"),
             "direction": "incoming"
             if record.get("Type") == "Deliver"
             else "outgoing"
             if record.get("Type") == "Submit"
             else "unknown",
-            "part": record.get("UDH", {}).get("PartNumber"),
-            "parts": record.get("UDH", {}).get("AllParts"),
+            "part": (record.get("UDH") or {}).get("PartNumber"),
+            "parts": (record.get("UDH") or {}).get("AllParts"),
         }
     return {
         "native_id": identifier,
@@ -84,6 +84,7 @@ def public(record: dict, domain: str) -> dict:
         "end": text(f.get("END_DATETIME")) if domain == "calendar" else "",
         "due": text(f.get("END_DATETIME")) if domain == "tasks" else "",
         "completed": bool(f.get("COMPLETED")),
+        "priority": record.get("Priority", "None") if domain == "tasks" else None,
         "recurrence": any(k.startswith("REPEAT_") for k in f),
     }
 
@@ -121,7 +122,56 @@ def calendar_import(raw: str) -> list[dict]:
                     "last-modified",
                     "sequence",
                     "prodid",
+                    "categories",
+                    "priority",
                 }
+                categories = getattr(c, "categories", None)
+                category_values = list(categories.value) if categories else []
+                category_map = {
+                    "MEETING": "MEETING",
+                    "MISCELLANEOUS": "MEMO",
+                    "MEMO": "MEMO",
+                    "REMINDER": "REMINDER",
+                    "CALL": "CALL",
+                    "BIRTHDAY": "BIRTHDAY",
+                }
+                entry_type = (
+                    category_map.get(str(category_values[0]).upper())
+                    if len(category_values) == 1
+                    else None
+                )
+                if category_values and entry_type is None:
+                    complex_fields.add("categories")
+                priority = _text(c, "priority")
+                if priority and (c.name != "VTODO" or priority not in {str(i) for i in range(10)}):
+                    complex_fields.add("priority")
+                priority_name = (
+                    (
+                        "None"
+                        if not priority or priority == "0"
+                        else "High"
+                        if int(priority) <= 3
+                        else "Medium"
+                        if int(priority) <= 6
+                        else "Low"
+                    )
+                    if priority is None or priority.isdigit()
+                    else "None"
+                )
+                status = _text(c, "status")
+                if status and status not in (
+                    {"CONFIRMED"}
+                    if c.name == "VEVENT"
+                    else {"CONFIRMED", "COMPLETED", "NEEDS-ACTION"}
+                ):
+                    complex_fields.add("status")
+                if any(
+                    isinstance(getattr(c, name).value, date)
+                    and not isinstance(getattr(c, name).value, datetime)
+                    for name in ("dtstart", "dtend", "due")
+                    if hasattr(c, name)
+                ):
+                    complex_fields.add("all-day")
                 rows.append(
                     {
                         "kind": "calendar" if c.name == "VEVENT" else "tasks",
@@ -134,6 +184,8 @@ def calendar_import(raw: str) -> list[dict]:
                         "due": _when(c, "due") or "",
                         "completed": _text(c, "status") == "COMPLETED",
                         "unsupported": sorted(complex_fields),
+                        "entry_type": entry_type,
+                        "priority": priority_name,
                     }
                 )
     except Exception as exc:
@@ -158,6 +210,14 @@ def update_record(before: dict | None, row: dict, domain: str) -> dict:
             }
         )
     )
+    if domain != "contacts" and not before and row.get("entry_type"):
+        if row["entry_type"] not in ("MEETING", "MEMO", "REMINDER", "CALL", "BIRTHDAY"):
+            raise ValueError("Unsupported calendar entry type")
+        record["Type"] = row["entry_type"]
+    if domain == "tasks" and "priority" in row:
+        if row["priority"] not in ("High", "Medium", "Low", "None"):
+            raise ValueError("Unsupported task priority")
+        record["Priority"] = row["priority"]
     if domain == "contacts":
         c = normalize([row])[0]
         if not c["name"] or len(c["phones"]) > 20 or len(c["emails"]) > 20:
@@ -393,6 +453,22 @@ class PersonalWorkspace:
                             ]:
                                 if isinstance(f.get(field), datetime) and hasattr(component, name):
                                     getattr(component, name).value = f[field]
+                            if domain == "tasks":
+                                # libGammu's encoder can invert High/Low. The
+                                # API enum is authoritative; RFC5545 uses 1=high.
+                                priority = {"High": 1, "Medium": 5, "Low": 9, "None": 0}[
+                                    record.get("Priority", "None")
+                                ]
+                                if not hasattr(component, "priority"):
+                                    component.add("priority")
+                                component.priority.value = str(priority)
+                                if not hasattr(component, "status"):
+                                    component.add("status")
+                                component.status.value = (
+                                    "COMPLETED"
+                                    if fields(record).get("COMPLETED")
+                                    else "NEEDS-ACTION"
+                                )
                             combined.add(component)
                     raw = combined.serialize()
                 except ImportError:
@@ -518,62 +594,31 @@ class PersonalWorkspace:
                 raise ValueError("The phone changed; read again and preview a new plan")
             backup = self._backup(snapshot)
             plan["used"] = True  # No automatic retry after any write attempt.
-            verified = 0
-            for change in plan["changes"]:
-                try:
-                    result = self.invoke(
-                        config,
-                        "write",
-                        domain=domain,
-                        record=change["after"],
-                        before_hash=native.digest(change["before"]),
-                        fingerprint=original["identity"]["fingerprint"],
-                        confirm=True,
-                    )
-                    wanted, actual = (
-                        public(change["after"], domain),
-                        public(result["record"], domain),
-                    )
-                    keys = (
-                        ("name", "phones", "emails")
-                        if domain == "contacts"
-                        else (
-                            "summary",
-                            "description",
-                            "location",
-                            "start",
-                            "end",
-                            "due",
-                            "completed",
-                        )
-                    )
-                    if any(wanted[k] != actual[k] for k in keys):
-                        raise ValueError("Read-back mismatch")
-
-                    def stable_entries(record):
-                        return [
-                            {
-                                k: e[k]
-                                for k in ("Type", "Value", "Location", "PictureType")
-                                if k in e
-                            }
-                            for e in record.get("Entries", [])
-                            if e.get("Type") not in ("LastModified", "LAST_MODIFIED")
-                        ]
-
-                    actual_entries = stable_entries(result["record"])
-                    if any(e not in actual_entries for e in stable_entries(change["after"])):
-                        raise ValueError("The driver changed or omitted an entry field")
-                    verified += 1
-                except (ValueError, OSError):
-                    return {
-                        "status": "partial-or-unverified",
-                        "verified": verified,
-                        "requested": len(plan["changes"]),
-                        "backup": backup,
-                        "reason": "The driver failed or read-back differed. Read the phone again before another write",
-                    }
-            return {"status": "verified-by-readback", "verified": verified, "backup": backup}
+            try:
+                result = self.invoke(
+                    config,
+                    "batch",
+                    domain=domain,
+                    changes=[
+                        {"record": change["after"], "before_hash": native.digest(change["before"])}
+                        for change in plan["changes"]
+                    ],
+                    before_store_hash=native.digest(original["records"]),
+                    fingerprint=original["identity"]["fingerprint"],
+                    confirm=True,
+                )
+            except (ValueError, OSError):
+                result = {
+                    "status": "partial-or-unverified",
+                    "verified": 0,
+                    "requested": len(plan["changes"]),
+                }
+            result["backup"] = backup
+            if result["status"] != "verified-by-readback":
+                result["reason"] = (
+                    "The driver failed or read-back differed. Read the phone again before another write"
+                )
+            return result
         if action == "sms-send":
             if snapshot.get("send_attempted"):
                 raise ValueError("A send was already attempted. Read SMS again before another send")
@@ -581,21 +626,30 @@ class PersonalWorkspace:
                 raise ValueError("Confirm sending the SMS to this recipient")
             backup = self._backup(snapshot, "before-sms-send")
             snapshot["send_attempted"] = True
-            result = self.invoke(
-                config,
-                "send",
-                domain="sms",
-                fingerprint=original["identity"]["fingerprint"],
-                number=data.get("number"),
-                text=data.get("text"),
-                confirm=True,
-            )
+            try:
+                result = self.invoke(
+                    config,
+                    "send",
+                    domain="sms",
+                    fingerprint=original["identity"]["fingerprint"],
+                    number=data.get("number"),
+                    text=data.get("text"),
+                    confirm=True,
+                )
+            except (ValueError, OSError):
+                return {
+                    "status": "partial-or-unverified",
+                    "backup": backup,
+                    "reason": "The send result is unknown. Read the phone before retrying",
+                }
             result["backup"] = backup
             try:
                 reread = self.invoke(config, "read", domain="sms")
                 result["readback"] = "completed"
+                before_hashes = {native.digest(old) for old in original["records"]}
                 result["stored_copy"] = any(
-                    r.get("Text") == data.get("text")
+                    native.digest(r) not in before_hashes
+                    and r.get("Text") == data.get("text")
                     and r.get("Number") == data.get("number")
                     and r.get("Type") == "Submit"
                     for r in reread["records"]
