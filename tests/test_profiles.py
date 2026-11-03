@@ -51,3 +51,10 @@ def test_e72_geometry_and_automatic_presentation():
     assert e72['name'] == 'Nokia E72' and e72['screen']['width'] == 320
     assert presentation('E52')['screen']['height'] == 320
     assert presentation('a mounted folder') is None
+
+
+def test_e72_artwork_keeps_handset_proportions():
+    from PIL import Image
+    with Image.open(REPO/'symport/web_assets/phones/nokia-e72.png') as image:
+        left,top,right,bottom = image.getbbox()
+        assert 1.85 < (bottom-top)/(right-left) < 2.10

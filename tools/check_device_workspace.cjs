@@ -23,7 +23,7 @@ const server=spawn(python,['-c',script,root],{cwd:repo,env:process.env,stdio:['i
  for(let i=0;i<50;i++){try{await page.goto('http://127.0.0.1:8779');break;}catch{await new Promise(r=>setTimeout(r,200));}}
  await page.waitForFunction(()=>Object.keys(uiTranslations.en).length>100);await page.selectOption('#ui-language','en');await page.selectOption('#ui-theme','dark');
  await page.click('[data-nav="connection"]');await page.click('#dm-discover');await page.waitForFunction(()=>dmDevices.length===2);await page.selectOption('#dm-device','gammu');await page.click('[data-nav="updates"]');await page.locator('#updates.visible').waitFor();if(!await page.locator('#updates button.primary').isDisabled())throw Error('Firmware flashing must remain disabled');
- await page.click('[data-nav="files"]');
+ await page.click('[data-nav="files"]');await page.locator('#files.visible').waitFor();
  for(const [input,button]of [['dm-path','dm-list'],['dm-upload','dm-send'],['dm-dir','dm-mkdir']]){const a=await page.locator('#'+input).boundingBox(),b=await page.locator('#'+button).boundingBox();if(Math.abs(a.height-b.height)>1)throw Error('File control height mismatch');}
  await page.click('[data-nav="connection"]');await page.selectOption('#dm-device','test-volume');await page.click('[data-nav="manager"]');
  if(await page.locator('#manager .mini-tile,#manager input[type=file],#manager #dm-send').count())throw Error('Dashboard still duplicates actions');

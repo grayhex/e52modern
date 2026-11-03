@@ -11,6 +11,7 @@ import secrets
 import shutil
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -57,11 +58,11 @@ class RingtoneStudio:
             raise ValueError("Ringtone processing requires the Linux Docker backend.")
         command = [sys.executable, "-m", "symport.audio.worker", executable, *args]
         try:
-            with __import__("tempfile").TemporaryFile() as log:
+            with tempfile.TemporaryFile() as log, tempfile.TemporaryFile() as output:
                 result = subprocess.run(
                     command,
                     stdin=subprocess.DEVNULL,
-                    stdout=subprocess.PIPE,
+                    stdout=output,
                     stderr=log,
                     timeout=timeout,
                     check=False,
@@ -77,11 +78,13 @@ class RingtoneStudio:
                     raise ValueError("Audio processing produced excessive diagnostics.")
                 log.seek(0)
                 diagnostic = log.read().decode("utf-8", errors="replace")
-                if result.returncode or len(result.stdout) > 1024**2:
+                output.seek(0, 2)
+                if result.returncode or output.tell() > 1024**2:
                     raise ValueError(
                         "Audio could not be decoded or processed. Choose a supported audio/video file."
                     )
-                return result.stdout, diagnostic
+                output.seek(0)
+                return output.read(), diagnostic
         except subprocess.TimeoutExpired as exc:
             raise ValueError(
                 "Audio processing timed out. Choose a shorter file or selection."
