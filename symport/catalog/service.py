@@ -153,7 +153,7 @@ class AppCatalog:
                         if entry['format'] == 'jar+jad':
                             raise ValueError('This OBEX adapter cannot preserve a JAR/JAD pair in one folder. Choose a JAR-only package or a mounted memory card.')
                         receipts = []
-                        for cached, evidence in artifacts:
+                        for cached, _evidence in artifacts:
                             folder = '' if 'opp-push' in device['capabilities'] else request.get('path', '').rstrip('/')
                             receipt = self.devices.execute({'action': 'software-transfer', 'device': request['device'],
                                 'path': '/'.join(filter(None, (folder, cached.name))), 'confirm': True,
