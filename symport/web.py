@@ -410,6 +410,13 @@ def make_handler(state: Workbench):
                 "/backups.js": ("backups.js", "text/javascript; charset=utf-8"),
                 "/calendar.js": ("calendar.js", "text/javascript; charset=utf-8"),
             }
+            graphic = '/brand/appmark.svg' if url.path == '/favicon.svg' else url.path
+            if re.fullmatch(r'/(?:brand/[a-z0-9-]+\.(?:svg|png)|icons/(?:outline|tiles)/[a-z0-9-]+\.svg)', graphic):
+                try:
+                    raw = (ASSETS / graphic.lstrip('/')).read_bytes()
+                    return self._send(raw, 'image/svg+xml' if graphic.endswith('.svg') else 'image/png')
+                except OSError:
+                    return self._json({'error': 'Not found'}, 404)
             if url.path == '/phones/nokia-e52-silver.png':
                 return self._send((ASSETS / 'phones/nokia-e52-silver.png').read_bytes(), 'image/png')
             font = url.path.removeprefix('/fonts/')

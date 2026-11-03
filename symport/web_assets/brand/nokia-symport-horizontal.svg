@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1050" height="286" viewBox="0 0 1050 286">
+<g fill="#124191" transform="translate(40 30) scale(1.64)">
+<path d="M0 104V8H26L75 70V8H102V104H76L27 42V104Z"/>
+<path fill-rule="evenodd" d="M171 6C208 6 228 26 228 56S208 106 171 106S114 86 114 56S134 6 171 6ZM171 32C152 32 143 40 143 56S152 80 171 80S199 72 199 56S190 32 171 32Z"/>
+<path d="M242 8H270V47L307 8H344L302 52L346 104H309L270 59V104H242Z"/>
+<path d="M355 8H384V104H355Z"/>
+<path fill-rule="evenodd" d="M434 8H464L505 104H475L467 84H429L421 104H392L434 8ZM437 62H459L448 32Z"/>
+</g>
+<path d="M44 222H892" stroke="#E2E8F0" stroke-width="2"/>
+<circle cx="53" cy="251" r="5" fill="#059669"/>
+<text x="75" y="259" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="5" fill="#0F172A">SYMPORT</text>
+<text x="331" y="259" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="600" letter-spacing="3" fill="#64748B">E52 MODERN  /  PHONE WORKSPACE</text>
+</svg>

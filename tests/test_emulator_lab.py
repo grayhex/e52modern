@@ -8,6 +8,7 @@ import io
 import json
 import threading
 import time
+from pathlib import Path
 
 import pytest
 
@@ -226,7 +227,7 @@ def test_lab_routes_require_auth_and_stream_firmware(http_server):  # noqa: F811
     connection.close()
     status, raw = _http(port, 'POST', '/api/lab', {'action': 'state'}, {'X-Symport-Token': workbench.token})
     assert status == 200 and TOKEN.encode() not in raw
-    for path in ['/lab.js', '/lab.css', '/nimbus.css', '/fonts/Inter.ttf', '/fonts/JetBrainsMono.ttf']:
+    for path in ['/lab.js', '/lab.css', '/nimbus.css', '/fonts/Inter.ttf', '/fonts/JetBrainsMono.ttf', '/phones/nokia-e52-silver.png', '/favicon.svg', '/brand/nokia-symport-horizontal.svg', '/icons/tiles/contacts.svg']:
         assert _http(port, 'GET', path)[0] == 200
 
 
@@ -286,3 +287,24 @@ def test_unavailable_screen_preserves_user_observation(setup):
     saved = lab.report(report['id'])
     assert saved['observations'][0]['result'] == 'unsupported'
     assert 'surface' in saved['screen_reason']
+
+
+def test_silver_e52_asset_geometry_and_key_targets():
+    from PIL import Image
+    root = Path(__file__).resolve().parents[1] / 'symport/web_assets/phones'
+    layout = json.loads((root / 'nokia-e52-silver.json').read_text())
+    with Image.open(root / 'nokia-e52-silver.png') as image:
+        assert image.mode == 'RGBA' and image.size == (layout['width'], layout['height'])
+    screen = layout['screen']
+    assert (screen['nativeWidth'], screen['nativeHeight']) == (240, 320)
+    assert 0 < screen['x'] < screen['x'] + screen['width'] < layout['width']
+    assert 0 < screen['y'] < screen['y'] + screen['height'] < layout['height']
+    keys = layout['keys']
+    assert len({k['id'] for k in keys}) == len(keys)
+    assert all(any(k['key'] == digit for k in keys) for digit in '0123456789')
+    assert next(k for k in keys if k['id'] == 'mail')['key'] is None
+    for i, a in enumerate(keys):
+        assert 0 <= a['x'] < a['x'] + a['width'] <= layout['width']
+        assert screen['y'] + screen['height'] < a['y'] < a['y'] + a['height'] <= layout['height']
+        for b in keys[i+1:]:
+            assert a['x']+a['width'] <= b['x'] or b['x']+b['width'] <= a['x'] or a['y']+a['height'] <= b['y'] or b['y']+b['height'] <= a['y'], 'Overlapping hardware controls'

@@ -13,13 +13,14 @@ from pathlib import Path
 from tests.lab_fixture import MockMgo,serve_mock,sis,TOKEN
 from tests.test_catalog import catalog_fixture,artifact
 from symport.web import main
+from symport.catalog.service import save
 root=Path(sys.argv[1]); (root/'volume').mkdir(); (root/'firmware.rom').write_bytes(b'TEST ONLY NOT A ROM'); (root/'app.sis').write_bytes(sis()); (root/'theme.sis').write_bytes(sis(True)); (root/'game.jar').write_bytes(b'TEST ONLY')
 (root/'build/symport/theme/light').mkdir(parents=True); (root/'build/symport/theme/light/fixture-theme.sis').write_bytes(sis(True))
 project=root/'workspace/Fixture';(project/'.symbian/package').mkdir(parents=True);(project/'symbian.toml').write_text('');(project/'.symbian/package/fixture-app.sis').write_bytes(sis())
 catalog_fixture(root); entry=root/'catalog/apps/example.json'; data=json.loads(entry.read_text());data.update(name='Lab contract game fixture',format='sis',dependencies=[],category='games');entry.write_text(json.dumps(data));sources=json.loads((root/'catalog/sources.json').read_text());a=artifact(sis(),'fixture-game.sis');sources['example']={'artifacts':[a]};(root/'catalog/sources.json').write_text(json.dumps(sources));cache=root/'build/symport/app-catalog/cache'/a['sha256'];cache.mkdir(parents=True);(cache/a['name']).write_bytes(sis())
 agent=MockMgo(installed=False); original=agent.request
 def record(*args,**kwargs):
- result=original(*args,**kwargs);(root/'calls.json').write_text(json.dumps(agent.calls));return result
+ result=original(*args,**kwargs);save(root/'calls.json',agent.calls);return result
 agent.request=record
 server=serve_mock(agent,8774);os.environ.update(SYMPORT_MGO_URL='http://127.0.0.1:8774',SYMPORT_MGO_TOKEN=TOKEN,SYMPORT_MGO_TOKEN_FILE='',SYMPORT_DEVICE_ROOTS=json.dumps({'test-volume':str(root/'volume')}),SYMPORT_GAMMU_CONFIG='',SYMPORT_BRIDGE_URL='')
 main(['--repo',str(root),'--port','8773'])`;
@@ -34,6 +35,14 @@ main(['--repo',str(root),'--port','8773'])`;
   page.once('dialog',d=>d.accept());await page.click('#lab-install-firmware');await page.waitForFunction(()=>document.querySelector('#lab-reports .status.installed'),null,{timeout:15000});
   await page.waitForFunction(()=>[...document.getElementById('lab-device').options].some(o=>o.value==='mock-device'));await page.selectOption('#lab-device','mock-device');await page.waitForFunction(()=>!document.getElementById('lab-start').disabled);await page.click('#lab-start');await page.locator('#lab-screen:not([hidden])').waitFor();
   await page.locator('#lab-controls').focus();await page.keyboard.press('F3');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');await page.waitForTimeout(200);
+  await page.locator('.lab-e52-body').waitFor();
+  if(!await page.locator('.lab-e52-mail').isDisabled())throw Error('Unsupported Mail key enabled');
+  // A pointer and keyboard can hold the same physical key without an early up.
+  await page.locator('#lab-controls').focus();await page.keyboard.down('ArrowLeft');
+  const keyBox=await page.locator('.lab-e52-left').boundingBox();await page.mouse.move(keyBox.x+keyBox.width/2,keyBox.y+keyBox.height/2);await page.mouse.down();await page.keyboard.up('ArrowLeft');await page.waitForTimeout(150);
+  const held=JSON.parse(fs.readFileSync(path.join(root,'calls.json'),'utf8')).filter(c=>c[1]==='/v1/input/key'&&c[2].key==='left');if(held.at(-1)[2].action!=='down')throw Error('Shared key released too early');
+  await page.mouse.up();await page.waitForTimeout(150);
+  const released=JSON.parse(fs.readFileSync(path.join(root,'calls.json'),'utf8')).filter(c=>c[1]==='/v1/input/key'&&c[2].key==='left');if(released.at(-1)[2].action!=='up')throw Error('Pointer key stuck');
   const calls=JSON.parse(fs.readFileSync(path.join(root,'calls.json'),'utf8'));if(!calls.some(([m,p,b])=>p==='/v1/input/key'&&b.key==='applications'&&b.action==='down'))throw Error('Menu key did not reach agent');
   await page.selectOption('#lab-source','upload');await page.setInputFiles('#lab-package',path.join(root,'app.sis'));page.once('dialog',d=>d.accept());await page.click('#lab-test');await page.waitForFunction(()=>document.querySelector('#lab-reports .status.launched'),null,{timeout:15000});
   await page.waitForFunction(()=>document.getElementById('lab-report-summary').textContent.includes('launched'));await page.click('#lab-shot');await page.waitForFunction(()=>document.querySelectorAll('#lab-report-shots img').length===2);
