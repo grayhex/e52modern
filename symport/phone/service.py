@@ -30,7 +30,8 @@ class DeviceManager:
     def execute(self, data: dict) -> dict:
         allowed = {'discover', 'history', 'list', 'download', 'upload', 'transfer',
                    'mkdir', 'delete', 'backup', 'restore-preview', 'restore', 'contacts-stage',
-                   'contacts-read', 'contacts-import', 'media-upload', 'software-transfer'}
+                   'contacts-read', 'contacts-import', 'media-upload', 'software-transfer',
+                   'apps-inventory', 'calendar-read'}
         if not isinstance(data.get('action'), str) or data['action'] not in allowed:
             raise ValueError('Unknown device operation')
         if data['action'] not in ('discover', 'history'):
@@ -48,7 +49,8 @@ class DeviceManager:
                 return {'devices': self.transport.devices(), 'limitations': {
                     'contacts': 'Импорт Google CSV / Apple vCard, передача vCard на карту или запись через Gammu с чтением для проверки',
                     'sms': 'Requires a tested Gammu or native Agent adapter',
-                    'applications': 'Mounted volumes do not expose the installed application registry',
+                    'applications': 'Mounted volumes do not expose the installed application registry; apps-inventory lists SIS package files only',
+                    'calendar': 'Read-only through Gammu (calendar-read); E52 support unverified',
                     'backup': 'File backup covers only the selected folder, not contacts, SMS, applications or firmware',
                     'bluetooth': 'OBEX pairing and service discovery must run on the PC connected to the phone',
                 }}

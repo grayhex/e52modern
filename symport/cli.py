@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -107,6 +108,33 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--output", type=Path)
     ap.add_argument("--cert", type=Path)
     ap.add_argument("--key", type=Path)
+
+    ph = sub.add_parser("phone", help="phone workspace: file backup, SIS inventory/staging, calendar (Gammu)")
+    phs = ph.add_subparsers(dest="action", required=True)
+    pb = phs.add_parser("backup", help="full file backup of a mounted volume").add_subparsers(dest="op", required=True)
+    pbc = pb.add_parser("create", parents=[common], help="recursive streamed backup with SHA-256 manifest")
+    pbc.add_argument("--volume", type=Path, required=True, help="mounted memory card / mass-storage directory")
+    pbc.add_argument("--dest", type=Path, required=True, help="empty destination directory (outside the volume)")
+    pbc.add_argument("--label", default="volume", help="label stored instead of the absolute path")
+    pbc.add_argument("--exclude", action="append", default=[], metavar="REL", help="relative path to skip (repeatable)")
+    pbc.add_argument("--max-bytes", type=int)
+    pbv = pb.add_parser("verify", parents=[common], help="re-hash a backup against its manifest")
+    pbv.add_argument("backup", type=Path)
+    pbr = pb.add_parser("restore", parents=[common], help="plan (default) or apply a restore; never overwrites or deletes")
+    pbr.add_argument("backup", type=Path)
+    pbr.add_argument("--volume", type=Path, required=True)
+    pbr.add_argument("--only", help="restore only this relative path / folder")
+    pbr.add_argument("--apply", action="store_true", help="write the new files (default is a dry run)")
+    pa = phs.add_parser("apps", help="SIS packages found on a volume").add_subparsers(dest="op", required=True)
+    pai = pa.add_parser("inventory", parents=[common], help="list SIS/SISX files (installed state is not observable)")
+    pai.add_argument("--volume", type=Path, required=True)
+    pc = phs.add_parser("calendar", help="calendar / to-do via Gammu").add_subparsers(dest="op", required=True)
+    pcr = pc.add_parser("read", parents=[common], help="read-only export through `gammu backup <file>.ics`")
+    pcr.add_argument("--gammu-config", help="gammurc path (default: $SYMPORT_GAMMU_CONFIG)")
+    pst = phs.add_parser("stage", parents=[common], help="copy a validated SIS onto a volume (does NOT install)")
+    pst.add_argument("sis", type=Path)
+    pst.add_argument("--volume", type=Path, required=True)
+    pst.add_argument("--folder", default="Installs", help="folder on the volume (default: Installs)")
 
     emu = sub.add_parser("emulator", help="EKA2L1 integration").add_subparsers(dest="action", required=True)
     emu.add_parser("list", parents=[common], help="detect emulator backends")
@@ -270,6 +298,19 @@ def _dispatch(args) -> Report | None:
             if args.path.is_dir():
                 return app_analyze.analyze_project(args.path, profile, fw, args.cross_check)
             return app_analyze.analyze_file(args.path, profile, fw, args.cross_check)
+    if g == "phone":
+        from symport.phone import ops
+        if a == "backup":
+            if args.op == "create":
+                return ops.backup_create(args.volume, args.dest, args.label, tuple(args.exclude), args.max_bytes)
+            if args.op == "verify":
+                return ops.backup_verify(args.backup)
+            return ops.backup_restore(args.backup, args.volume, args.apply, args.only)
+        if a == "apps":
+            return ops.apps_inventory(args.volume)
+        if a == "calendar":
+            return ops.calendar_read(args.gammu_config or os.environ.get("SYMPORT_GAMMU_CONFIG"))
+        return ops.stage_sis(args.sis, args.volume, args.folder)
     if g == "emulator":
         if a == "list":
             return emulator.list_emulators(cfg)

@@ -37,7 +37,7 @@ class LocalTransports:
                 if model:
                     rm = re.search(r'RM-\d+', model)
                     device.update(connected=True, model=model, rm=rm.group() if rm else None,
-                                  firmware=values.get('firmware'), capabilities=['contacts-read', 'contacts-import'], evidence='Gammu identify response; phonebook support must be checked by reading')
+                                  firmware=values.get('firmware'), capabilities=['contacts-read', 'contacts-import', 'calendar-read'], evidence='Gammu identify response; phonebook support must be checked by reading')
             except (OSError, subprocess.SubprocessError):
                 device['evidence'] = 'Gammu unavailable, configuration invalid or phone unreachable'
             result.append(device)
@@ -53,7 +53,16 @@ class LocalTransports:
                 return {'contacts': gammu_contacts.read(config)}
             if data['action'] == 'contacts-import':
                 return gammu_contacts.import_contacts(config, data['contacts'], data.get('confirm'))
+            if data['action'] == 'calendar-read':
+                from . import gammu_calendar
+                return gammu_calendar.read(config)
             raise ValueError('Gammu предоставляет контакты; для файлов выберите накопитель')
+        if data.get('action') == 'apps-inventory':
+            root = self.files.roots.get(data.get('device'))
+            if root is None or not root.is_dir() or root.is_symlink():
+                raise ValueError('Unknown or disconnected device')
+            from . import inventory
+            return inventory.scan(root)
         return self.files.execute(data)
 
 

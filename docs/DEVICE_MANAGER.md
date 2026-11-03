@@ -110,3 +110,9 @@ CI runs device-manager tests in the existing Python 3.11–3.13 job, without a p
 Hardware validation must cover mount/unplug/reconnect, destination paths, interrupted
 transfers, available services, permissions and actual handset installation. Preserve
 unknown and unsupported outcomes in the existing device test report.
+
+## Командная строка и новые действия
+
+Полная файловая копия карты, восстановление без перезаписи, инвентарь SIS, передача SIS и чтение календаря через Gammu — в CLI
+(`symport phone …`, см. [PHONE_BACKUP.md](PHONE_BACKUP.md)). Через API Device Manager добавлены `apps-inventory` (тома) и
+`calendar-read` (устройство `gammu`). Планы — в [ROADMAP.md](ROADMAP.md).

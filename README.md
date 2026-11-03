@@ -96,6 +96,7 @@ SymPort Phone Workspace объединяет контакты, файлы, ме�
 | Тема (P0) | `theme build`, `theme inspect [--reproducible]`, `theme package [--backend auto\|makesis\|native\|modern-sdk]` |
 | Анализ | `sis inspect`, `sis compare`, `app inspect`, `app analyze [--firmware-profile] [--cross-check]` |
 | Приложения (P1) | `app init`, `app build [--mode app\|toolchain]`, `app package` (через `symbian-platform`) |
+| Телефон (том, Gammu) | `phone backup create\|verify\|restore`, `phone apps inventory`, `phone stage`, `phone calendar read` |
 | Тестирование (P2) | `emulator list/test`, `device list/info/stage`, `report matrix` |
 
 Каждая команда поддерживает `--json` и `--report FILE`. Коды возврата: 0 успех, 1 ошибка проверки, 2 ошибка использования,
@@ -106,7 +107,7 @@ SymPort Phone Workspace объединяет контакты, файлы, ме�
 [Архитектура](docs/ARCHITECTURE.md) · [Установка Linux/WSL2](docs/INSTALL.md) · [Внешние инструменты (аудит)](docs/EXTERNAL_TOOLS.md) ·
 [Сборка темы](docs/THEME.md) · [Упаковка и подпись SIS](docs/PACKAGING.md) · [Первое приложение](docs/APPLICATIONS.md) ·
 [Бинарная совместимость](docs/COMPATIBILITY.md) · [Эмулятор](docs/EMULATOR.md) · [Тест на E52](docs/DEVICE_TEST.md) ·
-[Статусы](docs/STATUS.md) · [Ограничения](docs/LIMITATIONS.md)
+[Дорожная карта](docs/ROADMAP.md) · [Резервная копия и файлы](docs/PHONE_BACKUP.md) · [Статусы](docs/STATUS.md) · [Ограничения](docs/LIMITATIONS.md)
 
 ## Device Manager
 
