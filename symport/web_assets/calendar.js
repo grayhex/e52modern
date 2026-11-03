@@ -25,7 +25,7 @@ cal('calendar-read').onclick=async()=>{
   try{
     const r=await dmCall({action:'calendar-read',device:cal('calendar-device').value});
     calendarData=r;cal('calendar-workspace').hidden=false;calFilter();
-    calStatus(r.status==='read'?`Прочитано: ${r.events.length} событий, ${r.todos.length} задач. Совместимость с E52 не подтверждена; на телефон ничего не записывалось.`
+    calStatus(r.status==='read'?`Прочитано: ${r.events.length} событий, ${r.todos.length} задач. Данные прочитаны с телефона.`
       :'Записей нет: пустой календарь или он не поддерживается этим телефоном/драйвером (отличить нельзя).',r.status!=='read');
   }catch(e){calendarData=null;cal('calendar-workspace').hidden=true;calStatus(e.message,true);}
   finally{calButtons();}

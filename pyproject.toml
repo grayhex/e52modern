@@ -12,6 +12,8 @@ license = { text = "MIT" }
 dependencies = ["vobject>=0.9.9,<1", "cryptography>=46,<49"]
 
 [project.optional-dependencies]
+phone = ["python-gammu>=3.2.6,<4"]
+media = ["pillow>=10"]
 theme = ["pillow>=10"]
 dev = ["pytest>=8", "ruff>=0.5", "pillow>=10"]
 

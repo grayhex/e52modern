@@ -12,7 +12,7 @@ function suiteDevices(devices){
  for(const select of document.querySelectorAll('.suite-device')){
   const value=select.value;select.replaceChildren();
   const placeholder=el('option','','Выберите подключённый телефон');placeholder.value='';select.append(placeholder);
-  for(const device of devices.filter(d=>d.connected&&(!select.dataset.filesOnly||d.capabilities.includes('files'))&&(!select.dataset.capability||d.capabilities.includes(select.dataset.capability)))){
+  for(const device of devices.filter(d=>d.connected&&(!select.dataset.filesOnly||d.capabilities.includes('files'))&&(!select.dataset.capability||(d.capabilities.includes(select.dataset.capability)||(select.dataset.capability==='calendar-read'&&d.capabilities.includes('tasks-read')))))){
    const option=el('option','',device.model?`${device.id} · ${device.model}`:`${device.id} · накопитель`);option.value=device.id;option.dataset.capabilities=JSON.stringify(device.capabilities);select.append(option);
   }
   if([...select.options].some(o=>o.value===value))select.value=value;
@@ -34,7 +34,7 @@ function selectedRows(){return contactRows.filter((_,i)=>selectedContacts.has(i)
 function contactCount(){suite('contacts-count').textContent=`${selectedContacts.size} / ${contactRows.length} ВЫБРАНО`;suiteAvailability();}
 function renderContacts(){
  const query=suite('contacts-search').value.toLocaleLowerCase();
- const visible=contactRows.map((row,index)=>({row,index})).filter(({row})=>[row.name,...row.phones,...row.emails].join(' ').toLocaleLowerCase().includes(query));
+ const visible=contactRows.map((row,index)=>({row,index})).filter(({row,index})=>(!window.contactDuplicateIndexes||window.contactDuplicateIndexes.has(index))&&[row.name,...row.phones,...row.emails].join(' ').toLocaleLowerCase().includes(query));
  const pages=Math.max(1,Math.ceil(visible.length/pageSize));contactPage=Math.min(contactPage,pages-1);
  const tbody=suite('contacts-rows');tbody.replaceChildren();
  for(const {row,index} of visible.slice(contactPage*pageSize,(contactPage+1)*pageSize)){
@@ -48,7 +48,7 @@ function renderContacts(){
  const footer=suite('contacts-pagination')||el('div','form-row');footer.id='contacts-pagination';footer.replaceChildren();
  const prev=el('button','btn ghost','← Назад'),next=el('button','btn ghost','Далее →');prev.disabled=contactPage===0;next.disabled=contactPage===pages-1;prev.onclick=()=>{contactPage--;renderContacts();};next.onclick=()=>{contactPage++;renderContacts();};footer.append(prev,el('span','muted',`Страница ${contactPage+1} из ${pages} · Найдено ${visible.length}`),next);suite('contacts-rows').closest('.table-scroll').after(footer);contactCount();
 }
-function setContacts(rows,warnings=[]){contactRows=rows;selectedContacts=new Set(rows.map((_,i)=>i));contactPage=0;suite('contacts-workspace').hidden=false;suite('contacts-warnings').textContent=warnings.join(' ');renderContacts();}
+function setContacts(rows,warnings=[]){window.contactDuplicateIndexes=null;contactRows=rows;selectedContacts=new Set(rows.map((_,i)=>i));contactPage=0;suite('contacts-workspace').hidden=false;suite('contacts-warnings').textContent=warnings.join(' ');renderContacts();}
 suite('contacts-preview').onclick=()=>suiteBusy(suite('contacts-preview'),suite('contacts-status'),async()=>{
  const file=suite('contacts-file').files[0];if(!file||file.size>4*1024*1024)throw new Error('Выберите CSV или vCard до 4 МиБ');
  const result=await request('POST','/api/contacts',{action:'preview',name:file.name,content:await readFileBase64(file)});
@@ -80,7 +80,7 @@ for(const kind of ['media','software'])suite(kind+'-send').onclick=()=>suiteBusy
   try{await dmCall({action:kind==='media'?'media-upload':'software-transfer',device:suite(kind+'-device').value,path:[suite(kind+'-path').value.replace(/\/$/,''),file.name].filter(Boolean).join('/'),content:await readFileBase64(file),kind:kind==='media'?suite('media-kind').value:undefined,confirm:true});completed++;}
   catch(error){throw new Error(`Передано ${completed} из ${files.length}. ${error.message}`);}
  }
- suite(kind+'-result').textContent=kind==='software'?`Передано пакетов: ${completed}. Откройте их на Nokia и подтвердите установку. Статус установки не проверен.`:`Передано файлов: ${completed}. Проверьте воспроизведение на телефоне.`;
+ suite(kind+'-result').textContent=kind==='software'?`Передано пакетов: ${completed}. Откройте их на Nokia и подтвердите установку. Подтвердите установку на телефоне.`:`Передано файлов: ${completed}. Проверьте воспроизведение на телефоне.`;
 });
 for(const zone of document.querySelectorAll('.upload-zone')){
  const input=zone.querySelector('input[type=file]');if(!input)continue;

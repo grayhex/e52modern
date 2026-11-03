@@ -29,7 +29,7 @@ class PCBridge:
         })
         # Never send the local bridge key through an inherited Internet proxy.
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-        timeout = {'contacts-import': 420, 'contacts-read': 150, 'media-upload': 300}.get(data.get('action'), 30)
+        timeout = {'contacts-import': 420, 'contacts-read': 150, 'media-upload': 300, 'discover': 200, 'device-details': 200, 'personal-read': 200, 'personal-preview': 200, 'personal-apply': 1800, 'sms-send': 400}.get(data.get('action'), 30)
         with opener.open(req, timeout=timeout) as response:
             return json.loads(response.read(90 * 1024 * 1024))
 

@@ -22,7 +22,7 @@ class DeviceManager:
         self.transport = transport or (
             PCBridge(os.environ['SYMPORT_BRIDGE_URL'], os.getenv('SYMPORT_BRIDGE_KEY', ''))
             if os.getenv('SYMPORT_BRIDGE_URL') else
-            LocalTransports()
+            LocalTransports(repo)
         )
         self.lock = threading.Lock()
         self.journal = repo / 'build' / 'symport' / 'device-manager' / 'operations.jsonl'
@@ -31,7 +31,9 @@ class DeviceManager:
         allowed = {'discover', 'history', 'list', 'download', 'upload', 'transfer',
                    'mkdir', 'delete', 'backup', 'restore-preview', 'restore', 'contacts-stage',
                    'contacts-read', 'contacts-import', 'media-upload', 'software-transfer',
-                   'apps-inventory', 'calendar-read'}
+                   'apps-inventory', 'calendar-read', 'media-list', 'media-info', 'media-chunk', 'media-thumbnail',
+                   'device-details', 'device-imei', 'personal-read', 'personal-preview', 'personal-apply',
+                   'personal-calendar-import', 'personal-export', 'personal-backup', 'personal-backup-download', 'sms-send'}
         if not isinstance(data.get('action'), str) or data['action'] not in allowed:
             raise ValueError('Unknown device operation')
         if data['action'] not in ('discover', 'history'):
@@ -50,7 +52,7 @@ class DeviceManager:
                     'contacts': 'Импорт Google CSV / Apple vCard, передача vCard на карту или запись через Gammu с чтением для проверки',
                     'sms': 'Requires a tested Gammu or native Agent adapter',
                     'applications': 'Mounted volumes do not expose the installed application registry; apps-inventory lists SIS package files only',
-                    'calendar': 'Read-only through Gammu (calendar-read); E52 support unverified',
+                    'calendar': 'Calendar and tasks require Gammu storage access; use Nokia Suite iCalendar export if the selected driver cannot read them',
                     'backup': 'File backup covers only the selected folder, not contacts, SMS, applications or firmware',
                     'bluetooth': 'OBEX pairing and service discovery must run on the PC connected to the phone',
                 }}
@@ -64,7 +66,7 @@ class DeviceManager:
                     result = self.transport.execute(data)
                 except zipfile.BadZipFile as exc:
                     raise ValueError('Invalid ZIP archive') from exc
-                status = 'unverified' if result.get('status') == 'partial-or-unverified' else 'success'
+                status = 'unverified' if result.get('status') in ('partial-or-unverified', 'submitted-to-network') else 'success'
                 return result
             finally:
                 self.journal.parent.mkdir(parents=True, exist_ok=True, mode=0o700)

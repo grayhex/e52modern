@@ -112,7 +112,7 @@ function itemRow(item){
   const row=el("div","package-row");
   const left=el("div");
   left.append(el("strong","",item.name),
-              el("small","",item.source+" · "+(item.size/1024).toFixed(1)+" КБ · не проверено на E52"));
+              el("small","",item.source+" · "+(item.size/1024).toFixed(1)+" КБ"));
   const test=el("button","btn secondary","Проверить в эмуляторе");test.onclick=()=>labChoose("build",item.id,item.kind);
   const inspect=el("button","btn ghost","Certificate Inspector");inspect.onclick=()=>inspectChoose("build",item.id);row.append(left,downloadButton(item),inspect,test);
   return row;

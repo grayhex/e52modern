@@ -12,7 +12,7 @@ lib('import').onclick=()=>dmRun(async()=>{
 });
 lib('prepare').onclick=()=>dmRun(()=>libPrepare({action:'prepare-build',package:lib('build').value}));
 lib('publish').onclick=()=>dmRun(async()=>{
- if(!libraryDraft||!confirm('Опубликовать '+libraryDraft.name+' в локальной библиотеке? Совместимость с телефоном не подтверждена.'))return;
+ if(!libraryDraft||!confirm('Опубликовать '+libraryDraft.name+' в локальной библиотеке?'))return;
  await request('POST','/api/library',{action:'publish',id:libraryDraft.id,confirm:true});
  libraryDraft=null;lib('publish').disabled=true;await refresh();
 });
@@ -23,7 +23,7 @@ function renderLibrary(snapshot){
  lib('items').replaceChildren();
  for(const p of snapshot.library||[]){
   const row=el('div','form-row');const a=el('a','text-link',p.name+' ↓');a.href='/api/library/download?id='+encodeURIComponent(p.id);
-  row.append(a,el('span','muted',p.size+' B · На телефоне не проверено'));
+  row.append(a,el('span','muted',p.size+' B'));
   const send=el('button','btn secondary','Передать на телефон');send.onclick=()=>dmRun(async()=>{
    if(!confirm('Передать '+p.name+' на выбранный телефон? Это не установка.'))return;
    const response=await fetch(a.href);if(!response.ok)throw new Error('Не удалось скачать пакет');
