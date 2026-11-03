@@ -15,7 +15,7 @@ COPY . .
 # Keeps the existing Nokia Skin Compiler and bmconv toolchain.
 RUN --mount=type=secret,id=proxy_ca \
     if [ -f /run/secrets/proxy_ca ]; then export PIP_CERT=/run/secrets/proxy_ca; fi \
-    && pip install --no-cache-dir -e '.[theme,phone,media]' \
+    && pip install --no-cache-dir -e '.[theme,phone,media,transport-discovery]' \
     && tools/s60/build.sh \
     && mkdir -p build workspace /symbian-auth \
     && chown 10001:10001 /symbian-auth \

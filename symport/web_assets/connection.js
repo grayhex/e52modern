@@ -1,7 +1,7 @@
 "use strict";
 const connection=id=>document.getElementById('connection-'+id);
 let connectionBusy=false;
-async function connectionStatus(){const s=await request('POST','/api/connection',{action:'status'});connection('badge').textContent=tr(s.mode==='direct'?'Local transports':s.connected?'Connected':'Disconnected');connection('badge').classList.toggle('success',!!s.connected);return s;}
+async function connectionStatus(){const s=await request('POST','/api/connection',{action:'status'});connection('badge').textContent=tr(s.mode==='direct'?'Local transports':s.connected?'Connected':'Disconnected');connection('badge').classList.toggle('success',s.mode==='windows-bridge'&&!!s.connected);return s;}
 async function connectionAction(fn){if(connectionBusy)return;connectionBusy=true;connection('pair').disabled=true;try{await fn();}catch(error){connection('result').textContent=error.message;notify(error.message);}finally{connectionBusy=false;connection('pair').disabled=false;await connectionStatus();}}
 connection('status').onclick=()=>connectionAction(connectionStatus);
 connection('pair').onclick=()=>connectionAction(async()=>{

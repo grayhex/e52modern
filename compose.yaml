@@ -27,6 +27,7 @@ services:
       SYMPORT_DEVICE_ROOTS: "${SYMPORT_DEVICE_ROOTS:-{}}"
       SYMPORT_BRIDGE_URL: ${SYMPORT_BRIDGE_URL:-}
       SYMPORT_BRIDGE_KEY: ${SYMPORT_BRIDGE_KEY:-}
+      SYMPORT_BRIDGE_AGENT_PORT: ${SYMPORT_BRIDGE_AGENT_PORT:-8765}
     networks: [default, emulator]
     security_opt:
       - no-new-privileges:true

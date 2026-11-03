@@ -41,6 +41,7 @@ class Agent:
         self.server = BridgeServer(self.manager, key, port, self.config.get("origins", []), approve)
         self.auto = auto
         self.events = None
+        self.started = False
         self.relay = None
         self._volume_identities = {}
         self._enrolled_roots = {}
@@ -194,17 +195,24 @@ class Agent:
             self.stop.wait(3)
 
     def start(self):
+        threading.Thread(target=self.server.serve_forever, daemon=True, name="bridge-http").start()
+        self.started = True
+        threading.Thread(target=self.monitor, daemon=True, name="bridge-discovery").start()
         if self.config.get("websocket", False):
             from .events import start_events
 
-            self.events = start_events(self, self.server.key, self.server.server_port + 2)
-        threading.Thread(target=self.server.serve_forever, daemon=True, name="bridge-http").start()
-        threading.Thread(target=self.monitor, daemon=True, name="bridge-discovery").start()
+            try:
+                self.events = start_events(self, self.server.key, self.server.server_port + 2)
+            except OSError:
+                self.status["diagnostics"].append(
+                    "WebSocket status port is unavailable; authenticated HTTP remains active"
+                )
 
     def close(self):
         self.stop.set()
         self.revoke()
-        self.server.shutdown()
+        if self.started:
+            self.server.shutdown()
         self.server.server_close()
         if self.events:
             self.events.shutdown()
@@ -305,9 +313,10 @@ def main(argv=None):
             == 6
         )
 
-    agent = Agent(root, key, args.port, approve=None if args.headless else approve)
-    agent.start()
+    agent = None
     try:
+        agent = Agent(root, key, args.port, approve=None if args.headless else approve)
+        agent.start()
         if args.headless:
             while not agent.stop.wait(1):
                 pass
@@ -315,8 +324,21 @@ def main(argv=None):
             from .tray import run_tray
 
             run_tray(agent, key)
+    except (ValueError, OSError):
+        if os.name == "nt" and not args.headless:
+            import ctypes
+
+            ctypes.windll.user32.MessageBoxW(
+                None,
+                "SymPort Bridge could not start. Check whether it is already running, the selected port is free and settings.json contains valid configuration.",
+                "SymPort Bridge",
+                0x10,
+            )
+        else:
+            raise
     finally:
-        agent.close()
+        if agent:
+            agent.close()
 
 
 if __name__ == "__main__":

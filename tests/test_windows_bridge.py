@@ -129,3 +129,42 @@ def test_local_self_test(tmp_path, monkeypatch):
     result = json.loads(path.read_text())
     assert result["http_auth"] == "passed" and result["dns_rebinding"] == "passed"
     assert result["physical_device"] == "not-tested"
+
+
+def test_serial_discovery_filters_vendor_and_reports_only_candidates(monkeypatch):
+    import sys
+    from types import ModuleType, SimpleNamespace
+
+    from symport.bridge.discovery import serial_candidates
+    serial = ModuleType('serial')
+    tools = ModuleType('serial.tools')
+    tools.list_ports = SimpleNamespace(comports=lambda: [
+        SimpleNamespace(vid=0x0421, manufacturer='Nokia', description='E52 USB', product='', device='COM7'),
+        SimpleNamespace(vid=1, manufacturer='Other', description='Device', product='', device='COM8')])
+    monkeypatch.setitem(sys.modules, 'serial', serial)
+    monkeypatch.setitem(sys.modules, 'serial.tools', tools)
+    candidates, error = serial_candidates()
+    assert not error and [c['port'] for c in candidates] == ['COM7']
+    assert candidates[0]['model_profile']['measured'] is False
+
+
+def test_auto_volume_write_rechecks_physical_identity(monkeypatch):
+    from symport.bridge.main import Agent
+    agent = object.__new__(Agent)
+    agent._enrolled_roots = {'auto-card-e': 'E:/'}
+    agent._enrolled_identities = {'auto-card-e': 'original-disk-hash'}
+    monkeypatch.setattr('symport.bridge.main.windows_nokia_volumes', lambda: ([{'root':'E:/','identity':'replacement-disk'}], None))
+    with pytest.raises(ValueError, match='identity changed'):
+        agent.guard_volume({'device':'auto-card-e','action':'upload'})
+    # Reads do not change the phone; user-enrolled roots follow existing file safety.
+    agent.guard_volume({'device':'auto-card-e','action':'list'})
+    agent.guard_volume({'device':'manually-enrolled','action':'upload'})
+
+
+def test_relay_expiry_blocks_new_work():
+    import time
+    relay = BrowserBridgeRelay()
+    relay.expires = time.monotonic()-1
+    assert not relay.authorized(relay.token) and not relay.status()['connected']
+    with pytest.raises(ValueError, match='disconnected'):
+        relay.execute({'action':'upload'})

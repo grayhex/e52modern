@@ -391,7 +391,10 @@ def process_request(data: dict) -> dict:
         import gammu
 
         if data.get("action") == "self-test":
-            return {"gammu": gammu.Version(), "status": "available"}
+            card = gammu.EncodeVCARD({'Location': 0, 'MemoryType': 'ME', 'Entries': [{'Type': 'Text_Name', 'Value': 'Offline codec check'}, {'Type': 'Number_Mobile', 'Value': '12345'}]})
+            if 'BEGIN:VCARD' not in card or '12345' not in card:
+                raise PhoneOperationError('Offline Gammu vCard codec check failed')
+            return {"gammu": gammu.Version(), "status": "available", "vcard_codec": "passed"}
         gammu.SetDebugLevel("nothing")
         sm = gammu.StateMachine()
         sm.ReadConfig(Filename=data["config"])

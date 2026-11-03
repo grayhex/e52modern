@@ -97,3 +97,37 @@ def test_profiles_strict_nokia_scope(tmp_path):
             load_profiles(str(path))
     assert documented_model('Nokia E52 (RM-469)')['s60'] == '3rd FP2'
     assert documented_model('Nokia 6300') is None
+
+
+def test_obex_upstream_255_success_and_error_output(monkeypatch):
+    from types import SimpleNamespace
+    monkeypatch.setenv('SYMPORT_OBEXFTP_EXECUTABLE', 'operator-obexftp')
+    def success(args, **kw):
+        assert args[:3] == ['operator-obexftp', '--bluetooth', PROFILE['address']]
+        kw['stdout'].write(b'<folder-listing/>')
+        return SimpleNamespace(returncode=255)
+    monkeypatch.setattr('symport.phone.obex.subprocess.run', success)
+    assert ObexAdapter(PROFILE).device()['connected']
+    def failed(args, **kw):
+        kw['stderr'].write(b'failed: private phone path')
+        return SimpleNamespace(returncode=255)
+    monkeypatch.setattr('symport.phone.obex.subprocess.run', failed)
+    row = ObexAdapter(PROFILE).device()
+    assert not row['connected'] and 'private phone path' not in row['evidence']
+
+
+def test_missing_opp_executable_is_not_capability(monkeypatch):
+    monkeypatch.delenv('SYMPORT_OBEXFTP_EXECUTABLE', raising=False)
+    monkeypatch.setattr('symport.phone.obex.shutil.which', lambda name: None)
+    d = ObexAdapter(dict(PROFILE, kind='obex-opp')).device()
+    assert not d['connected'] and d['capabilities'] == []
+
+
+def test_known_model_profile_is_not_non_nokia_identity(tmp_path, monkeypatch):
+    from symport.phone.gammu_adapter import GammuAdapter
+    monkeypatch.setattr('symport.phone.gammu_adapter.gammu_native.available', lambda: True)
+    adapter = GammuAdapter(tmp_path, 'usb', '/owner/config', kind='gammu-usb')
+    adapter.personal.execute = lambda *args: {'model':'E52', 'manufacturer':'Another vendor', 'capability_status':{}}
+    assert not adapter.device()['connected']
+    with pytest.raises(ValueError, match='supported Nokia'):
+        adapter.execute({'action':'personal-read'})
