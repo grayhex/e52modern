@@ -6,7 +6,7 @@ import json
 import logging
 import threading
 
-from symport.phone.bridge_security import host_allowed, key_allowed
+from symport.phone.bridge_security import host_allowed, key_allowed, origin_allowed
 
 
 def start_events(agent, key, port):
@@ -32,6 +32,9 @@ def start_events(agent, key, port):
                 socket.close(1008, "Authorization required")
                 return
             while not agent.stop.is_set():
+                if not origin_allowed(socket.request.headers.get("Origin"), agent.server.origins):
+                    socket.close(1008, "Origin revoked")
+                    break
                 socket.send(
                     json.dumps(
                         {
@@ -55,6 +58,8 @@ def start_events(agent, key, port):
             request.path != "/api/bridge/events"
             or len(request.headers.get_all("Host")) != 1
             or not host_allowed(request.headers["Host"], port)
+            or len(request.headers.get_all("Origin")) > 1
+            or not origin_allowed(request.headers.get("Origin"), agent.server.origins)
         ):
             return connection.respond(HTTPStatus.FORBIDDEN, "Host or path not allowed")
 
@@ -65,12 +70,13 @@ def start_events(agent, key, port):
         session,
         "127.0.0.1",
         port,
-        origins=[None, *agent.server.origins],
+        origins=None,  # dynamically checked above against the current owner configuration
         max_size=16384,
         open_timeout=5,
         close_timeout=2,
         logger=logger,
         process_request=handshake,
     )
+    port = server.socket.getsockname()[1]
     threading.Thread(target=server.serve_forever, daemon=True, name="bridge-events").start()
     return server

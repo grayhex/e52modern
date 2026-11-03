@@ -262,7 +262,21 @@ def self_test(report: Path | None):
                 if gammu_native.available()
                 else {"status": "unavailable"}
             )
+            native_ui = "not-applicable"
+            if os.name == "nt":
+                import tkinter
+
+                import pystray
+                from PIL import Image
+
+                asset = Path(__file__).resolve().parents[1] / "web_assets/brand/appmark-192.png"
+                with Image.open(asset) as image:
+                    icon = pystray.Icon("SymPortSelfTest", image.copy(), "SymPort self-test")
+                    assert icon.title == "SymPort self-test"
+                assert tkinter.Tcl().eval("info patchlevel")
+                native_ui = "dependencies-loaded"
             result = {
+                "native_ui": native_ui,
                 "schema": "symport.bridge.self-test/1",
                 "version": VERSION,
                 "http_auth": "passed",

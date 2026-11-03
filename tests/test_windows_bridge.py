@@ -168,3 +168,32 @@ def test_relay_expiry_blocks_new_work():
     assert not relay.authorized(relay.token) and not relay.status()['connected']
     with pytest.raises(ValueError, match='disconnected'):
         relay.execute({'action':'upload'})
+
+
+def test_websocket_host_origin_auth_and_status_only():
+    pytest.importorskip('websockets.sync.server')
+    from types import SimpleNamespace
+
+    from websockets.exceptions import ConnectionClosed, InvalidStatus
+    from websockets.sync.client import connect
+
+    from symport.bridge.events import start_events
+    agent = SimpleNamespace(stop=threading.Event(), status={'state':'ready','connected':0}, server=SimpleNamespace(origins={'https://symport.example'}))
+    events = start_events(agent, 'x'*32, 0)
+    url = f'ws://127.0.0.1:{events.socket.getsockname()[1]}/api/bridge/events'
+    try:
+        with pytest.raises(InvalidStatus):
+            connect(url, origin='https://untrusted.invalid', proxy=None)
+        with pytest.raises(InvalidStatus):
+            connect(url, additional_headers={'Host':'rebind.invalid'}, proxy=None)
+        with connect(url, origin='https://symport.example', proxy=None) as socket:
+            socket.send(json.dumps({'token':'wrong'}))
+            with pytest.raises(ConnectionClosed):
+                socket.recv(timeout=3)
+        with connect(url, origin='https://symport.example', proxy=None) as socket:
+            socket.send(json.dumps({'token':'x'*32}))
+            result = json.loads(socket.recv(timeout=3))
+            assert result == {'schema':'symport.bridge.events/1','type':'status','status':{'state':'ready','connected':0}}
+    finally:
+        agent.stop.set()
+        events.shutdown()
