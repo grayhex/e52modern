@@ -59,7 +59,7 @@ async function labShowReport(report,scroll){
 }
 async function labFrame(){
  if(labFrameBusy||document.hidden||location.hash!=='#lab'||!labState.health?.instance?.running)return;
- labFrameBusy=true;try{const f=await labApi({action:'frame'});lab('screen').src='data:image/png;base64,'+f.png;lab('screen').hidden=false;lab('screen-empty').hidden=true;lab('screen-status').textContent=`EKA2L1 · ${f.width} × ${f.height}${f.width!==240||f.height!==320?' · разрешение этой прошивки отличается от E52':''}`;}
+ labFrameBusy=true;try{const f=await labApi({action:'frame'});lab('screen').src='data:image/png;base64,'+f.png;lab('screen').hidden=false;lab('screen-empty').hidden=true;lab('screen-status').textContent=`EKA2L1 · ${f.width} × ${f.height}${f.width>f.height?' · landscape':' · portrait'}`;}
  catch(e){lab('screen-status').textContent=e.message;lab('screen').hidden=true;lab('screen-empty').hidden=false;lab('screen-empty').textContent=e.message;}finally{labFrameBusy=false;}
 }
 lab('refresh').onclick=()=>labRefresh();

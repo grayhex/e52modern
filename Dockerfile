@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends g++ libgammu-dev pkg-config gammu obexftp bluez openssh-client \
+    && apt-get install -y --no-install-recommends g++ libgammu-dev pkg-config ffmpeg gammu obexftp bluez openssh-client \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /srv/e52modern

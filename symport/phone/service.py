@@ -57,6 +57,8 @@ class DeviceManager:
                     if isinstance(imei, str) and imei.isdigit():
                         item['imei'] = '•' * max(0, len(imei) - 4) + imei[-4:]
                     item['firmware_update'] = assess(item)
+                    from .models import presentation
+                    item['model_profile'] = presentation(str(item.get('model') or ''))
                     devices.append(item)
                 return {'devices': devices, 'connections': self.transport.diagnostics() if hasattr(self.transport, 'diagnostics') else [], 'limitations': {
                     'contacts': 'Импорт Google CSV / Apple vCard, передача vCard на карту или запись через Gammu с чтением для проверки',

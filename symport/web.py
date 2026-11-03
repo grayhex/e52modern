@@ -174,6 +174,8 @@ class Workbench:
         self.bridge_relay = None
         self.connection_lock = threading.Lock()
         self.media = MediaDownloads(repo, self.devices)
+        from symport.audio.studio import RingtoneStudio
+        self.ringtones = RingtoneStudio(repo, self.devices, self.media)
         self.catalog = AppCatalog(repo, self.devices)
         self.library = ThemeLibrary(repo)
         self.lab = EmulatorLab(repo, self.resolve_lab_package, self.devices)
@@ -401,11 +403,11 @@ def make_handler(state: Workbench):
             self.send_header("Referrer-Policy", "no-referrer")
             self.send_header(
                 "Content-Security-Policy",
-                "default-src 'self'; img-src 'self' data:; media-src 'self'; script-src 'self'; "
-                "style-src 'self'; connect-src 'self' http://127.0.0.1:24652; object-src 'none'; "
+                "default-src 'self'; img-src 'self' data:; media-src 'self' blob:; script-src 'self'; "
+                f"style-src 'self' 'nonce-{state.token}'; connect-src 'self' blob: http://127.0.0.1:24652; object-src 'none'; "
                 "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
             if session:
-                self.send_header("Set-Cookie", f"symport_media={state.token}; HttpOnly; SameSite=Strict; Path=/api/media/")
+                self.send_header("Set-Cookie", f"symport_media={state.token}; HttpOnly; SameSite=Strict; Path=/api/")
             if filename:
                 self.send_header("Content-Disposition",
                                  f'attachment; filename="{filename}"')
@@ -428,6 +430,8 @@ def make_handler(state: Workbench):
                 "/device-workspace.css": ("device-workspace.css", "text/css; charset=utf-8"),
                 "/manager.js": ("manager.js", "text/javascript; charset=utf-8"),
                 "/connection.js": ("connection.js", "text/javascript; charset=utf-8"),
+                "/ringtone.js": ("ringtone.js", "text/javascript; charset=utf-8"),
+                "/ringtone.css": ("ringtone.css", "text/css; charset=utf-8"),
                 "/library.js": ("library.js", "text/javascript; charset=utf-8"),
                 "/suite.js": ("suite.js", "text/javascript; charset=utf-8"),
                 "/catalog.js": ("catalog.js", "text/javascript; charset=utf-8"),
@@ -449,8 +453,15 @@ def make_handler(state: Workbench):
                     return self._send(raw, 'image/svg+xml' if graphic.endswith('.svg') else 'image/png')
                 except OSError:
                     return self._json({'error': 'Not found'}, 404)
-            if url.path == '/phones/nokia-e52-silver.png':
-                return self._send((ASSETS / 'phones/nokia-e52-silver.png').read_bytes(), 'image/png')
+            if url.path in ('/phones/nokia-e52-silver.png', '/phones/nokia-e72.png'):
+                return self._send((ASSETS / url.path.lstrip('/')).read_bytes(), 'image/png')
+            if url.path.startswith('/vendor/wavesurfer/'):
+                relative = url.path.removeprefix('/vendor/wavesurfer/')
+                if re.fullmatch(r'(?:[a-z0-9.-]+/)*[a-z0-9.-]+\.js', relative) and '..' not in relative:
+                    path = ASSETS / 'vendor/wavesurfer' / relative
+                    if path.is_file():
+                        return self._send(path.read_bytes(), 'text/javascript; charset=utf-8')
+                return self._json({'error':'Not found'},404)
             font = url.path.removeprefix('/fonts/')
             if url.path.startswith('/fonts/') and font in {'DMSans.ttf', 'FiraCode.ttf', 'PlusJakartaSans.ttf', 'Inter.ttf', 'JetBrainsMono.ttf'}:
                 return self._send((ASSETS / 'fonts' / font).read_bytes(), 'font/ttf')
@@ -463,6 +474,41 @@ def make_handler(state: Workbench):
                 if file == "index.html":
                     body = body.replace(b"__SESSION_TOKEN__", state.token.encode())
                 return self._send(body, mime, session=file == "index.html")
+            if url.path.startswith('/api/audio/'):
+                cookie = SimpleCookie()
+                try:
+                    cookie.load(self.headers.get('Cookie', ''))
+                    token = cookie['symport_media'].value if 'symport_media' in cookie else ''
+                    if not secrets.compare_digest(token.encode(), state.token.encode()) or self.headers.get('Sec-Fetch-Site') == 'cross-site':
+                        return self._json({'error':'Open SymPort before playing private audio'},403)
+                    parts = url.path.split('/')
+                    if len(parts) != 5:
+                        raise ValueError('Invalid audio route')
+                    raw, mime = state.ringtones.read(parts[3],parts[4])
+                    try:
+                        start,end,status = byte_range(self.headers.get('Range'),len(raw))
+                    except ValueError:
+                        self.send_response(416)
+                        self.send_header('Content-Range',f'bytes */{len(raw)}')
+                        self.send_header('Content-Length','0')
+                        self.end_headers()
+                        return
+                    self.send_response(status)
+                    self.send_header('Content-Type',mime)
+                    self.send_header('Content-Length',str(end-start+1))
+                    self.send_header('Accept-Ranges','bytes')
+                    self.send_header('Cache-Control','no-store')
+                    self.send_header('X-Content-Type-Options','nosniff')
+                    self.send_header('Content-Security-Policy',"default-src 'none'; sandbox")
+                    if status == 206:
+                        self.send_header('Content-Range',f'bytes {start}-{end}/{len(raw)}')
+                    if parse_qs(url.query).get('download') == ['1']:
+                        self.send_header('Content-Disposition','attachment; filename="SymPort-ringtone.mp3"')
+                    self.end_headers()
+                    self.wfile.write(raw[start:end+1])
+                    return
+                except (ValueError,OSError,KeyError):
+                    return self._json({'error':'Audio is unavailable or expired'},400)
             if url.path.startswith('/api/media/'):
                 cookie = SimpleCookie()
                 try:
@@ -604,6 +650,17 @@ def make_handler(state: Workbench):
                     self.headers.get("X-Symport-Token", ""), state.token))
             if not authorized:
                 return self._json({"error": "Bad session token"}, 403)
+            if self.path == '/api/ringtone/upload':
+                try:
+                    length = int(self.headers.get('Content-Length','0'))
+                    if self.headers.get('Transfer-Encoding') or len(self.headers.get_all('Content-Length',[])) != 1 or not 0 < length <= 64*1024**2:
+                        return self._json({'error':'Upload audio up to 64 MiB'},413)
+                    if self.headers.get('Content-Type','').split(';')[0] != 'application/octet-stream':
+                        return self._json({'error':'Binary audio upload required'},415)
+                    self.connection.settimeout(60)
+                    return self._json(state.ringtones.create(self.rfile,length))
+                except (ValueError,OSError) as exc:
+                    return self._json({'error':str(exc)},400)
             if urlsplit(self.path).path == '/api/lab/firmware':
                 if self.headers.get('Content-Type', '').split(';')[0] != 'application/octet-stream':
                     return self._json({'error': 'Binary firmware upload required'}, 415)
@@ -627,6 +684,8 @@ def make_handler(state: Workbench):
                 body = json.loads(self.rfile.read(length))
                 if not isinstance(body, dict):
                     raise ValueError("Expected JSON object")
+                if self.path == '/api/ringtone':
+                    return self._json(state.ringtones.execute(body))
                 if self.path == '/api/connection':
                     with state.connection_lock:
                         if body.get('action') == 'enable':
