@@ -5,10 +5,9 @@ import http.client
 import json
 import threading
 import time
+from http.server import ThreadingHTTPServer
 
 import pytest
-
-from http.server import ThreadingHTTPServer
 
 from symport.web import Workbench, command, make_handler, package_path, packages
 
