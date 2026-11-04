@@ -13,6 +13,8 @@ export default function Connection() {
   const { t, device, setDevice } = usePreferences();
   const devices = useDevices();
   const [imei, setImei] = useState('');
+  // Activity hides suspend effects: never retain a revealed identifier in a hidden view.
+  useEffect(() => () => setImei(''), []);
   const privateAction = useConfirmedAction<string>();
   const selected = devices.data?.devices.find((d) => d.id === device);
   useEffect(() => {
@@ -83,7 +85,13 @@ export default function Connection() {
               : t('Disconnected', 'Отключено')}
         </span>
         <div className="form-row">
-          <DeviceSelect value={device} onChange={setDevice} />
+          <DeviceSelect
+            value={device}
+            onChange={(id) => {
+              setImei('');
+              setDevice(id);
+            }}
+          />
           <button
             className="btn primary"
             disabled={devices.isFetching}
@@ -146,6 +154,22 @@ export default function Connection() {
             {t('Disconnect', 'Отключить')}
           </button>
         </div>
+      </Card>
+      <Card>
+        <h2>{t('Local SymPort transports', 'Локальные транспорты SymPort')}</h2>
+        <p>
+          {t(
+            'Connect USB and select PC Suite on Nokia. Mass Storage exposes the card only. Pair Bluetooth on the PC first; close Nokia Suite when it uses the same COM port. A remote SymPort server needs Windows Bridge for a phone connected to your PC.',
+            'Подключите USB и выберите PC Suite на Nokia. Mass Storage открывает только карту. Сначала выполните сопряжение Bluetooth на ПК; закройте Nokia Suite, если она занимает тот же COM-порт. Для телефона на вашем ПК и удалённого сервера SymPort используйте Windows Bridge.',
+          )}
+        </p>
+        <button
+          className="btn secondary"
+          disabled={action.isPending}
+          onClick={() => action.mutate('disconnect')}
+        >
+          {t('Use local SymPort transports', 'Использовать локальные транспорты')}
+        </button>
       </Card>
       {devices.data?.devices.map((row) => (
         <Card key={row.id}>

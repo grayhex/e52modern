@@ -463,6 +463,21 @@ const server = spawn(python, ["-c", script, root], {
         throw Error("Mobile overflow: " + id);
       await page.setViewportSize({ width: 1440, height: 1000 });
     }
+    await go("connection");
+    await page
+      .locator(".react-page:visible")
+      .getByLabel("Connection", { exact: true })
+      .selectOption("gammu");
+    await button("Reveal IMEI");
+    await confirm();
+    await page
+      .locator("#connection code")
+      .filter({ hasText: "000000000000000" })
+      .waitFor();
+    await go("updates");
+    await go("connection");
+    if (await page.locator("#connection code").count())
+      throw Error("Private IMEI retained across hidden view");
     await page.selectOption("#language", "ru");
     await page.selectOption("#theme", "light");
     await page.reload();
@@ -482,7 +497,7 @@ const server = spawn(python, ["-c", script, root], {
       "utf8",
     );
     if (
-      /PRIVATE-SMS|123456789|987654321|Private appointment|private@example|Edited through/.test(
+      /000000000000000|PRIVATE-SMS|123456789|987654321|Private appointment|private@example|Edited through/.test(
         journal,
       )
     )

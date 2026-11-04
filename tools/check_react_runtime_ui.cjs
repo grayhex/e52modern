@@ -82,11 +82,21 @@ fs.mkdirSync(shots, { recursive: true });
     await page
       .getByRole("button", { name: "Install firmware", exact: true })
       .click();
+    const started = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/lab") &&
+        response.request().method() === "POST" &&
+        response.request().postDataJSON().action === "install-firmware",
+    );
     await page.getByRole("button", { name: "Confirm", exact: true }).click();
+    const response = await started;
+    const created = await response.json();
+    if (!response.ok() || !created.id)
+      throw Error("Firmware operation was not created");
     let report;
     for (let i = 0; i < 160; i++) {
       const state = await call({ action: "state" });
-      const latest = state.reports[0];
+      const latest = state.reports.find((item) => item.id === created.id);
       if (latest && !latest.running) {
         report = await call({ action: "report", id: latest.id });
         break;
