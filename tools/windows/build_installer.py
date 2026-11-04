@@ -40,6 +40,8 @@ def main(argv=None):
     parser.add_argument("--out", type=Path, default=ROOT / "build/windows/installer")
     parser.add_argument("--manifest", action="store_true", help="also write bridge-update.json")
     args = parser.parse_args(argv)
+    # ISCC resolves relative paths against the script folder, so pass absolute ones.
+    args.out, args.portable = args.out.resolve(), args.portable.resolve()
     if not (args.portable / "SymPortBridge.exe").is_file():
         raise SystemExit("Build the portable bridge first (tools/windows/build_bridge.py)")
     args.out.mkdir(parents=True, exist_ok=True)
