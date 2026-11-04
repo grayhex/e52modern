@@ -185,7 +185,7 @@ export default function Catalog() {
               <a
                 className="btn ghost"
                 href={packageLink(
-                  'lab',
+                  'dev/lab',
                   app.delivery === 'automatic' ? 'catalog' : 'upload',
                   app.id,
                 )}
@@ -195,7 +195,7 @@ export default function Catalog() {
               <a
                 className="btn ghost"
                 href={packageLink(
-                  'inspector',
+                  'tools/certificates',
                   app.delivery === 'automatic' ? 'catalog' : 'upload',
                   app.id,
                 )}
@@ -210,7 +210,7 @@ export default function Catalog() {
             </div>
             {app.delivery_reason && <p className="note">{app.delivery_reason}</p>}
             {app.delivery === 'manual' && (
-              <a className="text-link" href="#installed">
+              <a className="text-link" href="#apps/installed">
                 {t('Transfer your package', 'Передать свой пакет')} →
               </a>
             )}

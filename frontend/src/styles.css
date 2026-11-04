@@ -1,0 +1,14 @@
+/* Cascade order: the existing stylesheets and the Nokia Classic theme sit in `legacy`; Tailwind utilities
+   (generated only for @harryy/react-file-browser, see file-browser.css) come after so that the library's
+   own classes are not overridden by element selectors such as `button{...}` in the older CSS. */
+@layer legacy, theme, base, utilities;
+@import '../../symport/web_assets/app.css' layer(legacy);
+@import '../../symport/web_assets/compact.css' layer(legacy);
+@import '../../symport/web_assets/nimbus.css' layer(legacy);
+@import '../../symport/web_assets/preferences.css' layer(legacy);
+@import '../../symport/web_assets/device-workspace.css' layer(legacy);
+@import '../../symport/web_assets/lab.css' layer(legacy);
+@import '../../symport/web_assets/ringtone.css' layer(legacy);
+@import './style.css' layer(legacy);
+@import '../../symport/web_assets/nokia-classic.css' layer(legacy);
+@import './file-browser.css';

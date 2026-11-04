@@ -668,7 +668,7 @@ function Report({ id, current, running }: { id: string; current: boolean; runnin
             mime="application/json"
           />
           {r.package && (
-            <a className="btn ghost" href={packageLink('inspector', 'lab', id, r.kind)}>
+            <a className="btn ghost" href={packageLink('tools/certificates', 'lab', id, r.kind)}>
               Certificate Inspector
             </a>
           )}

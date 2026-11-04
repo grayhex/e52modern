@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import mimetypes
 import os
 import re
 import secrets
@@ -435,7 +436,6 @@ def make_handler(state: Workbench):
                 target = root / relative
                 if any(part in ('.','..') for part in relative.split('/')) or '\\' in relative or not target.is_file() or target.is_symlink() or not target.resolve().is_relative_to(root.resolve()):
                     return self._json({'error':'React build not found. Run npm ci and npm run build in frontend.'},404)
-                import mimetypes
                 body = target.read_bytes()
                 if relative == 'index.html':
                     body = body.replace(b'__SESSION_TOKEN__',state.token.encode())
@@ -592,6 +592,52 @@ def make_handler(state: Workbench):
                     else:
                         return self._json({'error': 'Media unavailable or changed; refresh the gallery'}, 400)
                 return
+            if url.path == '/api/device/file':
+                cookie = SimpleCookie()
+                try:
+                    cookie.load(self.headers.get('Cookie', ''))
+                    value = cookie['symport_media'].value if 'symport_media' in cookie else ''
+                except Exception:
+                    value = ''
+                if not secrets.compare_digest(value.encode(), state.token.encode()) or self.headers.get('Sec-Fetch-Site') == 'cross-site':
+                    return self._json({'error': 'Open SymPort before viewing private phone files'}, 403)
+                try:
+                    query = parse_qs(url.query)
+                    item = {k: query.get(k, [''])[0] for k in ('device', 'path')}
+                    downloaded = state.devices.execute(dict(item, action='download'))
+                    raw = base64.b64decode(downloaded['content'], validate=True)
+                    name = str(downloaded.get('name') or item['path'].rsplit('/', 1)[-1] or 'file')
+                    guessed = mimetypes.guess_type(name)[0] or 'application/octet-stream'
+                    inline = guessed.split('/')[0] in ('image', 'audio', 'video') and guessed != 'image/svg+xml' \
+                        or guessed in ('text/plain', 'text/html', 'application/pdf', 'application/json')
+                    mime = guessed if inline else 'application/octet-stream'
+                    try:
+                        start, end, status = byte_range(self.headers.get('Range'), len(raw))
+                    except ValueError:
+                        self.send_response(416)
+                        self.send_header('Content-Range', f'bytes */{len(raw)}')
+                        self.send_header('Content-Length', '0')
+                        self.send_header('Cache-Control', 'no-store')
+                        self.end_headers()
+                        return
+                    self.send_response(status)
+                    self.send_header('Content-Type', mime + ('; charset=utf-8' if mime.startswith('text/') else ''))
+                    self.send_header('Content-Length', str(max(0, end - start + 1)))
+                    self.send_header('Accept-Ranges', 'bytes')
+                    if status == 206:
+                        self.send_header('Content-Range', f'bytes {start}-{end}/{len(raw)}')
+                    disposition = 'inline' if inline and query.get('download') != ['1'] else 'attachment'
+                    self.send_header('Content-Disposition', disposition + "; filename*=UTF-8''" + quote(name, safe=''))
+                    self.send_header('Cache-Control', 'no-store')
+                    self.send_header('X-Content-Type-Options', 'nosniff')
+                    self.send_header('Referrer-Policy', 'no-referrer')
+                    # Untrusted phone content: no scripts, no storage access, may be framed by SymPort itself only.
+                    self.send_header('Content-Security-Policy', "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox; frame-ancestors 'self'")
+                    self.end_headers()
+                    self.wfile.write(raw[start:end + 1])
+                    return
+                except (ValueError, OSError, KeyError):
+                    return self._json({'error': 'Phone file is unavailable'}, 400)
             if url.path == "/api/catalog/archive":
                 try:
                     key = parse_qs(url.query).get('id', [''])[0]

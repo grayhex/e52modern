@@ -5,14 +5,7 @@ import { ApiClient } from './api/client';
 import { ApiProvider, PreferencesProvider } from './state/app';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import '../../symport/web_assets/app.css';
-import '../../symport/web_assets/compact.css';
-import '../../symport/web_assets/nimbus.css';
-import '../../symport/web_assets/preferences.css';
-import '../../symport/web_assets/device-workspace.css';
-import '../../symport/web_assets/lab.css';
-import '../../symport/web_assets/ringtone.css';
-import './style.css';
+import './styles.css';
 async function bootstrap() {
   let token = document.querySelector<HTMLMetaElement>('meta[name="symport-token"]')?.content;
   if (!token || token === '__SESSION_TOKEN__') {

@@ -1,18 +1,17 @@
 import { encode as encodeBlob } from '../utils/files';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
-import { packageLink } from '../utils/packages';
 import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useApi, usePreferences } from '../state/app';
-import { keys, useDevices } from '../api/queries';
+import { useDevices } from '../api/queries';
 import { Card, DeviceSelect, ErrorMessage, ConfirmDialog, supports } from '../components/ui';
-import type { FileEntry } from '../api/contracts';
+import PhoneFileBrowser from '../components/PhoneFileBrowser';
 import { Download, Field, JsonReport } from '../components/workspace';
 import { fileSchema, objectSchema, payload } from '../api/workspace';
 import { z } from 'zod';
 
 type Pending = {
-  action: 'delete' | 'mkdir' | 'upload' | 'transfer';
+  action: 'upload' | 'transfer';
   path: string;
   content?: string;
 };
@@ -25,24 +24,10 @@ export default function Files() {
   const { t, device, setDevice } = usePreferences();
   const devices = useDevices();
   const [path, setPath] = useState('');
-  const [draftPath, setDraftPath] = useState('');
-  const [directory, setDirectory] = useState('');
   const [upload, setUpload] = useState<File | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
-  const [view, setView] = useState<'table' | 'grid'>('table');
   const [message, setMessage] = useState('');
-  const [downloaded, setDownloaded] = useState<{
-    content: string;
-    name: string;
-    count: number;
-  } | null>(null);
   const selected = devices.data?.devices.find((d) => d.id === device);
-  const listing = useQuery({
-    queryKey: keys.files(device, path),
-    queryFn: ({ signal }) => api.list(device, path, signal),
-    enabled: !!device && supports(selected, 'list'),
-    retry: false,
-  });
   const mutate = useMutation({
     mutationFn: (op: Pending) => api.fileAction(op.action, device, op.path, op.content),
     onSuccess: async (result) => {
@@ -51,14 +36,9 @@ export default function Files() {
       await queryClient.invalidateQueries({ queryKey: ['files', device] });
     },
   });
-  const download = useMutation({
-    mutationFn: (entry: FileEntry) => api.download(device, join(path, entry.name)),
-    onSuccess: (result) => setDownloaded((old) => ({ ...result, count: (old?.count ?? 0) + 1 })),
-  });
   function choose(id: string) {
     setDevice(id);
     setPath('');
-    setDraftPath('');
     setPending(null);
     setMessage('');
   }
@@ -70,9 +50,11 @@ export default function Files() {
     }
     setPending({ action, path: join(path, upload.name), content: await encodeBlob(upload) });
   }
+  const rootPath = path ? '/' + path : '/';
+  const label = selected?.name ?? selected?.model ?? device;
   return (
     <>
-      <h1>{t('Files', 'Файлы')}</h1>
+      <h1>{t('File manager', 'Файловый менеджер')}</h1>
       <Card>
         <div className="form-row">
           <DeviceSelect value={device} onChange={choose} capability="files" />
@@ -85,40 +67,6 @@ export default function Files() {
           >
             {t('Find phone', 'Найти телефон')}
           </button>
-          <label className="grow">
-            {t('Path', 'Путь')}
-            <input value={draftPath} onChange={(event) => setDraftPath(event.target.value)} />
-          </label>
-          <button className="btn secondary" disabled={!device} onClick={() => setPath(draftPath)}>
-            {t('Open', 'Открыть')}
-          </button>
-        </div>
-        <div className="form-row">
-          <button
-            className="btn ghost"
-            onClick={() => {
-              const parent = path.split('/').slice(0, -1).join('/');
-              setPath(parent);
-              setDraftPath(parent);
-            }}
-            disabled={!path}
-          >
-            ↑
-          </button>
-          <button
-            className="btn ghost"
-            aria-pressed={view === 'table'}
-            onClick={() => setView('table')}
-          >
-            {t('Table', 'Таблица')}
-          </button>
-          <button
-            className="btn ghost"
-            aria-pressed={view === 'grid'}
-            onClick={() => setView('grid')}
-          >
-            {t('Grid', 'Сетка')}
-          </button>
         </div>
         {device && !supports(selected, 'list') && (
           <p className="note">
@@ -128,46 +76,35 @@ export default function Files() {
             )}
           </p>
         )}
-        <ErrorMessage error={listing.error ?? devices.error ?? download.error} />
-        {listing.isFetching && <p role="status">{t('Reading…', 'Чтение…')}</p>}
-        <div className={view === 'grid' ? 'react-file-grid' : 'table-scroll'}>
-          {listing.data?.entries.map((entry) => (
-            <article className="react-file" key={entry.name}>
-              <button
-                className="btn ghost"
-                onClick={() => {
-                  if (entry.directory) {
-                    const next = join(path, entry.name);
-                    setPath(next);
-                    setDraftPath(next);
-                  } else download.mutate(entry);
-                }}
-              >
-                {entry.directory ? '▸' : '↓'} {entry.name}
-              </button>
-              <span>{entry.size == null ? '' : `${entry.size} B`}</span>
-              <button
-                className="btn ghost"
-                disabled={!supports(selected, 'delete')}
-                onClick={() => setPending({ action: 'delete', path: join(path, entry.name) })}
-              >
-                {t('Delete', 'Удалить')}
-              </button>
-              {!entry.directory && /\.sisx?$/i.test(entry.name) && (
-                <a
-                  className="btn ghost"
-                  href={
-                    packageLink('inspector', 'device', '') +
-                    '&' +
-                    new URLSearchParams({ device, path: join(path, entry.name) })
-                  }
-                >
-                  {t('Inspect', 'Анализ')}
-                </a>
+        <ErrorMessage error={devices.error} />
+        {device && supports(selected, 'list') ? (
+          <PhoneFileBrowser
+            device={device}
+            label={label}
+            capabilities={{
+              upload: supports(selected, 'upload'),
+              mkdir: supports(selected, 'mkdir'),
+              delete: supports(selected, 'delete'),
+            }}
+            path={rootPath}
+            onPath={(next) => setPath(next.replace(/^\/+/, ''))}
+          />
+        ) : (
+          !device && (
+            <p className="empty">
+              {t(
+                'Choose a connection to browse its files.',
+                'Выберите подключение, чтобы открыть его файлы.',
               )}
-            </article>
-          ))}
-        </div>
+            </p>
+          )
+        )}
+        <p className="note">
+          {t(
+            'The file browser labels are in English. Existing files are never overwritten, and uploads are limited to 8 MiB.',
+            'Подписи файлового браузера — на английском. Существующие файлы не перезаписываются, загрузка ограничена 8 МиБ.',
+          )}
+        </p>
       </Card>
       <Card>
         <div className="form-row">
@@ -192,19 +129,6 @@ export default function Files() {
             }}
           >
             SIS / SISX
-          </button>
-        </div>
-        <div className="form-row">
-          <label>
-            {t('New folder', 'Новая папка')}
-            <input value={directory} onChange={(event) => setDirectory(event.target.value)} />
-          </label>
-          <button
-            className="btn secondary"
-            disabled={!directory || !supports(selected, 'mkdir')}
-            onClick={() => setPending({ action: 'mkdir', path: join(path, directory) })}
-          >
-            {t('Create', 'Создать')}
           </button>
         </div>
         <p role="status">{message}</p>
@@ -234,9 +158,6 @@ export default function Files() {
           }}
           onConfirm={() => mutate.mutate(pending)}
         />
-      )}
-      {downloaded && (
-        <Download key={downloaded.count} content={downloaded.content} name={downloaded.name} auto />
       )}
       <ErrorMessage error={mutate.error} />
     </>
