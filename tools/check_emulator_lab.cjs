@@ -1,3 +1,4 @@
+process.env.SYMPORT_FRONTEND = 'classic'; // Explicit rollback-interface regression coverage.
 // Browser -> SymPort -> authenticated mock MGO contract -> persistent reports -> mounted test volume.
 // Synthetic success pipeline only; this does not test an E52 ROM or EKA2L1 compatibility.
 const {chromium}=require('playwright');

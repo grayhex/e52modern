@@ -1,0 +1,233 @@
+@font-face {
+  font-family: Inter;
+  src: url('/fonts/Inter.ttf');
+}
+@font-face {
+  font-family: JetBrains;
+  src: url('/fonts/JetBrainsMono.ttf');
+}
+.topbar .form-row {
+  margin: 0;
+  align-items: center;
+}
+.topbar select {
+  margin: 0;
+  width: auto;
+}
+.react-file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  padding: 4px;
+}
+.react-file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+}
+.react-file-grid .react-file {
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+dialog {
+  max-width: min(500px, calc(100vw - 24px));
+  border: 1px solid var(--border);
+  background: var(--panel, #fff);
+  color: var(--text);
+  border-radius: 16px;
+  padding: 20px;
+}
+dialog::backdrop {
+  background: #041c2e99;
+}
+.phone-dashboard:has(.dashboard-phone) {
+  grid-template-columns: 88px minmax(0, 1fr);
+}
+.phone-dashboard:not(:has(.dashboard-phone)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.dashboard-phone {
+  height: auto;
+}
+@media (max-width: 760px) {
+  .topbar {
+    height: auto;
+    min-height: 45px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .sidebar-menu nav {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  .sidebar-menu .nav-link {
+    white-space: nowrap;
+  }
+  .sidebar-panel {
+    width: auto;
+  }
+}
+.react-page .react-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: end;
+  margin: 12px 0;
+}
+.react-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.react-field input,
+.react-field select,
+.react-field textarea {
+  width: 100%;
+  margin: 0;
+}
+.react-page .form-row {
+  align-items: end;
+  flex-wrap: wrap;
+}
+.react-page .form-row .btn {
+  min-height: 38px;
+  box-sizing: border-box;
+}
+.react-page .form-row > label:not(.grow),
+.react-page .form-row > div {
+  flex: 0 1 auto;
+  min-width: 100px;
+  max-width: 100%;
+}
+.react-page .form-row > .react-field {
+  max-width: 280px;
+}
+.react-page .react-number {
+  width: 105px;
+}
+.react-editor {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.react-page pre {
+  max-height: 360px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.react-page td input {
+  min-width: 130px;
+}
+.react-page .device-details > div {
+  display: contents;
+}
+.react-page .package-row {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.react-page .react-theme-preview {
+  max-width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+}
+.react-modal {
+  max-width: min(850px, calc(100vw - 24px));
+  max-height: 90vh;
+  overflow: auto;
+}
+.gallery-player img,
+.gallery-player video {
+  max-width: 100%;
+  max-height: 65vh;
+  object-fit: contain;
+}
+.react-page .media-grid:empty {
+  display: none;
+}
+.react-page .media-art {
+  max-width: 100%;
+  object-fit: cover;
+}
+.react-page table {
+  width: 100%;
+}
+.react-page th {
+  text-align: left;
+}
+@media (max-width: 540px) {
+  .react-page .react-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .react-page .form-row > .react-field {
+    max-width: 100%;
+  }
+  .react-page .form-row > select {
+    max-width: 100%;
+  }
+}
+.react-ringtone-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.react-ringtone-workspace:has(.react-ringtone-result) {
+  grid-template-columns: minmax(0, 1fr) 290px;
+}
+.react-ringtone-workspace > .card {
+  margin: 0 !important;
+  min-width: 0;
+  padding: 14px !important;
+}
+.react-ringtone-workspace .react-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: end;
+}
+.react-ringtone-workspace .react-fields > .react-field {
+  max-width: 112px;
+}
+.react-ringtone-workspace .react-fields > label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.react-ringtone-result audio {
+  width: 100%;
+  height: 38px;
+}
+.react-ringtone-result .form-row {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.react-ringtone-result .form-row > * {
+  max-width: 100%;
+  width: 100%;
+}
+@media (max-width: 1000px) {
+  .react-ringtone-workspace:has(.react-ringtone-result) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.react-page .btn {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

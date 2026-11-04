@@ -7,7 +7,9 @@ python3 -m venv .venv
 . .venv/bin/activate
 pip install -e '.[dev,phone,media]'
 tools/s60/build.sh                  # requires g++
-python -m symport.web               # localhost only
+npm ci --prefix frontend
+npm run build --prefix frontend
+python -m symport.web               # localhost only; React at /
 symport doctor
 symport theme build
 symport theme inspect
@@ -30,9 +32,17 @@ Commands support JSON/report output; consult `--help` for each subcommand. Devic
 browser API additionally exposes the bounded media and personal-data workflows described in
 [DEVICE_WORKSPACE.md](DEVICE_WORKSPACE.md). There is no shell-command HTTP endpoint.
 
+For hot reload, start Python and run `npm run dev --prefix frontend` in another
+terminal. See [FRONTEND_MIGRATION.md](FRONTEND_MIGRATION.md) for the typed API,
+state ownership, static build and rollback entry.
+
 ## Checks
 
 ```bash
+npm run typecheck --prefix frontend
+npm run lint --prefix frontend
+npm test --prefix frontend
+node tools/check_react_workspace.cjs
 pytest
 ruff check .
 node --check symport/web_assets/device-workspace.js

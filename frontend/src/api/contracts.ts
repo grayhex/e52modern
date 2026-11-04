@@ -1,0 +1,64 @@
+import { z } from 'zod';
+const maybeText = z.string().nullish();
+const maybeNumber = z.number().nullish();
+export const deviceSchema = z.object({
+  id: z.string(),
+  name: maybeText,
+  model: maybeText,
+  rm: maybeText,
+  firmware: maybeText,
+  transport: z.string(),
+  connection_kind: maybeText,
+  connected: z.boolean(),
+  configured: z.boolean().optional(),
+  battery: maybeNumber,
+  signal: maybeNumber,
+  free: maybeNumber,
+  total: maybeNumber,
+  imei: maybeText,
+  evidence: maybeText,
+  capabilities: z.array(z.string()),
+  sms_send_verified: z.boolean().optional(),
+  usb_mode: maybeText,
+  life_timer_hours: maybeNumber,
+  life_timer_reason: maybeText,
+  capability_status: z
+    .record(z.string(), z.object({ status: z.string(), reason: maybeText }))
+    .optional(),
+  model_profile: z
+    .object({
+      name: z.string(),
+      image: z.string(),
+      screen: z.object({ width: z.number(), height: z.number(), orientation: z.string() }),
+      s60: z.string(),
+      symbian: z.string(),
+      input: z.string(),
+    })
+    .nullish(),
+  firmware_update: z
+    .object({ status: z.string(), latest_known: maybeText, sources: z.array(z.string()) })
+    .optional(),
+});
+export const discoverySchema = z.object({
+  devices: z.array(deviceSchema),
+  limitations: z.record(z.string(), z.string()),
+});
+export const filesSchema = z.object({
+  entries: z.array(z.object({ name: z.string(), directory: z.boolean(), size: maybeNumber })),
+});
+export const downloadSchema = z.object({ name: z.string(), content: z.string() });
+export const resultSchema = z.object({
+  status: z.string().optional(),
+  destination: z.string().optional(),
+});
+export const historySchema = z.object({
+  operations: z.array(z.object({ time: z.string(), action: z.string(), status: z.string() })),
+});
+export const connectionSchema = z.object({
+  mode: z.string(),
+  connected: z.boolean(),
+  relay_token: z.string().optional(),
+});
+export type Device = z.infer<typeof deviceSchema>;
+export type FileEntry = z.infer<typeof filesSchema>['entries'][number];
+export type Json = string | number | boolean | null | Json[] | { [key: string]: Json };

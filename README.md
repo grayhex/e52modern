@@ -4,7 +4,7 @@
 и приложения — рядом с инструментами разработки для Symbian S60.
 Интерфейс Nimbus: русский и английский, светлая и тёмная тема.
 
-![Ringtone Studio](docs/screenshots/ringtone-studio-dark-en.png)
+![Ringtone Studio](docs/screenshots/react-ringtone-dark-en.png)
 
 ## Запуск в Docker
 
@@ -121,3 +121,8 @@ E72 использует экран 320×240 и QWERTY. Портретные р�
 
 Код SymPort — MIT. Лицензии сторонних компонентов сохраняются; Windows-дистрибутив
 с Gammu поставляется с GPL-3.0, соответствующими исходниками и уведомлениями.
+
+Интерфейс работает на **React 19 + TypeScript strict + Vite**. TanStack Query
+управляет запросами и фоновыми операциями; Python API и транспорты сохранены.
+[Архитектура frontend, локальная разработка и проверки](docs/FRONTEND_MIGRATION.md).
+Предыдущий интерфейс доступен по `/classic` для переходного периода.

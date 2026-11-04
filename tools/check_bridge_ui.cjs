@@ -1,3 +1,4 @@
+process.env.SYMPORT_FRONTEND = 'classic'; // Explicit rollback-interface regression coverage.
 // Real browser -> local pairing -> outbound relay -> shared filesystem adapter.
 // Native confirmation is injected only in this isolated no-phone test process.
 const {chromium}=require('playwright'),{spawn}=require('child_process'),fs=require('fs'),os=require('os'),path=require('path');

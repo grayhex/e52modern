@@ -6,7 +6,7 @@ const shots=process.env.SYMPORT_SCREENSHOTS_DIR||path.resolve(__dirname,'../buil
  const browser=await chromium.launch({headless:true,...(process.env.SYMPORT_BROWSER_EXECUTABLE?{executablePath:process.env.SYMPORT_BROWSER_EXECUTABLE}:{}),args:['--no-sandbox']});
  try{
   const page=await browser.newPage({viewport:{width:1440,height:1100},timezoneId:'Europe/Moscow'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  let loaded=false;for(let i=0;i<50;i++){try{await page.goto('http://127.0.0.1:8775/#lab');loaded=true;break;}catch(e){await new Promise(r=>setTimeout(r,200));}}if(!loaded)throw Error('Runtime UI unavailable');
+  let loaded=false;for(let i=0;i<50;i++){try{await page.goto('http://127.0.0.1:8775/classic#lab');loaded=true;break;}catch(e){await new Promise(r=>setTimeout(r,200));}}if(!loaded)throw Error('Runtime UI unavailable');
   await page.waitForFunction(()=>document.getElementById('lab-status').textContent.includes('EKA2L1 master-'),null,{timeout:45000});await page.evaluate(()=>document.fonts.ready);
   const state=await page.evaluate(()=>labApi({action:'state'}));if(state.health.firmware.devices.length)throw Error('Refusing negative test on user firmware');
   if(!await page.locator('#lab-start').isDisabled())throw Error('Start available without firmware');

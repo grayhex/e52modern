@@ -1,3 +1,4 @@
+process.env.SYMPORT_FRONTEND = 'classic'; // Explicit rollback-interface regression coverage.
 // Real FFmpeg + local WaveSurfer + actual mounted folder. E72 identity is an explicit test fixture.
 const {chromium}=require('playwright'),{spawn,spawnSync}=require('child_process'),fs=require('fs'),os=require('os'),path=require('path');
 const repo=path.resolve(__dirname,'..'),root=fs.mkdtempSync(path.join(os.tmpdir(),'symport-ringtone-')),python=process.env.SYMPORT_PYTHON||'python3';

@@ -22,3 +22,6 @@ roms
 
 .env
 Nokia symbian*.zip
+frontend/node_modules
+frontend/public
+symport/react_assets

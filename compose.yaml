@@ -17,6 +17,7 @@ services:
       - symport-workspace:/srv/e52modern/workspace
       - mgo-symbian-auth:/symbian-auth:ro
     environment:
+      SYMPORT_FRONTEND: ${SYMPORT_FRONTEND:-react}
       SYMPORT_HTTP_PORT: ${SYMPORT_HTTP_PORT:-8765}
       SYMPORT_PUBLIC_ORIGIN: ${SYMPORT_PUBLIC_ORIGIN:-}
       SYMPORT_CONNECTIONS_FILE: ${SYMPORT_CONNECTIONS_FILE:-}

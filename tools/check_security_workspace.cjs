@@ -1,3 +1,4 @@
+process.env.SYMPORT_FRONTEND = 'classic'; // Explicit rollback-interface regression coverage.
 // Browser contract tests: genuine SDK certificate + mock phone volume, no phone jailbreak claim.
 const {chromium}=require('playwright'),{spawn}=require('child_process');
 const fs=require('fs'),os=require('os'),path=require('path');

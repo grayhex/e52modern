@@ -1,3 +1,4 @@
+process.env.SYMPORT_FRONTEND = 'classic'; // Explicit rollback-interface regression coverage.
 // Real catalog UI + offline batch fixture. Test devices/apps are never shipped as catalog data.
 const {chromium}=require('playwright');
 const {spawn,spawnSync}=require('child_process');

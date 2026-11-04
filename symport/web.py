@@ -381,6 +381,9 @@ class Workbench:
         return report
 
 
+REACT_ASSETS = Path(__file__).parent / 'react_assets'
+
+
 def make_handler(state: Workbench):
     class Handler(BaseHTTPRequestHandler):
         server_version = "SymPortWorkbench/0.1"
@@ -422,8 +425,22 @@ def make_handler(state: Workbench):
             if not self._host_ok():
                 return self._json({"error": "Host not allowed"}, 403)
             url = urlsplit(self.path)
+            react_root = REACT_ASSETS
+            use_react = os.getenv('SYMPORT_FRONTEND', 'react') != 'classic'
+            if (url.path == '/' and use_react and (react_root / 'index.html').is_file()) or url.path == '/next' or url.path.startswith('/next/'):
+                relative = url.path.removeprefix('/next').lstrip('/') or 'index.html'
+                root = REACT_ASSETS
+                target = root / relative
+                if any(part in ('.','..') for part in relative.split('/')) or '\\' in relative or not target.is_file() or target.is_symlink() or not target.resolve().is_relative_to(root.resolve()):
+                    return self._json({'error':'React build not found. Run npm ci and npm run build in frontend.'},404)
+                import mimetypes
+                body = target.read_bytes()
+                if relative == 'index.html':
+                    body = body.replace(b'__SESSION_TOKEN__',state.token.encode())
+                return self._send(body,mimetypes.guess_type(str(target))[0] or 'application/octet-stream',session=relative=='index.html')
             static = {
                 "/": ("index.html", "text/html; charset=utf-8"),
+                "/classic": ("index.html", "text/html; charset=utf-8"),
                 "/app.css": ("app.css", "text/css; charset=utf-8"),
                 "/app.js": ("app.js", "text/javascript; charset=utf-8"),
                 "/device-workspace.js": ("device-workspace.js", "text/javascript; charset=utf-8"),
