@@ -2,9 +2,9 @@
 
 **Веб-пространство для Nokia E52 и E72:** телефон, файлы, контакты, музыка
 и приложения — рядом с инструментами разработки для Symbian S60.
-Интерфейс Nokia Classic: русский и английский, светлая и тёмная тема; меню из пяти групп ([NAVIGATION.md](docs/NAVIGATION.md)).
+Интерфейс Nokia Classic: русский и английский, светлая тема в оригинальных цветах Nokia (тёмная пока отключена); меню из пяти групп ([NAVIGATION.md](docs/NAVIGATION.md)).
 
-![Ringtone Studio](docs/screenshots/react-ringtone-dark-en.png)
+![Обзор устройства: Nokia E52](docs/screenshots/overview-e52.png)
 
 ## Запуск в Docker
 
@@ -83,26 +83,23 @@ USB-драйверы Nokia устанавливаются отдельно.
 
 [Источники и ограничения новых приложений](docs/CATALOG_P1_RESEARCH.md): Opera Mini, FShell, QRemoteControl и Internet Radio представлены авторскими ссылками там, где подходящий оригинальный установщик не подтверждён. Утилиты для Symbian 9.4/Anna/Belle не отмечены как совместимые с E52/E72.
 
-![Advanced Theme Studio: реальный проект CLEAR и сборка SIS для E72](docs/screenshots/p1-theme-studio-dark-en.png)
+![Мастер первого подключения](docs/screenshots/connection-wizard.png)
 
 Передача пакета не означает его установку: завершите её на экране Nokia. Статическая совместимость, успешная установка и запуск на E52/E72 — разные уровни; в SymPort проверены только статические и тестовые.
 Рингтон назначается в настройках телефона после передачи. Ringtone Studio
 обрабатывает аудио локально в Docker, без внешних сервисов.
 
-![Обзор устройства](docs/screenshots/nokia-overview.png)
+![Обзор устройства: Nokia E72](docs/screenshots/overview-e72.png)
 
-[Наборы и восстановление](docs/screenshots/p1-collections-dark-en.png) ·
-[История диагностики](docs/screenshots/p1-diagnostics-dark-en.png) ·
-[Файловый менеджер](docs/screenshots/nokia-files.png) ·
-[Firmware & ROM Explorer](docs/screenshots/nokia-firmware.png) ·
-[Зависимости](docs/screenshots/nokia-dependencies.png) ·
-[Компактное меню и заготовка](docs/screenshots/nokia-planned-compact.png) ·
-[Тёмная тема](docs/screenshots/nokia-overview-dark.png) ·
-[E52](docs/screenshots/nokia-overview-e52.png) · [E72](docs/screenshots/nokia-overview-e72.png) ·
-[Телефон](docs/screenshots/nokia-overview-mobile.png) ·
-[E72](docs/screenshots/e72-dashboard-dark.png)
+| | |
+|---|---|
+| [Редактор тем](docs/screenshots/theme-studio.png) | [Файловый менеджер](docs/screenshots/files.png) |
+| [Каталог приложений](docs/screenshots/catalog.png) | [Firmware & ROM Explorer](docs/screenshots/firmware.png) |
+| [Зависимости и runtime](docs/screenshots/dependencies.png) | [Диагностика](docs/screenshots/diagnostics.png) |
+| [Ringtone Studio](docs/screenshots/ringtone.png) | [Компактное меню и заготовка «В разработке»](docs/screenshots/planned-compact.png) |
+| [Телефон (узкий экран)](docs/screenshots/overview-mobile.png) | |
 
-Снимки сняты с работающего интерфейса на **тестовых данных**: том `E52 card (test volume)` и синтетические образы/пакеты
+Снимки получены скриптом `node tools/capture_screenshots.cjs` из работающего интерфейса (светлая тема, русский язык) на **тестовых данных**: том `E52 card (test volume)` и синтетические образы/пакеты
 из тестов, без телефона и без прошивки Nokia. Иллюстрация телефона — графический ресурс, а не подтверждение аппаратной
 совместимости.
 

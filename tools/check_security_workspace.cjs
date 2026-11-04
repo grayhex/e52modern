@@ -35,8 +35,8 @@ async function checkSidebar(page){
  browser=await chromium.launch({headless:true,...(process.env.SYMPORT_BROWSER_EXECUTABLE?{executablePath:process.env.SYMPORT_BROWSER_EXECUTABLE}:{}),args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:1440,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  for(let i=0;i<50;i++){try{await page.goto('http://127.0.0.1:8776/#inspector');break;}catch{await new Promise(r=>setTimeout(r,200));}}
- await page.waitForFunction(()=>Object.keys(uiTranslations.en).length>100);await page.selectOption('#ui-language','en');await page.selectOption('#ui-theme','dark');await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.documentElement.dataset.theme==='dark');
- await page.reload();await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.documentElement.dataset.theme==='dark');
+ await page.waitForFunction(()=>Object.keys(uiTranslations.en).length>100);await page.selectOption('#ui-language','en');await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.documentElement.dataset.theme==='light');
+ await page.reload();await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.documentElement.dataset.theme==='light');
  if(await page.evaluate(()=>tr('Удалить Контакты.sis? Каталог должен быть пустым.'))!=='Delete Контакты.sis? The directory must be empty.')throw Error('Dialog translation changed filename or kept Russian UI');
  // Surface untranslated UI text for review. User content and raw evidence are intentionally excluded.
  const untranslated={};for(const id of ['manager','updates','contacts','calendar','messages','media','backups','catalog','installed','themes','apps','device','overview','activity','lab','inspector','jailbreak']){
@@ -49,7 +49,7 @@ async function checkSidebar(page){
  if(!await page.locator('#inspect-json').evaluate(n=>JSON.parse(n.textContent).signatures.status==='valid'))throw Error('Genuine SDK signature not verified');
  await page.fill('#inspect-message','expired certificate');await page.click('#inspect-diagnose');await page.waitForFunction(()=>document.getElementById('inspect-advice').textContent.includes('expired-certificate'));
  await checkSidebar(page);
- await page.screenshot({path:path.join(shots,'inspector-dark-en.png'),fullPage:true});
+ await page.screenshot({path:path.join(shots,'inspector-light-en.png'),fullPage:true});
  await page.click('[data-nav="jailbreak"]');await page.setInputFiles('#jb-archive',path.join(root,'fixture.zip'));await page.click('#jb-import');await page.waitForFunction(()=>document.querySelectorAll('#jb-files input').length===4);
  if(await page.locator('#jb-files input:disabled').count()!==2)throw Error('Key or wrong-model patch can be selected');
  await page.locator('#jb-files input:not(:disabled)').first().check();await page.click('#jailbreak .suite-discover');await page.waitForFunction(()=>!!document.getElementById('jb-device').value);
@@ -60,11 +60,11 @@ async function checkSidebar(page){
  const run=JSON.parse(await page.locator('#jb-json').textContent()),staged=path.join(root,'volume',run.staged[0].path);if(!fs.existsSync(staged))throw Error('Staging did not copy bytes');if(run.installation!=='not-tested')throw Error('False installation claim');
  await page.click('#jb-rollback-plan');await page.waitForFunction(()=>!document.getElementById('jb-rollback').disabled);page.once('dialog',d=>d.accept());await page.click('#jb-rollback');await page.waitForFunction(()=>!!JSON.parse(document.getElementById('jb-json').textContent).rollback);
  if(fs.existsSync(staged)||!fs.existsSync(path.join(root,'volume/original.txt')))throw Error('Rollback failed or removed original data');
- await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(shots,'jailbreak-dark-en.png'),fullPage:true});
+ await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(shots,'jailbreak-light-en.png'),fullPage:true});
  await page.setViewportSize({width:390,height:844});for(const id of ['inspector','jailbreak','manager','contacts','lab']){await page.evaluate(id=>location.hash='#'+id,id);await page.locator('#'+id+'.visible').waitFor();if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)){await page.screenshot({path:path.join(shots,'security-overflow.png'),fullPage:true});throw Error('Mobile overflow '+id+' '+JSON.stringify(await page.evaluate(()=>[...document.querySelectorAll('.page.visible *')].map(n=>({id:n.id,tag:n.tagName,cls:n.className,right:n.getBoundingClientRect().right,width:n.getBoundingClientRect().width})).filter(n=>n.right>innerWidth+1).slice(0,20))));}}
- await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(shots,'workspace-dark-mobile.png'),fullPage:true});
- await page.selectOption('#ui-language','ru');await page.waitForFunction(()=>document.documentElement.lang==='ru');await page.selectOption('#ui-theme','light');if(await page.locator('#ui-theme').inputValue()!=='light')throw Error('Theme switch failed');
+ await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(shots,'workspace-light-mobile.png'),fullPage:true});
+ await page.selectOption('#ui-language','ru');await page.waitForFunction(()=>document.documentElement.lang==='ru');if(await page.evaluate(()=>document.documentElement.dataset.theme)!=='light')throw Error('Interface must be light');
  await page.goto('http://127.0.0.1:8776/#inspector');await page.locator('#inspector.visible').waitFor();await checkSidebar(page);
  if(errors.length)throw Error(errors.join('\n'));if(Object.keys(untranslated).length)throw Error('Untranslated interface text: '+JSON.stringify(untranslated));
- console.log('PASS: genuine signature, diagnosis, archive/key exclusions, dry-run, backup, staged bytes/rollback, English/Russian persistence, Nimbus dark/light and responsive UI. No system patch or hardware installation claimed.');
+ console.log('PASS: genuine signature, diagnosis, archive/key exclusions, dry-run, backup, staged bytes/rollback, English/Russian persistence, light Nokia theme and responsive UI. No system patch or hardware installation claimed.');
  }finally{if(browser)await browser.close();server.kill();fs.rmSync(root,{recursive:true,force:true});}})().catch(e=>{console.error(e);process.exitCode=1;});

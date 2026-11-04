@@ -37,7 +37,7 @@ const server=spawn(python,['-c',script,root,String(port)],{cwd:repo,env:{...proc
  page=await browser.newPage({viewport:{width:1440,height:1000},timezoneId:'Europe/Moscow'});page.setDefaultTimeout(25000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/favicon|Failed to load resource/.test(m.text()))errors.push(page.url()+" "+m.text());});
  for(let i=0;i<50;i++){try{await page.goto(`http://127.0.0.1:${port}/`);break;}catch{await new Promise(r=>setTimeout(r,200));}}
- await page.evaluate(()=>{localStorage.setItem('symport-language','en');localStorage.setItem('symport-theme','dark');});await page.reload();
+ await page.evaluate(()=>{localStorage.setItem('symport-language','en');});await page.reload();
  const navigate=async route=>{await page.evaluate(r=>location.hash='#'+r,route);return page.locator('[data-route="'+route.split('?')[0]+'"]');};
  // Collections: real persisted manifest, dependency closure, cross-geometry recovery, explicit confirmation and real copied bytes.
  const kits=await navigate('apps/kits');await kits.getByLabel('Collection name',{exact:true}).fill('Recovery E2E');
@@ -53,14 +53,14 @@ const server=spawn(python,['-c',script,root,String(port)],{cwd:repo,env:{...proc
  await kits.getByText(/Transfer queued/).waitFor();
  for(let i=0;i<100&&!fs.existsSync(path.join(root,'card','example.jar'));i++)await page.waitForTimeout(100);
  if(!fs.existsSync(path.join(root,'card','runtime.jar')))throw Error('Runtime transfer missing');
- await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(shots,'collections-dark-en.png'),fullPage:true});
+ await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(shots,'collections-light-en.png'),fullPage:true});
  // Diagnostics: real filesystem counters + explicit observation double, measured zero and no IMEI export.
  const diag=await navigate('tools/diagnostics');await diag.getByLabel('Measurement connection',{exact:true}).selectOption('telemetry');
  await diag.getByRole('button',{name:'Read measurements',exact:true}).click();await diag.getByText('0%',{exact:true}).waitFor();
  await diag.getByRole('button',{name:'Read measurements',exact:true}).click();await diag.getByText('2 / 500',{exact:true}).waitFor();
  await diag.getByRole('button',{name:'Export JSON',exact:true}).click();const dh=await diag.getByRole('link',{name:/Download symport-diagnostics.json/}).getAttribute('href');
  const history=JSON.parse(Buffer.from(dh.split(',')[1],'base64').toString());if(history.measurements.length!==2||history.measurements[0].battery!==0||/imei/i.test(JSON.stringify(history)))throw Error('Diagnostic data integrity/privacy');
- await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(shots,'diagnostics-dark-en.png'),fullPage:true});
+ await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(shots,'diagnostics-light-en.png'),fullPage:true});
  // Actual Nokia compiler: visual palette + cropped wallpaper + native E72 resolution, guarded export.
  const studio=await navigate('personalize/theme-editor');await studio.getByLabel('Screen profile',{exact:true}).selectOption('nokia-e72');
  await studio.getByRole('button',{name:'Create editable CLEAR theme'}).click();await studio.getByRole('button',{name:'Save palette'}).waitFor();
@@ -74,7 +74,7 @@ const server=spawn(python,['-c',script,root,String(port)],{cwd:repo,env:{...proc
  const sisHref=await sisLink.getAttribute('href'),sisBytes=Buffer.from(sisHref.split(',')[1],'base64'),sha=crypto.createHash('sha256').update(sisBytes).digest('hex');
  fs.writeFileSync(path.join(root,'exported-theme.sis'),sisBytes);
  const svg=studio.getByRole('img',{name:'Schematic theme preview 320×240'});if(await svg.getAttribute('viewBox')!=='0 0 320 240')throw Error('E72 geometry lost');
- await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(shots,'theme-studio-dark-en.png'),fullPage:true});
+ await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(shots,'theme-studio-light-en.png'),fullPage:true});
  await studio.getByRole('link',{name:'Inspect & transfer to Nokia'}).click();
  const inspector=page.locator('[data-route="tools/certificates"]');if(await inspector.getByLabel('Model',{exact:true}).inputValue()!=='Nokia E72')throw Error('Theme target profile was not preserved');await inspector.getByRole('button',{name:'Analyze package'}).click();await inspector.getByText(sha,{exact:true}).waitFor();
  await inspector.getByLabel('Connection',{exact:true}).selectOption('card');await inspector.getByRole('checkbox',{name:/I acknowledge unverified/}).check();

@@ -369,7 +369,15 @@ function Overview() {
       </Card>
 
       <Box
-        sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))' }}
+        sx={{
+          display: 'grid',
+          gap: 2,
+          gridTemplateColumns: {
+            xs: 'repeat(2,minmax(0,1fr))',
+            md: 'repeat(3,minmax(0,1fr))',
+            xl: 'repeat(6,minmax(0,1fr))',
+          },
+        }}
       >
         {metrics.map((m) => (
           <Metric {...m} key={m.key} />

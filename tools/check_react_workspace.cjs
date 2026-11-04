@@ -61,7 +61,6 @@ const server = spawn(python, ["-c", script, root], {
     await page.locator("#page-phone-overview h1").waitFor();
     await page.getByRole("button", { name: "Настройки", exact: true }).click();
     await page.selectOption("#language", "en");
-    await page.selectOption("#theme", "dark");
     // Legacy URLs must keep working: navigation below deliberately uses the pre-restructure hash ids.
     const canonical = {
       manager: "phone/overview",
@@ -306,7 +305,7 @@ const server = spawn(python, ["-c", script, root], {
     await page.setViewportSize({ width: 1366, height: 768 });
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({
-      path: path.join(shots, "ringtone-dark-en.png"),
+      path: path.join(shots, "ringtone-light-en.png"),
       fullPage: true,
     });
     await go("connection");
@@ -346,7 +345,7 @@ const server = spawn(python, ["-c", script, root], {
       .first()
       .waitFor();
     await page.screenshot({
-      path: path.join(shots, "inspector-dark-en.png"),
+      path: path.join(shots, "inspector-light-en.png"),
       fullPage: true,
     });
     await noErrors();
@@ -509,7 +508,6 @@ const server = spawn(python, ["-c", script, root], {
     if (await page.locator("#page-phone-connection code").count())
       throw Error("Private IMEI retained across hidden view");
     await page.selectOption("#language", "ru");
-    await page.selectOption("#theme", "light");
     await page.reload();
     await page.waitForFunction(
       () =>

@@ -12,7 +12,7 @@ import {
   SunMoon,
   X,
 } from 'lucide-react';
-import { usePreferences } from '../state/app';
+import { DARK_THEME_ENABLED, usePreferences } from '../state/app';
 import { useDevices } from '../api/queries';
 import { findGroup, groups, type NavItem } from './routes';
 
@@ -337,24 +337,28 @@ function SidebarFooter({
             <option value="ru">Русский</option>
             <option value="en">English</option>
           </select>
-          <label htmlFor="theme">{t('Theme', 'Тема')}</label>
-          <select
-            id="theme"
-            value={theme}
-            onChange={(event) =>
-              setTheme(
-                event.target.value === 'dark'
-                  ? 'dark'
-                  : event.target.value === 'light'
-                    ? 'light'
-                    : 'system',
-              )
-            }
-          >
-            <option value="system">{t('System', 'Системная')}</option>
-            <option value="light">{t('Light', 'Светлая')}</option>
-            <option value="dark">{t('Dark', 'Тёмная')}</option>
-          </select>
+          {DARK_THEME_ENABLED && (
+            <>
+              <label htmlFor="theme">{t('Theme', 'Тема')}</label>
+              <select
+                id="theme"
+                value={theme}
+                onChange={(event) =>
+                  setTheme(
+                    event.target.value === 'dark'
+                      ? 'dark'
+                      : event.target.value === 'light'
+                        ? 'light'
+                        : 'system',
+                  )
+                }
+              >
+                <option value="system">{t('System', 'Системная')}</option>
+                <option value="light">{t('Light', 'Светлая')}</option>
+                <option value="dark">{t('Dark', 'Тёмная')}</option>
+              </select>
+            </>
+          )}
           <label className="settings-switch">
             <input
               type="checkbox"
@@ -381,15 +385,17 @@ function SidebarFooter({
         >
           <Settings size={18} aria-hidden="true" />
         </button>
-        <button
-          type="button"
-          className="icon-button"
-          aria-label={`${t('Theme', 'Тема')}: ${themeName}`}
-          onClick={() => setTheme(nextTheme)}
-          {...tip(`${t('Theme', 'Тема')}: ${themeName}`)}
-        >
-          <ThemeIcon size={18} aria-hidden="true" />
-        </button>
+        {DARK_THEME_ENABLED && (
+          <button
+            type="button"
+            className="icon-button"
+            aria-label={`${t('Theme', 'Тема')}: ${themeName}`}
+            onClick={() => setTheme(nextTheme)}
+            {...tip(`${t('Theme', 'Тема')}: ${themeName}`)}
+          >
+            <ThemeIcon size={18} aria-hidden="true" />
+          </button>
+        )}
         <button
           type="button"
           className="icon-button icon-button--text"

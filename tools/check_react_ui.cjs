@@ -48,7 +48,6 @@ const server = spawn(python, ["-c", script, root], {
       .waitFor();
     await page.getByRole("button", { name: "Настройки", exact: true }).click();
     await page.selectOption("#language", "en");
-    await page.selectOption("#theme", "dark");
     await page.getByRole("link", { name: "File manager", exact: true }).click();
     await page.getByLabel("Connection", { exact: true }).selectOption("card");
     const browserView = page.locator(".phone-files");
@@ -128,7 +127,7 @@ const server = spawn(python, ["-c", script, root], {
       throw Error("Mobile overflow");
     if (errors.length) throw Error(errors.join("\n"));
     console.log(
-      "PASS React: actual API discovery/list/download, Cancel-first delete, confirmed mkdir, RU/EN/dark/mobile; no legacy controller execution.",
+      "PASS React: actual API discovery/list/download, Cancel-first delete, confirmed mkdir, RU/EN/light/mobile; no legacy controller execution.",
     );
   } finally {
     await browser?.close();

@@ -142,14 +142,14 @@ describe('sidebar', () => {
     shell(sidebar());
     expect(await screen.findByText('Телефон не подключён')).toBeInTheDocument();
   });
-  it('lets the user switch language and theme from the footer', async () => {
+  it('lets the user switch language; the theme is light only while dark mode is off', async () => {
     shell(sidebar());
     await userEvent.click(screen.getByRole('button', { name: 'Настройки' }));
     await userEvent.selectOptions(screen.getByLabelText('Язык'), 'en');
     expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
     expect(document.documentElement.lang).toBe('en');
-    await userEvent.selectOptions(screen.getByLabelText('Theme'), 'dark');
-    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(screen.queryByLabelText('Theme')).toBeNull();
+    expect(document.documentElement.dataset.theme).toBe('light');
   });
 });
 
