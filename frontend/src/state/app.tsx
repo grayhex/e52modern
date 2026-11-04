@@ -10,7 +10,10 @@ export function useApi() {
   if (!client) throw Error('API provider missing');
   return client;
 }
+type ContactIndex = { device: string; fingerprint: string; names: Record<string, string> };
 type Preferences = {
+  contactIndex: ContactIndex | null;
+  setContactIndex: (value: ContactIndex | null) => void;
   language: 'ru' | 'en';
   theme: 'system' | 'light' | 'dark';
   device: string;
@@ -42,7 +45,8 @@ export function PreferencesProvider({ children }: PropsWithChildren) {
     const value = saved('symport-theme');
     return value === 'dark' || value === 'light' ? value : 'system';
   });
-  const [device, setDevice] = useState('');
+  const [device, setDeviceState] = useState('');
+  const [contactIndex, setContactIndex] = useState<ContactIndex | null>(null);
   useEffect(() => {
     const media = matchMedia('(prefers-color-scheme: dark)');
     const apply = () => {
@@ -62,7 +66,12 @@ export function PreferencesProvider({ children }: PropsWithChildren) {
         language,
         theme,
         device,
-        setDevice,
+        setDevice: (id) => {
+          if (id !== device) setContactIndex(null);
+          setDeviceState(id);
+        },
+        contactIndex,
+        setContactIndex,
         setLanguage: (value) => {
           setLanguageState(value);
           persist('symport-language', value);

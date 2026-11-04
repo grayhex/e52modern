@@ -1,13 +1,36 @@
+import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import { useApi, usePreferences } from '../state/app';
 import { keys, useDevices } from '../api/queries';
 import { Card, DeviceSelect, ErrorMessage } from '../components/ui';
+import { objectSchema, text, entries, strings } from '../api/workspace';
+
 export default function Connection() {
   const api = useApi();
   const queryClient = useQueryClient();
   const { t, device, setDevice } = usePreferences();
   const devices = useDevices();
+  const [imei, setImei] = useState('');
+  const privateAction = useConfirmedAction<string>();
+  const selected = devices.data?.devices.find((d) => d.id === device);
+  useEffect(() => {
+    const clear = () => setImei('');
+    const timer = setTimeout(clear, 30000);
+    addEventListener('blur', clear);
+    return () => {
+      clearTimeout(timer);
+      removeEventListener('blur', clear);
+    };
+  }, [imei]);
+  const diagnostics = useMutation({
+    mutationFn: (id: string) =>
+      api.request('/api/manager', { action: 'connection-diagnose', device: id }, objectSchema),
+  });
+  const host = useMutation({
+    mutationFn: () => api.request('/api/manager', { action: 'connection-host' }, objectSchema),
+  });
   const state = useQuery({
     queryKey: ['connection'],
     queryFn: ({ signal }) => api.connection('status', signal),
@@ -41,6 +64,10 @@ export default function Connection() {
     onSuccess: async () => {
       queryClient.removeQueries({ queryKey: keys.devices });
       queryClient.removeQueries({ queryKey: ['files'] });
+      queryClient.removeQueries({ queryKey: ['personal'] });
+      queryClient.removeQueries({ queryKey: ['media'] });
+      setDevice('');
+      setImei('');
       await queryClient.invalidateQueries({ queryKey: ['connection'] });
     },
   });
@@ -68,6 +95,24 @@ export default function Connection() {
           </button>
         </div>
         <ErrorMessage error={devices.error ?? state.error ?? action.error} />
+        {selected?.capabilities.includes('device-details') && (
+          <button
+            className="btn ghost"
+            onClick={() =>
+              privateAction.ask(
+                t('Reveal private IMEI for 30 seconds?', 'Показать личный IMEI на 30 секунд?'),
+                device,
+              )
+            }
+          >
+            {t('Reveal IMEI', 'Показать IMEI')}
+          </button>
+        )}
+        {imei && (
+          <p>
+            <code>{imei}</code>
+          </p>
+        )}
       </Card>
       <Card>
         <h2>Windows Bridge</h2>
@@ -113,8 +158,55 @@ export default function Connection() {
               </span>
             ))}
           </div>
+          <button
+            className="btn secondary"
+            disabled={!row.connection_kind || diagnostics.isPending}
+            onClick={() => diagnostics.mutate(row.id)}
+          >
+            {t('Diagnose connection', 'Диагностика подключения')}
+          </button>
         </Card>
       ))}
+      <Card>
+        <button className="btn secondary" disabled={host.isPending} onClick={() => host.mutate()}>
+          {t('Inspect host USB and Bluetooth', 'Проверить USB и Bluetooth компьютера')}
+        </button>
+        <ErrorMessage error={host.error ?? diagnostics.error} />
+        {diagnostics.data && (
+          <p>{text(objectSchema.catch({}).parse(diagnostics.data.connection).evidence)}</p>
+        )}
+        {host.data && (
+          <>
+            {['serial', 'bluetooth', 'volumes'].flatMap((kind) =>
+              entries(host.data[kind]).map((candidate, i) => (
+                <p key={`${kind}:${i}`}>
+                  {kind} · {text(candidate.name) || text(candidate.port) || text(candidate.root)} ·{' '}
+                  {text(candidate.address) || text(candidate.source)}
+                </p>
+              )),
+            )}
+            {strings(host.data.diagnostics).map((s) => (
+              <p className="note" key={s}>
+                {s}
+              </p>
+            ))}
+          </>
+        )}
+        <p className="note">
+          {t(
+            'Host records are candidates. Select an enrolled connection to verify capabilities. Mass Storage exposes files only.',
+            'Сведения компьютера — кандидаты. Выберите настроенное подключение для проверки возможностей. Mass Storage предоставляет только файлы.',
+          )}
+        </p>
+      </Card>
+      {privateAction.dialog(async (id) => {
+        const result = await api.request(
+          '/api/manager',
+          { action: 'device-imei', device: id, confirm: true },
+          z.object({ imei: z.string().nullish() }),
+        );
+        setImei(result.imei ?? '');
+      })}
     </>
   );
 }

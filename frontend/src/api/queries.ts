@@ -11,6 +11,7 @@ export function useDevices() {
     queryKey: keys.devices,
     queryFn: ({ signal }) => api.discover(signal),
     staleTime: 30000,
+    refetchInterval: 30000,
     retry: false,
   });
 }

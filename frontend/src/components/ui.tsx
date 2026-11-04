@@ -2,8 +2,8 @@ import { useRef, useEffect, useId, type PropsWithChildren } from 'react';
 import type { Device } from '../api/contracts';
 import { useDevices } from '../api/queries';
 import { usePreferences } from '../state/app';
-export function Card({ children }: PropsWithChildren) {
-  return <section className="card">{children}</section>;
+export function Card({ children, className = '' }: PropsWithChildren<{ className?: string }>) {
+  return <section className={`card ${className}`}>{children}</section>;
 }
 export function ErrorMessage({ error }: { error: unknown }) {
   return error ? (
@@ -14,7 +14,9 @@ export function ErrorMessage({ error }: { error: unknown }) {
 }
 export function Reading({ value }: { value: string | number | null | undefined }) {
   const { t } = usePreferences();
-  return value === null || value === undefined || value === 'unknown' ? (
+  return value === null ||
+    value === undefined ||
+    /^(unknown|unavailable|unsupported|none|null|n\/a|undefined)?$/i.test(String(value).trim()) ? (
     <span className="device-value value-state--unknown">ⓘ {t('No data', 'Нет данных')}</span>
   ) : (
     <span>{value}</span>
@@ -24,10 +26,20 @@ export function Reading({ value }: { value: string | number | null | undefined }
 export function supports(device: Device | undefined, capability: string) {
   if (!device) return false;
   if (device.capabilities.includes(capability)) return true;
+  const aliases: Record<string, string> = {
+    list: 'files-list',
+    download: 'files-download',
+    backup: 'files-backup',
+    upload: 'files-upload',
+    mkdir: 'files-mkdir',
+    delete: 'files-delete',
+  };
+  if (aliases[capability] && device.capabilities.includes(aliases[capability])) return true;
+  if (capability === 'upload' && device.capabilities.includes('files-stage')) return true;
   return (
-    device.transport === 'mounted-volume' &&
+    !['obexftp', 'obex-opp'].includes(device.transport) &&
     device.capabilities.includes('files') &&
-    ['list', 'download', 'upload', 'mkdir', 'delete'].includes(capability)
+    ['list', 'download', 'upload', 'mkdir', 'delete', 'backup'].includes(capability)
   );
 }
 export function DeviceSelect({

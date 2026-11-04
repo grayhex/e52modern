@@ -18,6 +18,13 @@ export const deviceSchema = z.object({
   imei: maybeText,
   evidence: maybeText,
   capabilities: z.array(z.string()),
+  sms_send_verified: z.boolean().optional(),
+  usb_mode: maybeText,
+  life_timer_hours: maybeNumber,
+  life_timer_reason: maybeText,
+  capability_status: z
+    .record(z.string(), z.object({ status: z.string(), reason: maybeText }))
+    .optional(),
   model_profile: z
     .object({
       name: z.string(),

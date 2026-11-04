@@ -142,3 +142,11 @@ services or changing volumes. `--no-build` / `-NoBuild` skip image rebuild;
 Audio sources, preview and exports are temporary, private and automatically expire.
 Use **Download MP3** to retain a ringtone before updating/restarting. Phone PIM
 backups and emulator firmware/results keep their existing persistent storage.
+
+## Frontend build
+
+Docker builds React 19 + strict TypeScript with Node 22 in a separate stage, then
+copies the static assets into the Python runtime. No Node service or extra port is
+needed. `/` opens React; `/classic` is the transition rollback entry. Set
+`SYMPORT_FRONTEND=classic` in `.env` and recreate Workbench to select the previous
+entry globally. API, Bridge and persisted phone data stay in place.

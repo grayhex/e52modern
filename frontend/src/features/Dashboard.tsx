@@ -19,7 +19,7 @@ export default function Dashboard() {
     <>
       <h1>{t('Dashboard', 'Обзор телефона')}</h1>
       <ErrorMessage error={error} />
-      <Card>
+      <Card className="dashboard-hero">
         <div className="phone-dashboard">
           {selected?.model_profile && (
             <img
@@ -63,6 +63,17 @@ export default function Dashboard() {
                 ],
                 ['IMEI', selected?.imei],
                 [t('Transport', 'Транспорт'), selected?.transport],
+                [t('USB mode', 'USB-режим'), selected?.usb_mode],
+                [
+                  t('Capacity', 'Ёмкость'),
+                  selected?.total == null ? null : `${(selected.total / 1024 ** 3).toFixed(1)} GiB`,
+                ],
+                [
+                  t('Life timer', 'Счётчик часов'),
+                  selected?.life_timer_hours == null
+                    ? null
+                    : `${selected.life_timer_hours.toFixed(1)} h`,
+                ],
               ].map(([label, value]) => (
                 <div className="dashboard-metric" key={label}>
                   <dt>{label}</dt>
@@ -72,6 +83,27 @@ export default function Dashboard() {
                 </div>
               ))}
             </dl>
+            {selected?.firmware_update?.status === 'older' && (
+              <p className="device-value value-state--warning">
+                ↗ {t('Update listed in Updates', 'В разделе «Обновления» есть новая версия')}:{' '}
+                {selected.firmware_update.latest_known}
+              </p>
+            )}
+            {selected?.life_timer_hours == null && (
+              <p className="muted">{selected?.life_timer_reason}</p>
+            )}
+            <div className="dashboard-grid">
+              {(
+                [
+                  ['Battery', 'Батарея', selected?.battery],
+                  ['Signal', 'Сигнал', selected?.signal],
+                ] as const
+              ).map(([en, ru, value]) =>
+                value != null && value >= 0 && value <= 100 ? (
+                  <progress key={en} max={100} value={value} aria-label={t(en, ru)} />
+                ) : null,
+              )}
+            </div>
             <div className="dashboard-capabilities">
               {selected?.capabilities.map((cap) => (
                 <span className="chip" key={cap}>
@@ -79,6 +111,24 @@ export default function Dashboard() {
                 </span>
               ))}
             </div>
+            {selected?.capability_status && (
+              <details>
+                <summary>{t('Connection services', 'Сервисы подключения')}</summary>
+                {Object.entries(selected.capability_status).map(([name, status]) => (
+                  <p key={name}>
+                    {name} ·{' '}
+                    <span
+                      className={`device-value value-state--${status.status === 'available' ? 'available' : 'warning'}`}
+                    >
+                      {status.status === 'available'
+                        ? t('Available', 'Доступно')
+                        : t('Unavailable', 'Недоступно')}
+                    </span>{' '}
+                    {status.reason}
+                  </p>
+                ))}
+              </details>
+            )}
           </div>
         </div>
       </Card>

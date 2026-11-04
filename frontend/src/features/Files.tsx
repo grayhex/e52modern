@@ -1,9 +1,16 @@
+import { encode as encodeBlob } from '../utils/files';
+import { useConfirmedAction } from '../hooks/useConfirmedAction';
+import { packageLink } from '../utils/packages';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi, usePreferences } from '../state/app';
 import { keys, useDevices } from '../api/queries';
 import { Card, DeviceSelect, ErrorMessage, ConfirmDialog, supports } from '../components/ui';
 import type { FileEntry } from '../api/contracts';
+import { Download, Field, JsonReport } from '../components/workspace';
+import { fileSchema, objectSchema, payload } from '../api/workspace';
+import { z } from 'zod';
+
 type Pending = {
   action: 'delete' | 'mkdir' | 'upload' | 'transfer';
   path: string;
@@ -12,25 +19,11 @@ type Pending = {
 function join(path: string, name: string) {
   return [path.replace(/\/$/, ''), name].filter(Boolean).join('/');
 }
-async function encode(file: File) {
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  let result = '';
-  for (const byte of bytes) result += String.fromCharCode(byte);
-  return btoa(result);
-}
-function save(content: string, name: string) {
-  const bytes = Uint8Array.from(atob(content), (c) => c.charCodeAt(0));
-  const url = URL.createObjectURL(new Blob([bytes]));
-  const link = Object.assign(document.createElement('a'), { href: url, download: name });
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 export default function Files() {
   const api = useApi();
   const queryClient = useQueryClient();
-  const { t } = usePreferences();
+  const { t, device, setDevice } = usePreferences();
   const devices = useDevices();
-  const [device, setDevice] = useState('');
   const [path, setPath] = useState('');
   const [draftPath, setDraftPath] = useState('');
   const [directory, setDirectory] = useState('');
@@ -38,11 +31,16 @@ export default function Files() {
   const [pending, setPending] = useState<Pending | null>(null);
   const [view, setView] = useState<'table' | 'grid'>('table');
   const [message, setMessage] = useState('');
+  const [downloaded, setDownloaded] = useState<{
+    content: string;
+    name: string;
+    count: number;
+  } | null>(null);
   const selected = devices.data?.devices.find((d) => d.id === device);
   const listing = useQuery({
     queryKey: keys.files(device, path),
     queryFn: ({ signal }) => api.list(device, path, signal),
-    enabled: !!device,
+    enabled: !!device && supports(selected, 'list'),
     retry: false,
   });
   const mutate = useMutation({
@@ -55,7 +53,7 @@ export default function Files() {
   });
   const download = useMutation({
     mutationFn: (entry: FileEntry) => api.download(device, join(path, entry.name)),
-    onSuccess: (result) => save(result.content, result.name),
+    onSuccess: (result) => setDownloaded((old) => ({ ...result, count: (old?.count ?? 0) + 1 })),
   });
   function choose(id: string) {
     setDevice(id);
@@ -70,7 +68,7 @@ export default function Files() {
       setMessage(t('File exceeds transfer limit', 'Файл превышает лимит передачи'));
       return;
     }
-    setPending({ action, path: join(path, upload.name), content: await encode(upload) });
+    setPending({ action, path: join(path, upload.name), content: await encodeBlob(upload) });
   }
   return (
     <>
@@ -122,6 +120,14 @@ export default function Files() {
             {t('Grid', 'Сетка')}
           </button>
         </div>
+        {device && !supports(selected, 'list') && (
+          <p className="note">
+            {t(
+              'This connection cannot browse files. Choose a file transport in Connection.',
+              'Это подключение не открывает файлы. Выберите файловый транспорт в разделе «Подключение».',
+            )}
+          </p>
+        )}
         <ErrorMessage error={listing.error ?? devices.error ?? download.error} />
         {listing.isFetching && <p role="status">{t('Reading…', 'Чтение…')}</p>}
         <div className={view === 'grid' ? 'react-file-grid' : 'table-scroll'}>
@@ -147,6 +153,18 @@ export default function Files() {
               >
                 {t('Delete', 'Удалить')}
               </button>
+              {!entry.directory && /\.sisx?$/i.test(entry.name) && (
+                <a
+                  className="btn ghost"
+                  href={
+                    packageLink('inspector', 'device', '') +
+                    '&' +
+                    new URLSearchParams({ device, path: join(path, entry.name) })
+                  }
+                >
+                  {t('Inspect', 'Анализ')}
+                </a>
+              )}
             </article>
           ))}
         </div>
@@ -197,6 +215,14 @@ export default function Files() {
           )}
         </p>
       </Card>
+      {device && supports(selected, 'backup') && (
+        <FolderBackup
+          key={`${device}:${path}`}
+          device={device}
+          path={path}
+          onRestored={() => queryClient.invalidateQueries({ queryKey: ['files', device] })}
+        />
+      )}
       {pending && (
         <ConfirmDialog
           message={`${pending.action}: ${device}/${pending.path}`}
@@ -209,7 +235,115 @@ export default function Files() {
           onConfirm={() => mutate.mutate(pending)}
         />
       )}
+      {downloaded && (
+        <Download key={downloaded.count} content={downloaded.content} name={downloaded.name} auto />
+      )}
       <ErrorMessage error={mutate.error} />
     </>
+  );
+}
+
+function FolderBackup({
+  device,
+  path,
+  onRestored,
+}: {
+  device: string;
+  path: string;
+  onRestored: () => Promise<void>;
+}) {
+  const api = useApi(),
+    { t } = usePreferences(),
+    [file, setFile] = useState<File | null>(null),
+    [output, setOutput] = useState<z.infer<typeof fileSchema> | null>(null),
+    [restore, setRestore] = useState<{ content: string; preview_sha256: string } | null>(null),
+    confirm = useConfirmedAction<{ content: string; preview_sha256: string }>();
+  const backup = useMutation({
+    mutationFn: () => api.request('/api/manager', { action: 'backup', device, path }, fileSchema),
+    onSuccess: setOutput,
+  });
+  const preview = useMutation({
+    mutationFn: async () => {
+      setRestore(null);
+      if (!file || file.size > 8 * 1024 ** 2) throw Error('ZIP limit: 8 MiB');
+      const content = await encodeBlob(file);
+      const result = await api.request(
+        '/api/manager',
+        { action: 'restore-preview', device, path, content },
+        z.object({
+          sha256: z.string(),
+          changes: z.array(z.object({ conflict: z.boolean() }).catchall(z.json())),
+        }),
+      );
+      if (result.changes.length && !result.changes.some((c) => c.conflict))
+        setRestore({ content, preview_sha256: result.sha256 });
+      return result;
+    },
+  });
+  return (
+    <Card>
+      <h2>{t('Folder backup / restore', 'Копия и восстановление папки')}</h2>
+      <p className="note">
+        {t(
+          'Only regular files in this folder; subfolders are excluded. ZIP up to 8 MiB / 500 files. Restore never overwrites existing files.',
+          'Только обычные файлы этой папки, без вложенных каталогов. ZIP до 8 МиБ / 500 файлов. Восстановление не перезаписывает существующие файлы.',
+        )}
+      </p>
+      <p>
+        {device}/{path}
+      </p>
+      <div className="form-row">
+        <button
+          className="btn secondary"
+          disabled={backup.isPending}
+          onClick={() => backup.mutate()}
+        >
+          {t('Download folder ZIP', 'Скачать ZIP папки')}
+        </button>
+        <Field label={t('Restore ZIP (8 MiB)', 'ZIP для восстановления (8 МиБ)')}>
+          <input
+            type="file"
+            accept=".zip"
+            onChange={(e) => {
+              setFile(e.target.files?.[0] ?? null);
+              setRestore(null);
+              preview.reset();
+            }}
+          />
+        </Field>
+        <button
+          className="btn secondary"
+          disabled={!file || preview.isPending}
+          onClick={() => preview.mutate()}
+        >
+          {t('Preview restore', 'План восстановления')}
+        </button>
+        <button
+          className="btn primary"
+          disabled={!restore || confirm.busy}
+          onClick={() => {
+            if (restore)
+              confirm.ask(
+                `${t('Restore displayed new files into', 'Восстановить показанные новые файлы в')} ${device}/${path}?`,
+                restore,
+              );
+          }}
+        >
+          {t('Restore', 'Восстановить')}
+        </button>
+      </div>
+      <ErrorMessage error={backup.error ?? preview.error} />
+      {preview.data && <JsonReport value={preview.data.changes} />}{' '}
+      {output && <Download {...output} auto />}
+      {confirm.dialog(async (value) => {
+        setRestore(null);
+        await api.request(
+          '/api/manager',
+          payload({ action: 'restore', device, path, ...value, confirm: true }),
+          objectSchema,
+        );
+        await onRestored();
+      })}
+    </Card>
   );
 }

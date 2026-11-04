@@ -4,11 +4,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ApiClient } from './api/client';
 import { ApiProvider, PreferencesProvider } from './state/app';
 import App from './App';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import '../../symport/web_assets/app.css';
 import '../../symport/web_assets/compact.css';
 import '../../symport/web_assets/nimbus.css';
 import '../../symport/web_assets/preferences.css';
 import '../../symport/web_assets/device-workspace.css';
+import '../../symport/web_assets/lab.css';
+import '../../symport/web_assets/ringtone.css';
 import './style.css';
 async function bootstrap() {
   let token = document.querySelector<HTMLMetaElement>('meta[name="symport-token"]')?.content;
@@ -33,11 +36,26 @@ async function bootstrap() {
       <QueryClientProvider client={queryClient}>
         <ApiProvider client={client}>
           <PreferencesProvider>
-            <App />
+            <ErrorBoundary>
+              <App />
+            </ErrorBoundary>
           </PreferencesProvider>
         </ApiProvider>
       </QueryClientProvider>
     </StrictMode>,
   );
 }
-void bootstrap();
+void bootstrap().catch(() => {
+  const root = document.getElementById('root');
+  if (root)
+    createRoot(root).render(
+      <main className="card">
+        <h1>SymPort</h1>
+        <p>
+          Откройте SymPort через настроенный Python-сервер. / Open SymPort through its authenticated
+          Python server.
+        </p>
+        <button onClick={() => location.reload()}>Обновить / Reload</button>
+      </main>,
+    );
+});

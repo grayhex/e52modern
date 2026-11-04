@@ -1,3 +1,4 @@
+process.env.SYMPORT_FRONTEND = 'classic'; // Explicit rollback-interface regression coverage.
 // Stateful mock Gammu + real enrolled filesystem and browser HTTP Range.
 const {chromium}=require('playwright'),{spawn}=require('child_process'),fs=require('fs'),os=require('os'),path=require('path');
 const repo=path.resolve(__dirname,'..'),root=fs.mkdtempSync(path.join(os.tmpdir(),'symport-device-ui-')),python=process.env.SYMPORT_PYTHON||'python3',shots=path.join(repo,'build/screenshots');fs.mkdirSync(shots,{recursive:true});
