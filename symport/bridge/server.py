@@ -166,6 +166,12 @@ class Handler(BaseHTTPRequestHandler):
             if not 0 < length <= 4096:
                 raise ValueError("Invalid body")
             data = json.loads(self.rfile.read(length))
+            if isinstance(data, dict) and data.get("probe") is True and data.get("origin") == origin:
+                # Reachability check for the first-connection wizard: no prompt, no state change,
+                # and nothing but the Bridge version is disclosed to any enrolled-or-not web origin.
+                return self.reply(
+                    {"probe": True, "version": VERSION, "pair_available": bool(self.server.pair)}
+                )
             if (
                 not isinstance(data, dict)
                 or data.get("origin") != origin

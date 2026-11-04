@@ -119,6 +119,17 @@ link is bound to the phone's fingerprint).
 All of the above is verified with mocks and fake transports only; **physical Nokia E52 results
 are not tested**.
 
+## First connection diagnostics
+
+The React *Connection* page contains the first-connection wizard (see
+[FIRST_CONNECTION_E52.md](FIRST_CONNECTION_E52.md)). Its states come from: `GET /api/connection`
+(mode, relay heartbeat), the Bridge probe, `connection-host` (COM, drives, Bluetooth, USB
+VID/PID without serials, environment), `discover` rows (`failure.reason`, matrix) and the
+capability probes above. Modes are told apart by what the connection reports: PC Suite (Gammu
+USB), Mass Storage (memory card files only), Bluetooth (Gammu/S60 Remote/OBEX FTP), OBEX FTP
+over USB, OBEX OPP (send only) and unsupported (not a Nokia S60 3rd/5th Edition model).
+Not verified on a physical E52.
+
 ## Configure connections
 
 Keep the legacy `SYMPORT_GAMMU_CONFIG` and `SYMPORT_DEVICE_ROOTS` settings if already

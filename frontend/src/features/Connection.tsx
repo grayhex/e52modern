@@ -6,6 +6,7 @@ import { useApi, usePreferences } from '../state/app';
 import { keys, useDevices } from '../api/queries';
 import { Card, DeviceSelect, ErrorMessage } from '../components/ui';
 import CapabilityMatrix from '../components/CapabilityMatrix';
+import ConnectionWizard from './ConnectionWizard';
 import { objectSchema, text, entries, strings } from '../api/workspace';
 
 export default function Connection() {
@@ -41,29 +42,8 @@ export default function Connection() {
     retry: false,
   });
   const action = useMutation({
-    mutationFn: async (kind: 'pair' | 'disconnect') => {
-      if (kind === 'disconnect') return api.connection('disconnect');
-      const lease = await api.connection('enable');
-      if (!lease.relay_token) throw Error('Missing bridge lease');
-      try {
-        const response = await fetch('http://127.0.0.1:24652/api/bridge/pair', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'omit',
-          cache: 'no-store',
-          redirect: 'error',
-          signal: AbortSignal.timeout(90000),
-          body: JSON.stringify({ origin: location.origin, token: lease.relay_token }),
-        });
-        const raw: unknown = await response.json();
-        if (!response.ok || !z.object({ paired: z.literal(true) }).safeParse(raw).success)
-          throw Error(t('Access was declined.', 'Доступ отклонён.'));
-        return lease;
-      } catch (error) {
-        await api.connection('disconnect');
-        throw error;
-      }
-    },
+    // Pairing lives in the wizard; this page only returns to the local transports.
+    mutationFn: (kind: 'disconnect') => api.connection(kind),
     onSuccess: async () => {
       queryClient.removeQueries({ queryKey: keys.devices });
       queryClient.removeQueries({ queryKey: ['files'] });
@@ -77,21 +57,12 @@ export default function Connection() {
   return (
     <>
       <h1>{t('Connection', 'Подключение')}</h1>
+      <ConnectionWizard />
       <Card>
-        <h2>{t('First E52 / E72 connection', 'Первое подключение E52 / E72')}</h2>
+        <h2>
+          {t('After connecting: safe first steps', 'После подключения: безопасные первые шаги')}
+        </h2>
         <ol className="p1-checklist">
-          <li>
-            {t(
-              'Charge the phone, unlock it, connect a data cable and choose PC Suite. Close Nokia Suite if it holds the COM port.',
-              'Зарядите и разблокируйте телефон, подключите кабель передачи данных и выберите PC Suite. Закройте Nokia Suite, если она занимает COM-порт.',
-            )}
-          </li>
-          <li>
-            {t(
-              'Start Bridge on the PC connected to Nokia. Approve this SymPort address, find the phone and select its connection below.',
-              'Запустите Bridge на ПК, к которому подключена Nokia. Разрешите адрес SymPort, найдите телефон и выберите подключение ниже.',
-            )}
-          </li>
           <li>
             <a href="#tools/diagnostics">{t('Read diagnostics', 'Прочитайте диагностику')}</a>
             {t(
@@ -176,20 +147,9 @@ export default function Connection() {
           >
             {t('Download Bridge', 'Скачать Bridge')}
           </a>
-          <button
-            className="btn primary"
-            disabled={action.isPending}
-            onClick={() => action.mutate('pair')}
-          >
-            {t('Request access', 'Запросить доступ')}
-          </button>
-          <button
-            className="btn ghost"
-            disabled={action.isPending}
-            onClick={() => action.mutate('disconnect')}
-          >
-            {t('Disconnect', 'Отключить')}
-          </button>
+          <a className="btn ghost" href="#phone/connection">
+            {t('Request access in the wizard above', 'Запрос доступа — в мастере выше')}
+          </a>
         </div>
       </Card>
       <Card>

@@ -7,7 +7,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from . import capabilities, gammu_native
+from . import capabilities, failure, gammu_native
 from .models import documented_model
 from .personal import PersonalWorkspace
 
@@ -118,8 +118,9 @@ class GammuAdapter:
                 try:
                     details = self.personal.execute(config, {"action": "device-details"})
                     device.update(details, connected=True, evidence="Gammu service responses")
-                except ValueError:
+                except ValueError as exc:
                     native_error = True
+                    device["failure"] = {"reason": failure.classify(exc)}
                     device["evidence"] = (
                         "Gammu connection failed; check the configured driver and phone mode"
                     )
@@ -150,7 +151,18 @@ class GammuAdapter:
                             firmware=values.get("firmware"),
                             evidence="Gammu CLI identity response only; stores are not read until a native probe succeeds",
                         )
-                except (OSError, subprocess.SubprocessError):
+                except FileNotFoundError:
+                    if "failure" not in device:
+                        device["failure"] = {"reason": "gammu-missing"}
+                    device["evidence"] = (
+                        "Gammu unavailable, configuration invalid or phone unreachable"
+                    )
+                except (OSError, subprocess.SubprocessError) as exc:
+                    # CLI stderr only feeds the classifier; it is never copied into the row.
+                    text = getattr(exc, "stderr", "") or ""
+                    reason = failure.classify(text)
+                    if reason != "unknown" or "failure" not in device:
+                        device["failure"] = {"reason": reason}
                     device["evidence"] = (
                         "Gammu unavailable, configuration invalid or phone unreachable"
                     )
@@ -167,7 +179,11 @@ class GammuAdapter:
                 self.scope_error = (
                     "This connection did not identify a supported Nokia S60 3rd/5th Edition model"
                 )
-                device.update(connected=False, evidence=self.scope_error)
+                device.update(
+                    connected=False,
+                    evidence=self.scope_error,
+                    failure={"reason": "unsupported-model"},
+                )
             else:
                 self.scope_error = None
             device["name"] = self.name

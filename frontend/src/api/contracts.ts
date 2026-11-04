@@ -28,6 +28,7 @@ export const deviceSchema = z.object({
   capabilities: z.array(z.string()),
   capability_matrix: z.record(z.string(), capabilityStateSchema).optional(),
   capability_fingerprint: z.string().optional(),
+  failure: z.object({ reason: z.string() }).nullish(),
   capabilities_checked_at: z.string().optional(),
   sms_send_verified: z.boolean().optional(),
   usb_mode: maybeText,
@@ -50,8 +51,16 @@ export const deviceSchema = z.object({
     .object({ status: z.string(), latest_known: maybeText, sources: z.array(z.string()) })
     .optional(),
 });
+export const connectionRowSchema = z.object({
+  id: z.string(),
+  connected: z.boolean().nullish(),
+  failure: z.object({ reason: z.string() }).nullish(),
+  model: maybeText,
+  connection_kind: maybeText,
+});
 export const discoverySchema = z.object({
   devices: z.array(deviceSchema),
+  connections: z.array(connectionRowSchema).optional(),
   limitations: z.record(z.string(), z.string()),
 });
 export const filesSchema = z.object({
@@ -69,9 +78,11 @@ export const connectionSchema = z.object({
   mode: z.string(),
   connected: z.boolean(),
   relay_token: z.string().optional(),
+  expires_in: z.number().optional(),
 });
 export type CapabilityState = z.infer<typeof capabilityStateSchema>;
 export const recheckSchema = z.object({ device: deviceSchema });
+export type ConnectionRow = z.infer<typeof connectionRowSchema>;
 export type Device = z.infer<typeof deviceSchema>;
 export type FileEntry = z.infer<typeof filesSchema>['entries'][number];
 export type Json = string | number | boolean | null | Json[] | { [key: string]: Json };

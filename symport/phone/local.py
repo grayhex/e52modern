@@ -63,6 +63,10 @@ class LocalTransports:
                             "capability_matrix",
                             "capability_fingerprint",
                             "capabilities_checked_at",
+                            "failure",
+                            "model",
+                            "rm",
+                            "firmware",
                             "evidence",
                             "configured_target",
                         )

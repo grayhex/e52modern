@@ -148,15 +148,112 @@ def paired_bluetooth_candidates():
         )
 
 
+NOKIA_VID = "0421"
+
+
+def usb_devices(sysfs: str = "/sys/bus/usb/devices"):
+    """Nokia USB devices the host *sees*, whatever driver state. Only VID/PID/class/status.
+
+    This is what separates "nothing is plugged in / charge-only cable" from "a Nokia is there but no
+    driver or COM port". Serial numbers and device paths are never returned. A seen device is a
+    candidate, not a confirmed phone.
+    """
+    rows: list[dict] = []
+    if os.name == "nt":
+        script = (
+            "$ErrorActionPreference='Stop'; $rows=@(Get-PnpDevice -PresentOnly | "
+            "Where-Object { $_.InstanceId -match '^USB\\\\VID_0421' } | "
+            "Select-Object Class,Status,InstanceId); ConvertTo-Json -InputObject @($rows) -Compress"
+        )
+        try:
+            result = subprocess.run(
+                ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
+                capture_output=True,
+                text=True,
+                timeout=15,
+                check=False,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            )
+            if result.returncode or len(result.stdout) > 65536:
+                raise ValueError("USB enumeration failed")
+            parsed = json.loads(result.stdout or "[]")
+            parsed = parsed if isinstance(parsed, list) else [parsed]
+        except (OSError, ValueError, subprocess.SubprocessError):
+            return [], "Windows USB enumeration is unavailable; check Device Manager for a Nokia entry"
+        for item in parsed[:64]:
+            match = re.search(r"VID_([0-9A-Fa-f]{4})&PID_([0-9A-Fa-f]{4})", str(item.get("InstanceId")))
+            if not match or match[1].upper() != NOKIA_VID.upper():
+                continue
+            rows.append(
+                {
+                    "vid": match[1].lower(),
+                    "pid": match[2].lower(),
+                    "class": re.sub(r"[^A-Za-z0-9 ._-]", "", str(item.get("Class") or "unknown"))[:40],
+                    "status": "ok" if str(item.get("Status")) == "OK" else "problem",
+                    "source": "Windows PnP record",
+                }
+            )
+    else:
+        base = os.fspath(sysfs)
+        try:
+            entries = sorted(os.listdir(base))
+        except OSError:
+            return [], "USB enumeration is unavailable on this host"
+        for entry in entries[:256]:
+            if not re.fullmatch(r"[0-9]+-[0-9.]+", entry):
+                continue
+            try:
+                with open(os.path.join(base, entry, "idVendor"), encoding="ascii") as handle:
+                    vid = handle.read().strip().lower()
+                if vid != NOKIA_VID:
+                    continue
+                with open(os.path.join(base, entry, "idProduct"), encoding="ascii") as handle:
+                    pid = handle.read().strip().lower()
+            except OSError:
+                continue
+            bound = any(
+                os.path.islink(os.path.join(base, name, "driver"))
+                for name in os.listdir(base)
+                if name.startswith(entry + ":")
+            )
+            rows.append(
+                {
+                    "vid": vid,
+                    "pid": re.sub(r"[^0-9a-f]", "", pid)[:4],
+                    "class": "usb",
+                    "status": "ok" if bound else "problem",
+                    "source": "Linux sysfs",
+                }
+            )
+    unique = {(r["vid"], r["pid"], r["class"], r["status"]): r for r in rows}
+    return list(unique.values()), None
+
+
 def host_candidates():
+    import platform
+
+    from symport.phone import gammu_native
+
+    from . import VERSION
+
     serial, serial_reason = serial_candidates()
     bluetooth, bluetooth_reason = paired_bluetooth_candidates()
     volumes, volume_reason = windows_nokia_volumes()
+    usb, usb_reason = usb_devices()
     # Do not expose physical PNP identifiers, even hashed ones, to the browser.
     return {
         "serial": serial,
         "bluetooth": bluetooth,
         "volumes": [{k: v for k, v in r.items() if k != "identity"} for r in volumes],
-        "diagnostics": [r for r in (serial_reason, bluetooth_reason, volume_reason) if r],
+        "usb": usb,
+        "diagnostics": [
+            r for r in (serial_reason, bluetooth_reason, volume_reason, usb_reason) if r
+        ],
+        "environment": {
+            "bridge_version": VERSION,
+            # OS family/release only; no host name, user name or paths.
+            "os": f"{platform.system()} {platform.release()}"[:60],
+            "python_gammu": gammu_native.available(),
+        },
         "evidence": "Host records only; a device response or explicit enrollment is required before use",
     }
