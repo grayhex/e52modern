@@ -16,6 +16,8 @@ workspace/
 *.key
 *.pem
 firmware/
+# ...but the Firmware & ROM Explorer source package is code, not user firmware.
+!symport/firmware/
 roms/
 
 .env
