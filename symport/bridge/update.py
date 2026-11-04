@@ -232,7 +232,7 @@ def launch_installer(path: Path) -> None:
     """Start the verified installer detached; it closes this application and restarts it."""
     flags = getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
     subprocess.Popen(
-        [str(path), "/SILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/CLOSEAPPLICATIONS", "/StartAfter=1"],
+        [str(path), "/SILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/StartAfter=1"],
         close_fds=True,
         creationflags=flags,
         stdin=subprocess.DEVNULL,

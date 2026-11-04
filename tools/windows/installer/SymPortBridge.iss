@@ -41,11 +41,10 @@ Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
 LicenseFile={#PortableDir}\LICENSE.txt
-; A running Bridge is closed through the Windows Restart Manager (asked interactively, silently on
-; updates, which first wait for an idle phone). AppMutex is deliberately not used: in silent mode it
-; would cancel the update instead of closing the old copy.
-CloseApplications=yes
-RestartApplications=no
+; A running tray Bridge has no window to close, so the Restart Manager cannot stop it and a silent
+; update would abort. Setup stops it itself (see StopBridge); the updater only starts Setup while no
+; phone operation runs, and exits on its own first.
+CloseApplications=no
 UsedUserAreasWarning=no
 
 [Languages]
@@ -83,6 +82,27 @@ Filename: "{app}\{#AppExe}"; Description: "{cm:Launch}"; Flags: nowait postinsta
 Filename: "{app}\{#AppExe}"; Flags: nowait; Check: StartAfterSilentUpdate
 
 [Code]
+procedure StopBridge;
+var
+  Code: Integer;
+begin
+  // Only this user's processes can be ended; a missing process is not an error.
+  Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM SymPortBridge.exe', '', SW_HIDE, ewWaitUntilTerminated, Code);
+  Sleep(1500);
+end;
+
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+begin
+  StopBridge;
+  Result := '';
+end;
+
+function InitializeUninstall: Boolean;
+begin
+  StopBridge;
+  Result := True;
+end;
+
 function StartAfterSilentUpdate: Boolean;
 begin
   Result := WizardSilent and (ExpandConstant('{param:StartAfter|0}') = '1');

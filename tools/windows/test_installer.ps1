@@ -36,7 +36,7 @@ Set-Content "$data\keep-me.txt" 'private backup placeholder'
 $running = Start-Process "$dir\SymPortBridge.exe" -PassThru
 Start-Sleep -Seconds 8
 Assert (-not $running.HasExited) 'old Bridge is running'
-Run $New @('/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/CLOSEAPPLICATIONS', '/StartAfter=1', "/LOG=$root\new.log")
+Run $New @('/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/StartAfter=1', "/LOG=$root\new.log")
 Assert ((Version) -eq $NewVersion) "upgraded to $NewVersion"
 Assert (@(Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall' | Where-Object { $_.PSChildName -like '{8F3C2B7A*' }).Count -eq 1) 'one uninstall entry only'
 Assert (Test-Path "$data\keep-me.txt") 'user data kept by the update'
