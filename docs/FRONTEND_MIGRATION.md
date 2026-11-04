@@ -19,6 +19,23 @@ Python checkout without a frontend build falls back to the classic entry.
 The old controllers are isolated to that rollback entry. They are deliberately
 retained for comparison and regression tests; new features belong in `frontend/`.
 
+## Nokia Classic, навигация и новые библиотеки (2026-11-04)
+
+* **Тема и навигация.** Интерфейс переведён на Nokia Classic ([UI_DESIGN.md](UI_DESIGN.md)), боковое меню — пять групп с
+  редиректами старых URL ([NAVIGATION.md](NAVIGATION.md)). Идентификаторы секций — `page-<группа>-<страница>`.
+* **Файловый браузер.** `@harryy/react-file-browser` 1.5.1 (MIT) с адаптером Device Manager (`api/phoneFiles.ts`).
+  Библиотека не поставляет CSS и использует утилиты Tailwind v4: подключены только `theme` и `utilities` (без preflight,
+  `@tailwindcss/vite` — в devDependencies) в слое выше прежних стилей, токены `--fb-*` привязаны к Nokia. Предпросмотр и
+  скачивание идут через `GET /api/device/file` (cookie сессии, Fetch Metadata: встраивание — inline, навигация — attachment,
+  `CSP: sandbox`, SVG/SIS/неизвестное — только вложение). Хранилище передач отключено (`storage: null`), имена файлов не пишутся
+  в `localStorage`. Возможны только list/delete/upload/mkdir; rename/move/copy в API нет и в интерфейсе скрыты. Подписи библиотеки — английские.
+* **Дашборд.** MUI 7 + `@mui/x-charts` 8 с темой на токенах Nokia, кэш Emotion с nonce (CSP `style-src` не ослаблена); показаны
+  только данные транспорта.
+* **Иконки** — `lucide-react`. Уведомления о лицензиях (`THIRD_PARTY_NOTICES.txt`) формируются из `package-lock.json` для всех
+  production-зависимостей.
+* Новые страницы: Firmware & ROM Explorer, Зависимости и совместимость, Комплекты приложений, Установочные пакеты, заготовки «В разработке».
+* Node: файловая библиотека объявляет `engines.node >=24`; клиент собирается и тестируется на Node 22 (предупреждение npm).
+
 ## Architecture
 
 - `src/features/`: lazy route components for every existing section. React Activity
@@ -107,6 +124,7 @@ npm test --prefix frontend
 npm run build --prefix frontend
 node tools/check_react_ui.cjs
 node tools/check_react_workspace.cjs
+node tools/check_p0_ui.cjs
 ```
 
 Browser checks need Playwright/Chromium, Python's development extras and FFmpeg.

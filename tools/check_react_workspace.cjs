@@ -57,14 +57,41 @@ const server = spawn(python, ["-c", script, root], {
         await new Promise((r) => setTimeout(r, 200));
       }
     }
-    await page.locator("#manager h1").waitFor();
+    await page.locator("#page-phone-overview h1").waitFor();
+    await page.getByRole("button", { name: "Настройки", exact: true }).click();
     await page.selectOption("#language", "en");
     await page.selectOption("#theme", "dark");
+    // Legacy URLs must keep working: navigation below deliberately uses the pre-restructure hash ids.
+    const canonical = {
+      manager: "phone/overview",
+      files: "phone/files",
+      connection: "phone/connection",
+      contacts: "phone/contacts",
+      messages: "phone/messages",
+      calendar: "phone/calendar",
+      media: "phone/media",
+      backups: "phone/backups",
+      catalog: "apps/catalog",
+      installed: "apps/installed",
+      themes: "personalize/themes",
+      ringtone: "personalize/ringtones",
+      updates: "tools/diagnostics",
+      inspector: "tools/certificates",
+      jailbreak: "tools/jailbreak",
+      activity: "tools/activity",
+      device: "tools/diagnostics",
+      lab: "dev/lab",
+      apps: "dev/sdk",
+      overview: "dev/sdk",
+    };
     async function go(id) {
       await page.evaluate((id) => {
         location.hash = id;
       }, id);
-      await page.locator("#" + id.split("?")[0] + " h1").waitFor();
+      const route = canonical[id.split("?")[0]] ?? id.split("?")[0];
+      await page.locator("#page-" + route.replace("/", "-") + " h1").first().waitFor();
+      const hash = await page.evaluate(() => location.hash);
+      if (!hash.startsWith("#" + route)) throw Error("Redirect failed: " + id + " -> " + hash);
     }
     async function button(name) {
       await page.getByRole("button", { name, exact: true }).click();
@@ -102,7 +129,7 @@ const server = spawn(python, ["-c", script, root], {
       .waitFor();
     await page.getByText("Before → after", { exact: true }).click();
     if (
-      !(await page.locator("#contacts pre").innerText()).includes("+987654321")
+      !(await page.locator("#page-phone-contacts pre").innerText()).includes("+987654321")
     )
       throw Error("Contact preview omitted edited field");
     await button("Apply changes");
@@ -192,7 +219,7 @@ const server = spawn(python, ["-c", script, root], {
       .waitFor();
     await noErrors();
     await go("media");
-    await page.locator("#media > .card select").first().selectOption("card");
+    await page.locator("#page-phone-media > .card select").first().selectOption("card");
     await button("Read gallery");
     await page.locator(".media-item").first().waitFor();
     await page.locator(".media-item img").waitFor();
@@ -223,7 +250,7 @@ const server = spawn(python, ["-c", script, root], {
     );
     if (zip.slice(0, 2).toString() !== "PK") throw Error("Media ZIP invalid");
     await page.getByRole("link", { name: "Create ringtone" }).click();
-    await page.locator("#ringtone h1").waitFor();
+    await page.locator("#page-personalize-ringtones h1").waitFor();
     await button("Open gallery file");
     await page.getByRole("button", { name: "Play fragment" }).waitFor();
     await page
@@ -455,12 +482,14 @@ const server = spawn(python, ["-c", script, root], {
       await go(id);
       await noErrors();
       await page.setViewportSize({ width: 390, height: 844 });
-      if (
-        await page.evaluate(
-          () => document.documentElement.scrollWidth > innerWidth,
-        )
-      )
-        throw Error("Mobile overflow: " + id);
+      const overflow = await page.evaluate(() => {
+        if (document.documentElement.scrollWidth <= innerWidth) return null;
+        return [...document.querySelectorAll("body *")]
+          .filter((el) => el.getBoundingClientRect().right > innerWidth + 1 && getComputedStyle(el).display !== "none" && !el.closest("[inert],[hidden]"))
+          .slice(0, 6)
+          .map((el) => { const b = el.getBoundingClientRect(), c = getComputedStyle(el); return el.tagName + "." + String(el.className) + " left=" + Math.round(b.left) + " right=" + Math.round(b.right) + " width=" + c.width + " margin=" + c.margin + " padding=" + c.padding + " parent=" + Math.round(el.parentElement.getBoundingClientRect().width) + " sw=" + el.scrollWidth + " mainW=" + Math.round(document.querySelector(".main").getBoundingClientRect().width) + " WIDE=" + [...el.querySelectorAll("*")].filter((x) => x.scrollWidth > x.clientWidth + 1 && x.clientWidth > 0).slice(0, 5).map((x) => x.outerHTML.slice(0, 140) + " in " + (x.parentElement.className || x.parentElement.tagName) + ":" + x.scrollWidth + ">" + x.clientWidth).join("|"); });
+      });
+      if (overflow) throw Error("Mobile overflow: " + id + " " + JSON.stringify(overflow));
       await page.setViewportSize({ width: 1440, height: 1000 });
     }
     await go("connection");
@@ -471,12 +500,12 @@ const server = spawn(python, ["-c", script, root], {
     await button("Reveal IMEI");
     await confirm();
     await page
-      .locator("#connection code")
+      .locator("#page-phone-connection code")
       .filter({ hasText: "000000000000000" })
       .waitFor();
     await go("updates");
     await go("connection");
-    if (await page.locator("#connection code").count())
+    if (await page.locator("#page-phone-connection code").count())
       throw Error("Private IMEI retained across hidden view");
     await page.selectOption("#language", "ru");
     await page.selectOption("#theme", "light");

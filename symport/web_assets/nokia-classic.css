@@ -49,7 +49,7 @@ code,pre,.lab-value,.hex,.nav-label,.eyebrow,.target,.status{font-family:JetBrai
 .shell{display:flex;min-height:100vh;background:var(--nokia-canvas)}
 .main{flex:1;min-width:0;display:flex;flex-direction:column}
 .main:focus{outline:none}
-.content{padding:20px 32px 40px;max-width:none}
+.content{padding:20px 32px 40px;max-width:none;width:100%;min-width:0;box-sizing:border-box}
 .sidebar{width:var(--nokia-sidebar);flex:0 0 var(--nokia-sidebar);padding:0;background:var(--nokia-surface);border-right:1px solid var(--nokia-border);transition:width .2s ease,flex-basis .2s ease}
 .sidebar-panel{position:sticky;top:0;height:100vh;height:100dvh;display:flex;flex-direction:column;padding:12px 10px 10px;width:auto;overflow:visible}
 .sidebar-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px}
@@ -264,3 +264,6 @@ dialog::backdrop{background:rgb(16 27 42 / 55%)}
 .hex{white-space:pre;overflow:auto;background:var(--nokia-surface-alt);padding:8px;border:1px solid var(--nokia-border);border-radius:var(--nokia-radius-control)}
 @media(max-width:760px){.fw-browser{grid-template-columns:1fr}}
 .phone-files{margin-top:8px}
+/* The visually hidden file input of an upload zone must not widen the page (its inner text is wider than 1px). */
+.upload-zone{overflow:hidden}
+.upload-zone input[type=file]{overflow:hidden;clip-path:inset(50%);font-size:12px}

@@ -626,7 +626,10 @@ def make_handler(state: Workbench):
                     self.send_header('Accept-Ranges', 'bytes')
                     if status == 206:
                         self.send_header('Content-Range', f'bytes {start}-{end}/{len(raw)}')
-                    disposition = 'inline' if inline and query.get('download') != ['1'] else 'attachment'
+                    # Inline only for sub-resource loads by the page itself (preview). A top-level navigation or a
+                    # request without Fetch Metadata is a download and is always served as an attachment.
+                    embedded = self.headers.get('Sec-Fetch-Dest', '') in ('image', 'audio', 'video', 'iframe', 'empty', 'track')
+                    disposition = 'inline' if inline and embedded and query.get('download') != ['1'] else 'attachment'
                     self.send_header('Content-Disposition', disposition + "; filename*=UTF-8''" + quote(name, safe=''))
                     self.send_header('Cache-Control', 'no-store')
                     self.send_header('X-Content-Type-Options', 'nosniff')

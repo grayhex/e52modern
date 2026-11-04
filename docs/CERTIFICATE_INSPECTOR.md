@@ -31,6 +31,12 @@ missing capabilities/imports must not be interpreted as absence. E52 profile har
 facts have their existing evidence levels; other models remain unknown. Static compatibility
 never establishes installation or runtime success. Dependencies are listed, not assumed installed.
 
+## Dependency analysis
+
+Отчёт `analyze` содержит поле `dependency_analysis` (схема `symport.dependencies/1`), а отдельные действия `dependencies` и
+`bundle` доступны на страницах «Зависимости и совместимость» и «Комплекты приложений». Подробности, вердикты и пределы —
+в [DEPENDENCIES.md](DEPENDENCIES.md). Образ из [Firmware & ROM Explorer](FIRMWARE_EXPLORER.md) можно передать как `firmware_id`.
+
 ## Workflow
 
 1. Open **Certificate Inspector** from a Catalog card, device SIS file, build, theme or
