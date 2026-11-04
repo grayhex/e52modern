@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
@@ -96,6 +96,13 @@ function Overview() {
         ? 'disconnected'
         : 'none';
   const profile = selected?.model_profile;
+  // The connection did not identify the model: show the project's artwork, labelled as an illustration only.
+  const [artwork, setArtwork] = useState<'e52' | 'e72'>('e52');
+  const picture = profile
+    ? { src: profile.image, alt: profile.name }
+    : artwork === 'e72'
+      ? { src: '/phones/nokia-e72.png', alt: 'Nokia E72' }
+      : { src: '/phones/nokia-e52-silver.png', alt: 'Nokia E52' };
   const candidates = [
     {
       key: 'battery',
@@ -212,18 +219,51 @@ function Overview() {
               alignItems: 'center',
               gridTemplateColumns: {
                 xs: '1fr',
-                md: profile ? '170px minmax(0,1fr) 200px' : 'minmax(0,1fr) 200px',
+                md: '170px minmax(0,1fr) 200px',
               },
             }}
           >
-            {profile && (
+            <Stack alignItems="center" spacing={0.75}>
               <Box
                 component="img"
-                src={`${base}${profile.image.replace(/^\//, '')}`}
-                alt={profile.name}
-                sx={{ height: 200, maxWidth: '100%', objectFit: 'contain', justifySelf: 'center' }}
+                src={`${base}${picture.src.replace(/^\//, '')}`}
+                alt={
+                  profile
+                    ? picture.alt
+                    : t('Illustration (model not identified)', 'Иллюстрация (модель не определена)')
+                }
+                sx={{
+                  height: 200,
+                  maxWidth: '100%',
+                  objectFit: 'contain',
+                  opacity: profile ? 1 : 0.85,
+                }}
               />
-            )}
+              {!profile && (
+                <Stack alignItems="center" spacing={0.5}>
+                  <Typography variant="caption" color="text.secondary" align="center">
+                    {t(
+                      'Illustration only — the connection did not report a model',
+                      'Только иллюстрация — подключение не сообщило модель',
+                    )}
+                  </Typography>
+                  <Stack direction="row" spacing={0.5}>
+                    {(['e52', 'e72'] as const).map((id) => (
+                      <Chip
+                        key={id}
+                        size="small"
+                        label={id.toUpperCase()}
+                        clickable
+                        color={artwork === id ? 'primary' : 'default'}
+                        variant={artwork === id ? 'filled' : 'outlined'}
+                        onClick={() => setArtwork(id)}
+                        aria-pressed={artwork === id}
+                      />
+                    ))}
+                  </Stack>
+                </Stack>
+              )}
+            </Stack>
             <Stack spacing={1.5} sx={{ minWidth: 0 }}>
               <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                 <StateChip state={state} />
