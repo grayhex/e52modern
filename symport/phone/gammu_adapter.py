@@ -7,7 +7,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from . import gammu_native
+from . import capabilities, gammu_native
 from .models import documented_model
 from .personal import PersonalWorkspace
 
@@ -20,6 +20,80 @@ class GammuAdapter:
         self.scope_error = None
         self.probed = False
 
+    def _matrix(self, device: dict, details: dict | None, identified: bool, native_error: bool):
+        """Capabilities of this Gammu connection, from what actually answered.
+
+        ``gammu identify`` proves identity only. PIM stores are readable only after the
+        native status call of that store succeeded; writes are never probed.
+        """
+        m = capabilities.Matrix()
+        files = (
+            "Gammu S60 file getters are NOTIMPLEMENTED in the audited driver"
+            if self.kind == "gammu-s60"
+            else "The Gammu adapter exposes no filesystem; use Mass Storage or OBEX FTP"
+        )
+        for op in ("files.list", "files.download", "files.upload", "files.stage", "files.mkdir",
+                   "files.delete", "media.read", "packages.transfer", "packages.opp-push",
+                   "contacts.stage"):
+            m.unsupported(op, "gammu-profile", files)
+        if details is not None:
+            m.available("identity.read", "gammu-native:details", "Gammu identity responded")
+            telemetry = any(type(details.get(k)) in (int, float) for k in ("battery", "signal"))
+            if telemetry:
+                m.available("telemetry.read", "gammu-native:details", "Battery or signal value returned")
+            else:
+                m.unsupported("telemetry.read", "gammu-native:details", "The driver returned no battery or signal value")
+            if type(details.get("free")) in (int, float) or type(details.get("total")) in (int, float):
+                m.available("storage.read", "gammu-native:GetFileSystemStatus", "Phone filesystem status returned")
+            else:
+                m.unsupported("storage.read", "gammu-native:details", "The driver returned no storage values")
+            status = details.get("capability_status") or {}
+            for domain, op in capabilities.LEGACY_DOMAINS.items():
+                state = status.get(domain) or {}
+                source = "gammu-native:" + gammu_native.DOMAINS[domain][2]
+                if state.get("status") == "available":
+                    m.available(op, source, "The store status call succeeded (no records were read)")
+                elif state.get("status") == "unavailable":
+                    code = str(state.get("reason") or "ERR_CONNECTION")
+                    if code in ("ERR_NOTSUPPORTED", "ERR_NOTIMPLEMENTED"):
+                        m.unsupported(op, source, "Not supported by this driver or phone: " + code)
+                    else:
+                        m.error(op, source, "Store status failed: " + code)
+                else:
+                    m.untested(op, source, "The store was not probed", attemptable=False)
+            for write, read, source in (
+                ("contacts.write", "contacts.read", "read-back-verified apply"),
+                ("sms.send", None, "sms-send"),
+            ):
+                if read and m.entries[read]["status"] != "available":
+                    m.untested(write, source, "Needs a readable store for read-back verification", attemptable=False)
+                elif read is None and not details.get("sms_send_verified"):
+                    m.untested(write, source, "Sending is never probed; no verified-send profile for this phone", attemptable=False)
+                else:
+                    m.untested(write, source, "Writes are never probed; confirmed apply is verified by read-back")
+            if details.get("sms_send_verified") is not True:
+                m.entries["sms.send"]["attempt"] = "blocked"
+        elif identified:
+            why = (
+                "python-gammu is not installed; gammu identify does not read any store"
+                if not gammu_native.available()
+                else "Identity answered but the store probe did not complete; recheck"
+            )
+            m.available("identity.read", "gammu-cli:identify", "gammu identify answered")
+            m.unsupported("telemetry.read", "gammu-cli:identify", "identify returns no battery or signal")
+            m.unsupported("storage.read", "gammu-cli:identify", "identify returns no storage values")
+            for op in ("contacts.read", "calendar.read", "tasks.read", "sms.read",
+                       "contacts.write", "sms.send"):
+                m.untested(op, "gammu-cli:identify", why, attemptable=False)
+        else:
+            reason = (
+                "Gammu connection failed; check the configured driver and phone mode"
+                if native_error
+                else "Gammu unavailable, configuration invalid or phone unreachable"
+            )
+            m.rest("error", "gammu-connection", reason)
+        return m
+
     def device(self):
         config = self.config()
         if config:
@@ -31,20 +105,15 @@ class GammuAdapter:
                 "rm": None,
                 "firmware": None,
                 "battery": None,
-                "capabilities": [],
                 "evidence": "Gammu identification not yet successful",
             }
+            details, native_error = None, False
             if gammu_native.available():
                 try:
                     details = self.personal.execute(config, {"action": "device-details"})
                     device.update(details, connected=True, evidence="Gammu service responses")
-                    device["capabilities"] = ["device-details", "personal-data"]
-                    device["capabilities"] += [
-                        name + "-read"
-                        for name, status in details["capability_status"].items()
-                        if status["status"] == "available"
-                    ]
                 except ValueError:
+                    native_error = True
                     device["evidence"] = (
                         "Gammu connection failed; check the configured driver and phone mode"
                     )
@@ -73,8 +142,7 @@ class GammuAdapter:
                             manufacturer=values.get("manufacturer"),
                             rm=rm.group() if rm else None,
                             firmware=values.get("firmware"),
-                            capabilities=["contacts-read", "calendar-read"],
-                            evidence="Gammu CLI identity response; read the selected store to check access",
+                            evidence="Gammu CLI identity response only; stores are not read until a native probe succeeds",
                         )
                 except (OSError, subprocess.SubprocessError):
                     device["evidence"] = (
@@ -84,20 +152,28 @@ class GammuAdapter:
             platform = documented_model(str(device.get("model") or ""))
             if platform:
                 device["platform_info"] = platform
-            if (
+            scope_blocked = (
                 self.kind != "gammu"
                 and device["connected"]
                 and (not platform or str(device.get("manufacturer", "Nokia")).casefold() != "nokia")
-            ):
+            )
+            if scope_blocked:
                 self.scope_error = (
                     "This connection did not identify a supported Nokia S60 3rd/5th Edition model"
                 )
-                device.update(connected=False, capabilities=[], evidence=self.scope_error)
+                device.update(connected=False, evidence=self.scope_error)
             else:
                 self.scope_error = None
             device["name"] = self.name
             device["connection_kind"] = self.kind
-            return device
+            # Keep probe details out of the row; the matrix is the single answer.
+            for stale in ("capability_status", "capabilities"):
+                device.pop(stale, None)
+            if scope_blocked:
+                matrix = capabilities.Matrix().rest("error", "scope-check", self.scope_error)
+            else:
+                matrix = self._matrix(device, details, device["connected"], native_error)
+            return capabilities.apply(device, matrix)
         return None
 
     def execute(self, data: dict) -> dict:

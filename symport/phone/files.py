@@ -8,11 +8,13 @@ from __future__ import annotations
 import base64
 import hashlib
 import io
+import os
 import secrets
 import shutil
 import zipfile
 from pathlib import Path, PurePosixPath
 
+from . import capabilities
 from .contracts import LIMIT
 
 
@@ -25,14 +27,59 @@ class MountedVolumes:
         for key, root in self.roots.items():
             connected = root.is_dir() and not root.is_symlink()
             usage = shutil.disk_usage(root) if connected else None
-            result.append({"id": key, "transport": "mounted-volume", "connected": connected,
-                           "model": None, "rm": None, "firmware": None, "battery": None,
-                           "free": usage.free if usage else None,
-                           "total": usage.total if usage else None,
-                           "storage_scope": "enrolled-filesystem", "signal": None, "usb_mode": None,
-                           "imei": None, "evidence": "Operator-enrolled volume; phone identity unavailable",
-                           "capabilities": ["files", "transfer", "media-read", "contacts-stage", "files-delete", "files-mkdir", "files-upload"] if connected else []})
+            row = {"id": key, "transport": "mounted-volume", "connected": connected,
+                   "model": None, "rm": None, "firmware": None, "battery": None,
+                   "free": usage.free if usage else None,
+                   "total": usage.total if usage else None,
+                   "storage_scope": "enrolled-filesystem", "signal": None, "usb_mode": None,
+                   "imei": None, "evidence": "Operator-enrolled volume; phone identity unavailable"}
+            result.append(capabilities.apply(row, self.matrix(root, connected)))
         return result
+
+    @staticmethod
+    def matrix(root: Path, connected: bool) -> capabilities.Matrix:
+        """Mass Storage proves a readable filesystem and nothing about the phone behind it."""
+        m = capabilities.Matrix()
+        if not connected:
+            return m.rest("error", "volume-probe", "The enrolled drive is not mounted or is a symlink")
+        src = "mounted-volume"
+        mass = "Mass Storage exposes only the memory card filesystem"
+        try:
+            names = sorted(os.listdir(root))
+        except OSError:
+            return m.rest("error", src, "The enrolled drive cannot be listed")
+        m.available("files.list", src + ":listdir", "Listed the enrolled drive root")
+        m.available("storage.read", src + ":disk_usage", "Filesystem usage was read")
+        sample = next(
+            (n for n in names if (root / n).is_file() and not (root / n).is_symlink()), None
+        )
+        probed = False
+        if sample:
+            try:
+                with open(root / sample, "rb") as handle:
+                    handle.read(1)
+                probed = True
+            except OSError:
+                probed = False
+        for op in ("files.download", "media.read"):
+            if probed:
+                m.available(op, src + ":read", "Read one byte of an existing file")
+            else:
+                m.untested(op, src, "No readable file on the drive root to probe; first use verifies")
+        writable = os.access(root, os.W_OK | os.X_OK)
+        for op in ("files.upload", "files.mkdir", "files.delete", "packages.transfer",
+                   "contacts.stage"):
+            if writable:
+                m.untested(op, src + ":os.access",
+                           "Writable per OS flags; writes are never probed and need confirmation")
+            else:
+                m.unsupported(op, src + ":os.access", "The drive is read-only for SymPort")
+        for op in ("identity.read", "telemetry.read", "contacts.read", "contacts.write",
+                   "calendar.read", "tasks.read", "sms.read", "sms.send"):
+            m.unsupported(op, src, mass + "; no phone identity, battery or personal data")
+        m.unsupported("packages.opp-push", src, mass)
+        m.unsupported("files.stage", src, "Direct writes use files.upload; staging is an OBEX concept")
+        return m
 
     def _path(self, device: str, value: str) -> Path:
         if device not in self.roots:

@@ -12,6 +12,7 @@ import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
 
+from . import capabilities
 from .bridge import PCBridge
 from .contracts import Transport
 from .firmware import assess
@@ -26,6 +27,8 @@ class DeviceManager:
             LocalTransports(repo)
         )
         self.lock = threading.Lock()
+        self.observed = capabilities.ObservedWrites()
+        self.rows: dict[str, dict] = {}
         self.journal_lock = threading.Lock()
         self.journal = repo / 'build' / 'symport' / 'device-manager' / 'operations.jsonl'
 
@@ -35,7 +38,7 @@ class DeviceManager:
                    'contacts-read', 'contacts-import', 'media-upload', 'software-transfer',
                    'apps-inventory', 'calendar-read', 'media-list', 'media-info', 'media-chunk', 'media-thumbnail',
                    'device-details', 'device-imei', 'personal-read', 'personal-preview', 'personal-apply',
-                   'personal-calendar-import', 'personal-export', 'personal-backup', 'personal-backup-download', 'sms-send', 'connection-diagnose', 'connection-status', 'connection-host'}
+                   'personal-calendar-import', 'personal-export', 'personal-backup', 'personal-backup-download', 'sms-send', 'connection-diagnose', 'connection-status', 'connection-host', 'capabilities'}
         if not isinstance(data.get('action'), str) or data['action'] not in allowed:
             raise ValueError('Unknown device operation')
         if data['action'] not in ('discover', 'history', 'connection-status', 'connection-host'):
@@ -49,17 +52,14 @@ class DeviceManager:
             from .contacts import normalize
             data = dict(data, contacts=normalize(data.get('contacts')))
         with self.lock:
-            if data.get('action') == 'discover':
-                devices = []
-                for observed in self.transport.devices():
-                    item = dict(observed)
-                    imei = item.get('imei')
-                    if isinstance(imei, str) and imei.isdigit():
-                        item['imei'] = '•' * max(0, len(imei) - 4) + imei[-4:]
-                    item['firmware_update'] = assess(item)
-                    from .models import presentation
-                    item['model_profile'] = presentation(str(item.get('model') or ''))
-                    devices.append(item)
+            if data.get('action') in ('discover', 'capabilities'):
+                devices = self._observe()
+                if data['action'] == 'capabilities':
+                    # Read-only re-probe of one connection; never writes, sends or installs.
+                    row = next((d for d in devices if d['id'] == data['device']), None)
+                    if row is None:
+                        raise ValueError('Unknown connection; discover the phone again')
+                    return {'device': row}
                 return {'devices': devices, 'connections': self.transport.diagnostics() if hasattr(self.transport, 'diagnostics') else [], 'limitations': {
                     'contacts': 'Импорт Google CSV / Apple vCard, передача vCard на карту или запись через Gammu с чтением для проверки',
                     'sms': 'Requires a tested Gammu or native Agent adapter',
@@ -86,10 +86,29 @@ class DeviceManager:
                 except zipfile.BadZipFile as exc:
                     raise ValueError('Invalid ZIP archive') from exc
                 status = 'unverified' if result.get('status') in ('partial-or-unverified', 'submitted-to-network') else 'success'
+                self.observed.record(self.rows.get(data.get('device')), data['action'], result)
                 return result
             finally:
                 if data['action'] not in ('media-info', 'media-chunk', 'media-thumbnail'):
                     self.record(data['action'], status)
+
+    def _observe(self) -> list[dict]:
+        """Probe every connection and return normalised rows (matrix = source of truth)."""
+        devices = []
+        for observed in self.transport.devices():
+            item = capabilities.finalize(dict(observed))
+            imei = item.get('imei')
+            if isinstance(imei, str) and imei.isdigit():
+                item['imei'] = '•' * max(0, len(imei) - 4) + imei[-4:]
+            item['firmware_update'] = assess(item)
+            from .models import presentation
+            item['model_profile'] = presentation(str(item.get('model') or ''))
+            devices.append(self.observed.overlay(item))
+        # Rows of connections that vanished must not keep proving anything.
+        self.rows = {d['id']: d for d in devices}
+        for gone in set(self.observed.proofs) - set(self.rows):
+            self.observed.proofs.pop(gone, None)
+        return devices
 
     def record(self, action: str, status: str) -> None:
         """Only logical operations, never per-chunk media traffic or private data."""

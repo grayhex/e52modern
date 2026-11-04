@@ -18,6 +18,8 @@ import tempfile
 from pathlib import Path, PurePosixPath
 from xml.etree import ElementTree
 
+from . import capabilities
+
 LIMIT = 64 * 1024 * 1024
 
 
@@ -149,6 +151,40 @@ class ObexAdapter:
         path = remote_path(path)
         return parse_listing(self.runner(["--list", path]))
 
+    def _matrix(self, state: str, reason: str = "") -> capabilities.Matrix:
+        """state: ``ftp`` (listing worked), ``opp`` (configured push), ``down`` (probe failed)."""
+        m = capabilities.Matrix()
+        kind = "OBEX OPP" if self.profile["kind"] == "obex-opp" else "OBEX FTP"
+        no_pim = f"{kind} exposes no phone identity, telemetry, personal data or application registry"
+        no_write = f"{kind} wrapper: no direct write, delete, mkdir or media streaming"
+        for op in ("identity.read", "telemetry.read", "storage.read", "contacts.read",
+                   "contacts.write", "contacts.stage", "calendar.read", "tasks.read",
+                   "sms.read", "sms.send"):
+            m.unsupported(op, "obex-profile", no_pim)
+        for op in ("media.read", "files.upload", "files.mkdir", "files.delete"):
+            m.unsupported(op, "obex-profile", no_write)
+        if state == "opp":
+            for op in ("files.list", "files.download", "files.stage", "packages.transfer"):
+                m.unsupported(op, "obex-opp", "OPP has no folder listing, download or staging")
+            m.untested("packages.opp-push", "obex-opp:configured",
+                       "Configured endpoint; receiver acceptance is checked only during a confirmed "
+                       "push and is not an installation result")
+        elif state == "ftp":
+            m.unsupported("packages.opp-push", "obex-ftp", "FTP connection, not an OPP endpoint")
+            m.available("files.list", "obex-ftp:folder-listing",
+                        "Actual OBEX folder-listing response; only the exposed namespace is accessible")
+            m.untested("files.download", "obex-ftp",
+                       "Listing succeeded; the first download verifies size")
+            for op in ("files.stage", "packages.transfer"):
+                m.untested(op, "obex-ftp",
+                           "Writes are never probed; staged upload is verified by read-back")
+        else:
+            m.unsupported("packages.opp-push", "obex-ftp", "FTP connection, not an OPP endpoint")
+            m.error("files.list", "obex-ftp:folder-listing", reason or "Folder listing failed")
+            for op in ("files.download", "files.stage", "packages.transfer"):
+                m.untested(op, "obex-ftp", "Requires a successful folder listing", attemptable=False)
+        return m
+
     def device(self) -> dict:
         row = {
             "id": self.id,
@@ -160,7 +196,6 @@ class ObexAdapter:
             "rm": None,
             "firmware": None,
             "battery": None,
-            "capabilities": [],
             "configured_target": {
                 "manufacturer": "Nokia",
                 "platform": "S60",
@@ -172,26 +207,27 @@ class ObexAdapter:
                 self._base()
             except ValueError as exc:
                 row.update(configured=True, evidence=str(exc))
-                return row
+                return capabilities.apply(
+                    row, capabilities.Matrix().rest("error", "obexftp-executable", str(exc))
+                )
         if self.profile["kind"] == "obex-opp":
             # OPP has no read-only folder probe. Offer an explicitly configured,
             # confirmed transfer attempt without inventing a discovered handset.
             row.update(
                 configured=True,
-                capabilities=["opp-push", "transfer"],
                 evidence="Configured OPP endpoint; receiver acceptance is checked only during a confirmed push",
             )
-            return row
+            return capabilities.apply(row, self._matrix("opp"))
         try:
             self.listing()
             row.update(
                 connected=True,
-                capabilities=["files", "files-list", "files-download", "files-stage", "transfer"],
                 evidence="Actual OBEX folder-listing response; only the exposed namespace is accessible",
             )
+            return capabilities.apply(row, self._matrix("ftp"))
         except ValueError as exc:
             row["evidence"] = str(exc)
-        return row
+            return capabilities.apply(row, self._matrix("down", str(exc)))
 
     def _download(self, path: str, target: Path):
         parent, name = str(PurePosixPath(path).parent), PurePosixPath(path).name
