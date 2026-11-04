@@ -7,7 +7,7 @@ import sys
 import threading
 from pathlib import Path
 
-from . import VERSION
+from . import VERSION, update
 from .settings import load_config, save_config
 
 RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
@@ -67,6 +67,12 @@ def run_tray(agent, key):
             ttk.Checkbutton(frame, text="Start at Windows sign-in", variable=startup).grid(
                 row=2, column=0, columnspan=3, sticky="w"
             )
+            checks = BooleanVar(value=config.get("update_check", True))
+            ttk.Checkbutton(
+                frame,
+                text="Check for updates daily (always asks before installing)",
+                variable=checks,
+            ).grid(row=8, column=0, columnspan=3, sticky="w", pady=(8, 0))
             gammu = StringVar(value=config.get("gammu_config", ""))
             profiles = StringVar(value=config.get("connections_file", ""))
             for row, label, value in [
@@ -107,6 +113,7 @@ def run_tray(agent, key):
                             raise ValueError("Choose existing absolute configuration paths")
                     config.update(
                         auto_usb=auto.get(),
+                        update_check=checks.get(),
                         gammu_config=gammu.get(),
                         connections_file=profiles.get(),
                     )
@@ -161,6 +168,47 @@ def run_tray(agent, key):
     def quit_app(icon, item):
         icon.stop()
 
+    def message(text, flags=0x40040):  # MB_ICONINFORMATION | MB_TOPMOST
+        import ctypes
+
+        return ctypes.windll.user32.MessageBoxW(None, text, "SymPort Bridge", flags)
+
+    def ask(text):
+        return message(text, 0x40024) == 6  # MB_YESNO | MB_ICONQUESTION | MB_TOPMOST -> IDYES
+
+    def idle():
+        # Hold the manager lock for good: no phone operation starts while the installer takes over.
+        return agent.manager.lock.acquire(blocking=False)
+
+    def launch(path):
+        update.launch_installer(path)
+        agent.stop.set()
+        icon.stop()
+
+    def run_update(interactive):
+        status = update.run_flow(
+            agent.root,
+            interactive=interactive,
+            ask=ask,
+            inform=message,
+            notify=lambda text: icon.notify(text, "SymPort Bridge"),
+            idle=idle,
+            launch=launch,
+        )
+        if status in ("notified", "already-notified"):
+            available.append(True)
+
+    available: list[bool] = []
+
+    def check_updates(icon_, item):
+        threading.Thread(target=run_update, args=(True,), daemon=True, name="bridge-update").start()
+
+    def automatic_update_check():
+        config = load_config(agent.root)
+        if config.get("update_check", True) and update.installed():
+            if update.due(update.load_state(agent.root).get("last_check")):
+                run_update(False)
+
     asset = Path(__file__).resolve().parents[1] / "web_assets/brand/appmark-192.png"
     icon = pystray.Icon(
         "SymPortBridge",
@@ -178,7 +226,15 @@ def run_tray(agent, key):
             pystray.MenuItem("Diagnostics", lambda icon, item: diagnostics()),
             pystray.MenuItem("Revoke web access", lambda icon, item: agent.revoke()),
             pystray.MenuItem("Operation logs", lambda icon, item: logs()),
+            pystray.MenuItem(
+                lambda item: "Install update…" if available else "Check for updates…", check_updates
+            ),
             pystray.MenuItem("Exit", quit_app),
         ),
     )
+    timer = threading.Timer(
+        20, lambda: threading.Thread(target=automatic_update_check, daemon=True).start()
+    )
+    timer.daemon = True
+    timer.start()
     icon.run()

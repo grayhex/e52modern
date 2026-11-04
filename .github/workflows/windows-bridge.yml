@@ -1,6 +1,8 @@
 name: Windows Bridge
 on:
   push:
+    tags: ['bridge-v*']
+    branches: ['**']
   pull_request:
   workflow_dispatch:
 concurrency:
@@ -11,6 +13,7 @@ permissions:
 jobs:
   portable:
     runs-on: windows-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,7 +28,7 @@ jobs:
           [System.Management.Automation.Language.Parser]::ParseFile("$PWD/tools/install.ps1", [ref]$null, [ref]$errors) | Out-Null
           if ($errors.Count) { throw ($errors | Out-String) }
       - name: Windows adapter and security tests
-        run: python -m pytest tests/test_windows_bridge.py tests/test_transports.py
+        run: python -m pytest tests/test_windows_bridge.py tests/test_transports.py tests/test_bridge_update.py tests/test_first_connection.py
       - name: Build and execute real portable EXE
         run: python tools/windows/build_bridge.py
       - name: Assemble source and license notices
@@ -37,3 +40,62 @@ jobs:
             build/windows/portable/
             build/windows/self-test.json
           if-no-files-found: error
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup --no-progress -y }
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { throw 'Inno Setup 6 is not available' }
+      - name: Build installers (release version and an older one for the update test)
+        run: |
+          python tools/windows/build_installer.py --manifest
+          python tools/windows/build_installer.py --version 0.0.1 --out build/windows/installer-old
+      - name: Test installer, update over a running copy and uninstall
+        shell: pwsh
+        run: |
+          $version = python -c "from symport.bridge import VERSION; print(VERSION)"
+          ./tools/windows/test_installer.ps1 -Old "build/windows/installer-old/SymPortBridge-Setup-0.0.1.exe" -New "build/windows/installer/SymPortBridge-Setup-$version.exe" -NewVersion $version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SymPortBridge-Installer
+          path: |
+            build/windows/installer/SymPortBridge-Setup-*.exe
+            build/windows/installer/SHA256SUMS.txt
+            build/windows/installer/bridge-update.json
+          if-no-files-found: error
+  release:
+    # Only for tags bridge-vX.Y.Z; the signing secret never reaches pull-request builds.
+    if: startsWith(github.ref, 'refs/tags/bridge-v')
+    needs: portable
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install cryptography
+      - uses: actions/download-artifact@v4
+        with:
+          name: SymPortBridge-Installer
+          path: release
+      - uses: actions/download-artifact@v4
+        with:
+          name: SymPortBridge-Windows-x64
+          path: portable
+      - name: Check tag, version and sign the update manifest
+        env:
+          BRIDGE_UPDATE_SIGNING_KEY: ${{ secrets.BRIDGE_UPDATE_SIGNING_KEY }}
+        run: |
+          version=$(python -c "from symport.bridge import VERSION; print(VERSION)")
+          [ "${GITHUB_REF_NAME}" = "bridge-v${version}" ] || { echo "Tag ${GITHUB_REF_NAME} does not match VERSION ${version}"; exit 1; }
+          python tools/windows/update_key.py sign release/bridge-update.json
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          (cd portable/portable && zip -qr "$GITHUB_WORKSPACE/release/SymPortBridge-portable-x64.zip" .)
+          (cd release && sha256sum *.exe *.zip >> SHA256SUMS.txt)
+          gh release create "$GITHUB_REF_NAME" release/SymPortBridge-Setup-*.exe release/SymPortBridge-portable-x64.zip release/SHA256SUMS.txt release/bridge-update.json \
+            --title "SymPort Bridge ${GITHUB_REF_NAME#bridge-v}" \
+            --notes "Per-user Windows installer (no administrator rights, no drivers). Unsigned: Windows SmartScreen shows an unknown-publisher warning; verify SHA256SUMS.txt. Installed copies offer this update from the tray menu and always ask first."

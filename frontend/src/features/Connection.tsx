@@ -141,7 +141,7 @@ export default function Connection() {
         <div className="form-row">
           <a
             className="btn secondary"
-            href="https://github.com/grayhex/e52modern/actions/workflows/windows-bridge.yml"
+            href="https://github.com/grayhex/s60modern/releases"
             target="_blank"
             rel="noreferrer"
           >

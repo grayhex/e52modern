@@ -341,6 +341,22 @@ def self_test(report: Path | None):
             agent.close()
 
 
+MUTEX_NAME = "SymPortBridgeSingleInstance"  # also the installer's AppMutex
+
+
+def claim_single_instance():
+    """Hold a named mutex for the process lifetime; False if another Bridge already runs."""
+    if os.name != "nt":
+        return True
+    import ctypes
+
+    handle = ctypes.windll.kernel32.CreateMutexW(None, False, MUTEX_NAME)
+    if ctypes.windll.kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+        return False
+    claim_single_instance.handle = handle  # keep it open until exit
+    return True
+
+
 def main(argv=None):
     if len(sys.argv) == 4 and sys.argv[1] == "--gammu-worker":
         gammu_native.worker_files(Path(sys.argv[2]), Path(sys.argv[3]))
@@ -354,6 +370,14 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.self_test:
         return self_test(args.report)
+    if not args.headless and not claim_single_instance():
+        if os.name == "nt":
+            import ctypes
+
+            ctypes.windll.user32.MessageBoxW(
+                None, "SymPort Bridge is already running (see the tray icon).", "SymPort Bridge", 0x40
+            )
+        return
     root = (args.data_dir or data_directory()).absolute()
     key = load_key(root)
 
