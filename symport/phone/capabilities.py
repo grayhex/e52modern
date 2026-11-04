@@ -16,7 +16,9 @@ they become ``available`` only after a confirmed, read-back-verified operation c
 the *same* connection fingerprint (see :class:`ObservedWrites`).
 
 The flat ``capabilities`` list and the ``capability_status`` map are *derived* from the matrix
-for older clients; adapters must not write them by hand.
+for older clients; adapters must not write them by hand. The flat list names only verified
+operations and confirmed-only writes; an unprobed read (``unverified``) is offered by clients
+that read the matrix, because the read itself is the probe.
 """
 
 from __future__ import annotations
@@ -160,7 +162,7 @@ class Matrix:
 def flat(matrix: dict) -> list[str]:
     names: list[str] = []
     for op, state in matrix.items():
-        if state.get("attempt") in ("verified", "confirmed-only", "unverified"):
+        if state.get("attempt") in ("verified", "confirmed-only"):
             names += [n for n in OPERATIONS.get(op, ("", ()))[1] if n not in names]
     if any(matrix.get(op, {}).get("status") == "available" for op in PIM_READS):
         names.append("personal-data")

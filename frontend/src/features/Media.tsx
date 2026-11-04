@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useApi, usePreferences } from '../state/app';
 import { useDevices } from '../api/queries';
 import { mediaSchema, payload, type MediaItem } from '../api/workspace';
-import { Card, DeviceSelect, ErrorMessage } from '../components/ui';
+import { Card, CapabilityHint, DeviceSelect, ErrorMessage } from '../components/ui';
 import { Field, Modal } from '../components/workspace';
 import Transfer from './Transfer';
 const url = (device: string, item: MediaItem, download = false) =>
@@ -36,6 +36,7 @@ function Gallery({ device }: { device: string }) {
     canRead = devices.data?.devices
       .find((d) => d.id === device)
       ?.capabilities.includes('media-read');
+  const galleryDevice = devices.data?.devices.find((d) => d.id === device);
   const [draft, setDraft] = useState(''),
     [path, setPath] = useState<string | null>(null),
     [search, setSearch] = useState(''),
@@ -191,6 +192,7 @@ function Gallery({ device }: { device: string }) {
             )}
           </p>
         )}
+        {!canRead && <CapabilityHint device={galleryDevice} ops={['media.read']} />}
         <ErrorMessage error={listing.error ?? zip.error} />
         {listing.data?.truncated && (
           <p className="note">

@@ -5,6 +5,7 @@ import {
   downloadSchema,
   filesSchema,
   historySchema,
+  recheckSchema,
   resultSchema,
   type Json,
 } from './contracts';
@@ -97,6 +98,10 @@ export class ApiClient {
       ...(signal ? { signal } : {}),
     });
     return this.decode(response, schema);
+  }
+  /** Read-only re-probe of one connection (never writes, sends or installs). */
+  recheck(device: string, signal?: AbortSignal) {
+    return this.request('/api/manager', { action: 'capabilities', device }, recheckSchema, signal);
   }
   discover(signal?: AbortSignal) {
     return this.request('/api/manager', { action: 'discover' }, discoverySchema, signal);

@@ -267,3 +267,16 @@ dialog::backdrop{background:rgb(16 27 42 / 55%)}
 /* The visually hidden file input of an upload zone must not widen the page (its inner text is wider than 1px). */
 .upload-zone{overflow:hidden}
 .upload-zone input[type=file]{overflow:hidden;clip-path:inset(50%);font-size:12px}
+
+/* Capability matrix: states are never colour-only (text label + border style) */
+.capability-table{width:100%;border-collapse:collapse;margin:6px 0 12px}
+.capability-table th,.capability-table td{padding:6px 8px;border-bottom:1px solid var(--nokia-border);text-align:left;vertical-align:top;font-weight:400}
+.capability-table thead th{font-weight:600;color:var(--nokia-muted)}
+.capability-mode{display:block;color:var(--nokia-muted)}
+.capability-source{color:var(--nokia-muted)}
+.capability-chip--available{background:var(--nokia-brand-soft);color:var(--nokia-brand);border-color:var(--nokia-brand-border)}
+.capability-chip--not-tested{border-style:dashed}
+.capability-chip--unsupported{text-decoration:line-through;text-decoration-thickness:1px}
+.capability-chip--error{border-width:2px;border-color:var(--nokia-danger,#b3261e);color:var(--nokia-danger,#b3261e)}
+.capability-hint{margin:8px 0;padding:8px 12px;border:1px dashed var(--nokia-border);border-radius:var(--nokia-radius-control)}
+@media(max-width:760px){.capability-table thead{display:none}.capability-table tr{display:block;margin-bottom:8px;border:1px solid var(--nokia-border);border-radius:4px}.capability-table th,.capability-table td{display:block;border:0}}

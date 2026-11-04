@@ -16,7 +16,8 @@ values=struct.unpack('<'+'h'*(len(frames)//2),frames);shaped=[int(x*(.12+.88*(.5
 with wave.open(str(v/'sample.wav'),'wb') as w:w.setparams(params);w.writeframes(struct.pack('<'+'h'*len(shaped),*shaped))
 os.environ.update(SYMPORT_DEVICE_ROOTS=json.dumps({'card':str(v)}),SYMPORT_GAMMU_CONFIG='',SYMPORT_CONNECTIONS_FILE='',SYMPORT_BRIDGE_URL='')
 w=Workbench(r);original=w.devices.transport.devices
-w.devices.transport.devices=lambda:original()+[{'id':'e72-fixture','model':'Nokia E72 (RM-530)','firmware':'091.004','connected':True,'capabilities':[],'transport':'test-fixture'}]
+from tests.capfake import row as capability_row
+w.devices.transport.devices=lambda:original()+[capability_row({'id':'e72-fixture','model':'Nokia E72 (RM-530)','firmware':'091.004','connected':True,'transport':'test-fixture'})]
 ThreadingHTTPServer(('127.0.0.1',8782),make_handler(w)).serve_forever()`;
 const server=spawn(python,['-c',script,root],{cwd:repo,env:process.env,stdio:['ignore','ignore','inherit']});
 (async()=>{let browser;try{

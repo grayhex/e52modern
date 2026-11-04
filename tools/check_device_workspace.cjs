@@ -14,7 +14,8 @@ r=Path(sys.argv[1]);v=r/'volume';(v/'Images').mkdir(parents=True);Image.new('RGB
 with wave.open(str(v/'sample.wav'),'wb') as f:f.setnchannels(1);f.setsampwidth(2);f.setframerate(8000);f.writeframes(bytes(16000))
 os.environ.update(SYMPORT_DEVICE_ROOTS=json.dumps({'test-volume':str(v)}),SYMPORT_GAMMU_CONFIG='mock-only',SYMPORT_MGO_URL='',SYMPORT_BRIDGE_URL='')
 w=Workbench(r);local=LocalTransports(r);phone=MockPhone();local.personal.invoke=phone.invoke
-local.devices=lambda: local.files.devices()+[dict(phone.identity,id='gammu',transport='gammu',connected=True,model='Nokia E52 (mock transport)',firmware='081.003',capabilities=['device-details','personal-data','contacts-read','calendar-read','tasks-read','sms-read'],capability_status={k:{'status':'available'} for k in phone.records},sms_send_verified=False)]
+from tests.capfake import row as capability_row
+local.devices=lambda: local.files.devices()+[capability_row(dict(phone.identity,id='gammu',transport='gammu',connected=True,model='Nokia E52 (mock transport)',firmware='081.003',sms_send_verified=False),available=['identity.read','contacts.read','calendar.read','tasks.read','sms.read'])]
 w.devices.transport=local
 ThreadingHTTPServer(('127.0.0.1',8779),make_handler(w)).serve_forever()`;
 const server=spawn(python,['-c',script,root],{cwd:repo,env:process.env,stdio:['ignore','ignore','inherit']});

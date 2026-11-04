@@ -33,8 +33,10 @@ def test_gammu_identify_alone_never_promises_pim(tmp_path, monkeypatch):
     assert state(row, 'identity.read')['status'] == 'available'
     for op in ('contacts.read', 'calendar.read', 'tasks.read', 'sms.read'):
         assert state(row, op)['status'] == 'not-tested'
-        assert state(row, op)['attempt'] == 'blocked'
         assert 'identify' in state(row, op)['evidence']
+    # The CLI export is a read-only path that may be tried (the read is the probe); SMS has none.
+    assert state(row, 'calendar.read')['attempt'] == 'unverified'
+    assert state(row, 'sms.read')['attempt'] == 'blocked'
     for name in ('contacts-read', 'calendar-read', 'personal-data', 'sms-send'):
         assert name not in row['capabilities']
     assert row['capability_status']['contacts']['status'] == 'unknown'

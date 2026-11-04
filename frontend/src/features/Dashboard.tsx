@@ -36,6 +36,7 @@ import { useApi, usePreferences } from '../state/app';
 import { useWorkspace } from '../hooks/useWorkspace';
 import { nokiaTheme } from '../dashboard/muiTheme';
 import { formatBytes, localeFor, perDay, storage, timeLabel } from '../dashboard/derive';
+import { useLinkedVolume } from '../dashboard/linkedVolume';
 import type { Device } from '../api/contracts';
 
 const base = import.meta.env.BASE_URL;
@@ -81,10 +82,10 @@ function Overview() {
     refetchInterval: 30000,
   });
   const operations = journal.data?.operations ?? [];
-  // Same view for every model: storage comes from the selected connection, else from any connected
-  // volume that reports counters (a phone identified over Gammu and its memory card are separate connections).
-  const volume = [selected, ...(devices.data?.devices ?? [])].find((d) => storage(d));
-  const space = storage(volume);
+  // Same view for every model. Counters belong to the connection that reported them; a phone
+  // without its own counters shows a mounted volume only after the user links it explicitly.
+  const linked = useLinkedVolume(selected, devices.data?.devices ?? []);
+  const space = storage(linked.volume);
   const backups = (workspace.data?.backups ?? []).filter((b) => typeof b.created === 'string');
   const lastBackup = backups
     .map((b) => String(b.created))
@@ -437,15 +438,39 @@ function Overview() {
               />
               <Typography variant="caption" color="text.secondary">
                 {space
-                  ? t(
-                      'Counters of the mounted volume; they say nothing about phone memory or other cards.',
-                      'Счётчики подключённого тома; о памяти телефона и других картах они ничего не говорят.',
-                    )
+                  ? `${linked.volume?.name ?? linked.volume?.id ?? ''} · ` +
+                    (linked.isLinked
+                      ? t(
+                          'Volume linked by you to this phone; it says nothing about phone memory or other cards.',
+                          'Том, который вы связали с этим телефоном; о памяти телефона и других картах он ничего не говорит.',
+                        )
+                      : t(
+                          'Counters reported by this connection.',
+                          'Счётчики, сообщённые этим подключением.',
+                        ))
                   : t(
-                      'No connected volume reports storage counters.',
-                      'Ни один подключённый том не сообщает счётчики накопителя.',
+                      'This connection reports no storage counters.',
+                      'Это подключение не сообщает счётчики накопителя.',
                     )}
               </Typography>
+              {linked.candidates.length > 0 && selected && (
+                <label>
+                  <Typography variant="caption" color="text.secondary" component="span">
+                    {t('Link a memory card volume', 'Связать с томом карты памяти')}{' '}
+                  </Typography>
+                  <select
+                    value={linked.isLinked ? (linked.volume?.id ?? '') : ''}
+                    onChange={(event) => linked.link(event.target.value || null)}
+                  >
+                    <option value="">{t('Not linked', 'Не связан')}</option>
+                    {linked.candidates.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name ?? d.id}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
             </Stack>
           </Stack>
         </Panel>
@@ -550,10 +575,14 @@ function Overview() {
               ],
               [
                 t('File access', 'Доступ к файлам'),
-                selected?.capabilities.includes('files') ? 'ok' : 'unknown',
-                selected?.capabilities.includes('files')
-                  ? t('Available', 'Доступен')
-                  : t('No data', 'Нет данных'),
+                selected?.capability_matrix?.['files.list']?.status === 'available'
+                  ? 'ok'
+                  : 'unknown',
+                selected?.capability_matrix?.['files.list']?.status === 'available'
+                  ? t('Verified', 'Проверено')
+                  : selected?.capability_matrix?.['files.list']?.status === 'unsupported'
+                    ? t('Not supported by this connection', 'Это подключение не поддерживает')
+                    : t('Not verified', 'Не проверено'),
               ],
               [
                 t('Firmware vs reference', 'Прошивка и справочник'),
@@ -629,17 +658,34 @@ function Overview() {
         </Panel>
       </Box>
 
-      {selected?.capabilities.length ? (
-        <Stack
-          direction="row"
-          spacing={0.75}
-          flexWrap="wrap"
-          useFlexGap
-          aria-label={t('Capabilities', 'Возможности')}
-        >
-          {selected.capabilities.map((cap) => (
-            <Chip key={cap} size="small" variant="outlined" label={cap} />
-          ))}
+      {selected?.capability_matrix ? (
+        <Stack spacing={0.75}>
+          <Typography variant="caption" color="text.secondary">
+            {t(
+              'Verified by a read-only probe of this connection (details: Connection):',
+              'Подтверждено безопасной проверкой чтения этого подключения (подробнее: «Подключение»):',
+            )}
+          </Typography>
+          <Stack
+            direction="row"
+            spacing={0.75}
+            flexWrap="wrap"
+            useFlexGap
+            aria-label={t('Verified capabilities', 'Подтверждённые возможности')}
+          >
+            {Object.entries(selected.capability_matrix)
+              .filter(([, s]) => s.status === 'available')
+              .map(([op]) => (
+                <Chip key={op} size="small" variant="outlined" label={op} />
+              ))}
+            {!Object.values(selected.capability_matrix).some((s) => s.status === 'available') && (
+              <Chip
+                size="small"
+                variant="outlined"
+                label={t('Nothing verified yet', 'Пока ничего не подтверждено')}
+              />
+            )}
+          </Stack>
         </Stack>
       ) : null}
     </Stack>

@@ -18,7 +18,8 @@ import {
   type PersonalRow,
   type ChangePlan,
 } from '../api/workspace';
-import { Card, DeviceSelect, ErrorMessage } from '../components/ui';
+import { Card, CapabilityHint, DeviceSelect, ErrorMessage } from '../components/ui';
+import { unverifiedReason } from '../api/capabilities';
 import { Download, Field, JsonReport, OperationStatus } from '../components/workspace';
 type Domain = 'contacts' | 'sms' | 'calendar' | 'tasks';
 const names = {
@@ -282,12 +283,21 @@ function Workspace({ device, domain }: { device: string; domain: Domain }) {
           .toLocaleLowerCase()
           .includes(search.toLocaleLowerCase()),
     );
+  // The store of this very domain must have answered; another store being readable is not enough.
+  const readOp = `${domain}.read`;
   const readable =
     !!device &&
-    (personal ||
-      phone?.capabilities.includes(
-        domain === 'sms' ? 'sms-read' : domain === 'contacts' ? 'contacts-read' : `${domain}-read`,
-      ));
+    !!phone &&
+    (phone.capability_matrix
+      ? unverifiedReason(phone, readOp) === null
+      : personal ||
+        phone.capabilities.includes(
+          domain === 'sms'
+            ? 'sms-read'
+            : domain === 'contacts'
+              ? 'contacts-read'
+              : `${domain}-read`,
+        ));
   function edit(index: number, patch: Partial<PersonalRow>) {
     setRows((current) => current.map((row, i) => (i === index ? { ...row, ...patch } : row)));
     setPlan(null);
@@ -296,6 +306,7 @@ function Workspace({ device, domain }: { device: string; domain: Domain }) {
   return (
     <>
       <Card>
+        <CapabilityHint device={phone} ops={[readOp]} verified />
         <div className="form-row">
           <button
             className="btn primary"

@@ -4,7 +4,14 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useApi, usePreferences } from '../state/app';
 import { useDevices } from '../api/queries';
-import { Card, DeviceSelect, ErrorMessage, ConfirmDialog, supports } from '../components/ui';
+import {
+  Card,
+  CapabilityHint,
+  DeviceSelect,
+  ErrorMessage,
+  ConfirmDialog,
+  supports,
+} from '../components/ui';
 import PhoneFileBrowser from '../components/PhoneFileBrowser';
 import { Download, Field, JsonReport } from '../components/workspace';
 import { fileSchema, objectSchema, payload } from '../api/workspace';
@@ -69,12 +76,15 @@ export default function Files() {
           </button>
         </div>
         {device && !supports(selected, 'list') && (
-          <p className="note">
-            {t(
-              'This connection cannot browse files. Choose a file transport in Connection.',
-              'Это подключение не открывает файлы. Выберите файловый транспорт в разделе «Подключение».',
-            )}
-          </p>
+          <>
+            <p className="note">
+              {t(
+                'This connection cannot browse files. Choose a file transport in Connection.',
+                'Это подключение не открывает файлы. Выберите файловый транспорт в разделе «Подключение».',
+              )}
+            </p>
+            <CapabilityHint device={selected} ops={['files.list']} />
+          </>
         )}
         <ErrorMessage error={devices.error} />
         {device && supports(selected, 'list') ? (

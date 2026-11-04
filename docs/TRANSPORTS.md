@@ -64,6 +64,61 @@ JAR in the same directory. Use a JAR-only package or a mounted card. Sending an 
 SISX or JAR never establishes installation; confirm installation on the Nokia screen.
 Emulator success remains separate from physical-device results.
 
+## Capability matrix (single source of truth)
+
+Capabilities belong to a **connection**, not to a phone model. Every device row returned by
+`discover` carries `capability_matrix`: one entry per operation (`identity.read`,
+`telemetry.read`, `storage.read`, `files.list|download|upload|stage|mkdir|delete`, `media.read`,
+`packages.transfer|opp-push`, `contacts.read|write|stage`, `calendar.read`, `tasks.read`,
+`sms.read|send`, `apps.registry`, `install.run`) with
+
+| Field | Meaning |
+|---|---|
+| `status` | `available` — a safe probe of *this* adapter succeeded; `not-tested` — nothing proved it; `unsupported` — the transport cannot do it; `error` — the probe failed (fixed reason in `evidence`) |
+| `attempt` | `verified`, `unverified` (a read that was not probed; the read itself is the probe), `confirmed-only` (a write, never probed, runs only after an explicit confirmation) or `blocked` |
+| `source`, `evidence`, `checked_at` | where the answer comes from (e.g. `gammu-native:GetMemoryStatus`, `obex-ftp:folder-listing`, `mounted-volume:listdir`, `observed-operation`) and when |
+
+The flat `capabilities` list and `capability_status` are **derived** from the matrix for older
+clients and contain only verified operations and confirmed-only writes. `capability_fingerprint`
+(connection id, transport, profile, model, RM, firmware — no IMEI) identifies the connection;
+it changes when another phone, link or firmware answers.
+
+Rules enforced by the adapters and `DeviceManager`:
+
+- `gammu identify` proves **identity only**. Contacts/calendar/tasks become `available` only
+  after the native store-status call (`GetMemoryStatus`, `GetCalendarStatus`, `GetToDoStatus`,
+  `GetSMSStatus`) succeeds; `ERR_NOTSUPPORTED/NOTIMPLEMENTED` is `unsupported`, any other error
+  is `error` with the Gammu code. Without python-gammu the CLI export path stays
+  `not-tested`/`unverified` and the verified React workflows are disabled with that reason.
+- Mass Storage: only `files.list`, `storage.read` (and `files.download`/`media.read` after a
+  one-byte read of an existing file) are probed. No identity, battery, PIM, application registry
+  or installation. Read-only per OS flags → write operations `unsupported`.
+- OBEX FTP: a successful folder listing is the only probe. No delete/mkdir/direct write/gallery.
+  OBEX OPP: `packages.opp-push` is configured, not discovered; the receiver acknowledgement is
+  not a file browser, not a listing and never an installation.
+- Writes are **never probed** (no test writes, no SMS). A write operation turns `available`
+  only after a confirmed, verified operation of that kind on the same connection fingerprint
+  (`observed-operation`, kept in memory). The proof is dropped on disconnect or when the
+  fingerprint changes; failed or unverified results (`submitted-to-network`,
+  `received-by-opp-not-installed`, partial) prove nothing. Reading never implies writing.
+- `install.run` and `apps.registry` are `unsupported` for every transport: SymPort never installs
+  and copying a package is not an installation.
+- A peer (older Bridge) that sends no matrix is **not trusted**: every operation is `not-tested`
+  and blocked until the Bridge is updated. Matrices from a Bridge are validated (unknown
+  operations/statuses dropped, attempts re-derived).
+- `{"action":"capabilities","device":"<id>"}` re-probes one connection (reads only) and returns
+  the fresh row; the React *Connection* page exposes it as “Recheck (read-only)”.
+
+React (`useCapabilityGuard`) removes cached files/personal/media/diagnostics data of a connection
+as soon as its fingerprint changes, it disconnects or discovery fails, so “available” from the
+previous phone is never shown for the next one. Buttons of impossible actions are disabled with
+the reason (`CapabilityHint`). The dashboard shows storage counters only from the selected
+connection; a mounted volume is shown for a phone only after the user links it explicitly (the
+link is bound to the phone's fingerprint).
+
+All of the above is verified with mocks and fake transports only; **physical Nokia E52 results
+are not tested**.
+
 ## Configure connections
 
 Keep the legacy `SYMPORT_GAMMU_CONFIG` and `SYMPORT_DEVICE_ROOTS` settings if already

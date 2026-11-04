@@ -1,6 +1,7 @@
 import { Activity, lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { usePreferences } from './state/app';
 import Sidebar from './nav/Sidebar';
+import { useCapabilityGuard } from './api/queries';
 import Topbar from './nav/Topbar';
 import Planned from './nav/Planned';
 import { plannedSpecs } from './features/PlannedPages';
@@ -38,6 +39,7 @@ function readLocation() {
 }
 export default function App() {
   const { t } = usePreferences();
+  useCapabilityGuard();
   const [current, setCurrent] = useState(readLocation);
   const { route } = current;
   const [visited, setVisited] = useState<Record<string, string>>(() => ({ [route]: current.hash }));

@@ -5,7 +5,8 @@ import { useMutation } from '@tanstack/react-query';
 import { useApi, usePreferences } from '../state/app';
 import { useDevices } from '../api/queries';
 import { objectSchema } from '../api/workspace';
-import { Card, DeviceSelect, ErrorMessage } from '../components/ui';
+import { Card, CapabilityHint, DeviceSelect, ErrorMessage } from '../components/ui';
+import { supports } from '../components/ui';
 import { Field } from '../components/workspace';
 export default function Transfer({ kind }: { kind: 'software' | 'media' }) {
   const api = useApi(),
@@ -75,12 +76,11 @@ export default function Transfer({ kind }: { kind: 'software' | 'media' }) {
           onChange={(e) => setFiles([...(e.target.files ?? [])])}
         />
       </label>
+      <CapabilityHint device={phone} ops={['packages.transfer', 'packages.opp-push']} />
       <p>{files.map((f) => f.name).join(' · ')}</p>
       <button
         className="btn primary"
-        disabled={
-          !device || !phone?.capabilities.includes('transfer') || !files.length || confirm.busy
-        }
+        disabled={!device || !supports(phone, 'transfer') || !files.length || confirm.busy}
         onClick={() => validate.mutate()}
       >
         {t('Transfer', 'Передать')}

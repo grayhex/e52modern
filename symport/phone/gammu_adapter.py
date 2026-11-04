@@ -82,8 +82,14 @@ class GammuAdapter:
             m.available("identity.read", "gammu-cli:identify", "gammu identify answered")
             m.unsupported("telemetry.read", "gammu-cli:identify", "identify returns no battery or signal")
             m.unsupported("storage.read", "gammu-cli:identify", "identify returns no storage values")
-            for op in ("contacts.read", "calendar.read", "tasks.read", "sms.read",
-                       "contacts.write", "sms.send"):
+            for op in ("contacts.read", "calendar.read", "tasks.read"):
+                # `gammu backup` exports exist as a read-only path, but nothing has proven them yet.
+                m.untested(
+                    op,
+                    "gammu-cli:identify",
+                    why + "; an explicit read through the CLI export can try it",
+                )
+            for op in ("sms.read", "contacts.write", "sms.send"):
                 m.untested(op, "gammu-cli:identify", why, attemptable=False)
         else:
             reason = (
