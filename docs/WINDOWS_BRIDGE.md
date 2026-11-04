@@ -18,6 +18,17 @@ No Electron, firmware flashing, ROM, Nokia drivers or applet binaries are includ
    their existing UI. An outbound HTTPS relay also serves Catalog, Inspector,
    Emulator Lab transfer and authenticated media downloads through the backend.
 
+The first-connection wizard (**Connection**) drives these steps and explains each
+failure. It first sends a harmless `POST /api/bridge/pair` with `{"origin", "probe": true}`:
+the Bridge answers with its version and whether pairing is available, opens no dialog and
+changes no state; any other request still needs the local approval. Host enumeration
+(`connection-host`) additionally returns USB vendor/product/class/status of Nokia devices (no
+serial numbers or paths), the Bridge version, OS family/release and whether python-gammu is
+present, so “nothing plugged in / charge-only cable” is told apart from “device seen, driver
+or COM port missing”. Gammu failures are reduced to fixed reasons (`port-busy`, `port-open`,
+`port-missing`, `port-permission`, `driver-missing`, `no-response`, `gammu-missing`,
+`config-invalid`, `unsupported-model`); raw Gammu/OS text is never forwarded.
+
 Use a current Chromium browser for local-network permission prompts. If browser
 policy blocks loopback access, use the existing authenticated SSH PC Bridge route
 in [DEVICE_MANAGER.md](DEVICE_MANAGER.md). The Workbench must be reachable by the

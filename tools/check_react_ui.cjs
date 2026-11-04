@@ -99,13 +99,13 @@ const server = spawn(python, ["-c", script, root], {
     // Capability matrix of the enrolled volume: probe-backed reads, unprobed writes, no phone claims.
     await page.goto("http://127.0.0.1:8786/next/#phone/connection");
     const matrixRow = (op, status) =>
-      page.locator(`tr[data-op="${op}"][data-status="${status}"]`).first();
+      page.locator(`.card:not(.wizard) tr[data-op="${op}"][data-status="${status}"]`).first();
     await matrixRow("files.list", "available").waitFor();
     await matrixRow("files.upload", "not-tested").waitFor();
     await matrixRow("identity.read", "unsupported").waitFor();
     await matrixRow("sms.send", "unsupported").waitFor();
     await matrixRow("install.run", "unsupported").waitFor({ state: "attached" });
-    await page.getByRole("button", { name: "Recheck (read-only)", exact: true }).first().click();
+    await page.locator(".card:not(.wizard)").getByRole("button", { name: "Recheck (read-only)", exact: true }).first().click();
     await matrixRow("files.list", "available").waitFor();
     if (fs.readdirSync(path.join(root, "volume")).some((n) => n.includes("symport")))
       throw Error("Recheck must not write to the phone");

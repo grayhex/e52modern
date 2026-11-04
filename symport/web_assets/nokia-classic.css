@@ -280,3 +280,26 @@ dialog::backdrop{background:rgb(16 27 42 / 55%)}
 .capability-chip--error{border-width:2px;border-color:var(--nokia-danger,#b3261e);color:var(--nokia-danger,#b3261e)}
 .capability-hint{margin:8px 0;padding:8px 12px;border:1px dashed var(--nokia-border);border-radius:var(--nokia-radius-control)}
 @media(max-width:760px){.capability-table thead{display:none}.capability-table tr{display:block;margin-bottom:8px;border:1px solid var(--nokia-border);border-radius:4px}.capability-table th,.capability-table td{display:block;border:0}}
+
+/* First-connection wizard: state is text + icon + border, never colour alone */
+.wizard-levels{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;padding:0;list-style:none}
+.wizard-levels li[data-on="true"]{background:var(--nokia-brand-soft);color:var(--nokia-brand);border-color:var(--nokia-brand-border)}
+.wizard-steps{list-style:none;margin:12px 0;padding:0;display:grid;gap:8px}
+.wizard-step{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--nokia-border);border-left-width:4px;border-radius:var(--nokia-radius-control);background:var(--nokia-surface)}
+.wizard-step p{margin:4px 0}
+.wizard-step[data-status="success"]{border-left-color:var(--nokia-success)}
+.wizard-step[data-status="failed"]{border-left-color:var(--nokia-danger);background:var(--nokia-danger-soft)}
+.wizard-step[data-status="loading"]{border-left-color:var(--nokia-brand)}
+.wizard-step[data-status="unsupported"]{border-left-style:dashed;border-left-color:var(--nokia-warning)}
+.wizard-step[data-status="pending"],.wizard-step[data-status="skipped"]{border-left-style:dotted}
+.wizard-step[aria-current="step"]{outline:2px solid var(--nokia-brand);outline-offset:1px}
+.wizard-icon{flex:none;margin-top:2px}
+.wizard-icon.spin{animation:wizard-spin 1.2s linear infinite}
+@keyframes wizard-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.wizard-icon.spin{animation:none}}
+.wizard-fixes{margin:4px 0 4px 18px;padding:0}
+.wizard-choice{margin:12px 0;border:1px solid var(--nokia-border);border-radius:var(--nokia-radius-control)}
+.wizard-choice label{display:block;padding:4px 0}
+.wizard-facts{display:grid;grid-template-columns:max-content 1fr;gap:4px 12px;margin:8px 0}
+.wizard-facts dd{margin:0}
+.wizard-choice input[type=radio]{width:auto;min-width:0;height:auto;padding:0}
