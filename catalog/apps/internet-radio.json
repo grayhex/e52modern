@@ -45,5 +45,8 @@
   "target_profiles": [],
   "description_en": "Nokia Internet Radio sources. A ROM stub is not offered as an installable player.",
   "delivery_reason_en": "Native InternetRadio 2.0 and Qt sources are available. ir3_qtinternetradio_stub.sis contains ROM-stub metadata, not the player. No full author installer or live station-directory service was confirmed.",
-  "compatibility_basis_en": "Native InternetRadio 2.0 and Qt sources are available. ir3_qtinternetradio_stub.sis contains ROM-stub metadata, not the player. No full author installer or live station-directory service was confirmed."
+  "compatibility_basis_en": "Native InternetRadio 2.0 and Qt sources are available. ir3_qtinternetradio_stub.sis contains ROM-stub metadata, not the player. No full author installer or live station-directory service was confirmed.",
+  "backend_en": "No external service is required for the main function.",
+  "tls_en": "Modern TLS and server compatibility have not been tested.",
+  "signature_en": "Not inspected: no original installable distribution was obtained."
 }

@@ -45,5 +45,8 @@
   "target_profiles": [],
   "description_en": "Tap counter for touch Symbian devices. Unsupported on Nokia E52/E72.",
   "delivery_reason_en": "The author targets 9.4–Belle FP2. The SIS requires Qt 4.7.3 and touch/Symbian^3 product IDs. It is not for E52/E72 on 9.3. Original controller/data CRC fields are absent; the measured SHA-256 is pinned.",
-  "compatibility_basis_en": "The author targets 9.4–Belle FP2. The SIS requires Qt 4.7.3 and touch/Symbian^3 product IDs. It is not for E52/E72 on 9.3. Original controller/data CRC fields are absent; the measured SHA-256 is pinned."
+  "compatibility_basis_en": "The author targets 9.4–Belle FP2. The SIS requires Qt 4.7.3 and touch/Symbian^3 product IDs. It is not for E52/E72 on 9.3. Original controller/data CRC fields are absent; the measured SHA-256 is pinned.",
+  "backend_en": "No external service is required for the main function.",
+  "tls_en": "Modern TLS and server compatibility have not been tested.",
+  "signature_en": "SIS structure inspected; a signature does not establish trust on the phone. See Certificate Inspector."
 }

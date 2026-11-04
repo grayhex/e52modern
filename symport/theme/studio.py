@@ -38,7 +38,9 @@ class ThemeStudio:
         )
         self.tools = Path(__file__).resolve().parents[2] / "tools/s60"
         self.source_repo = Path(__file__).resolve().parents[2]
-        self.palette = json.loads((self.source_repo / "theme/colours.json").read_text())
+        self.palette = json.loads(
+            (self.source_repo / "theme/colours.json").read_text(encoding="utf-8")
+        )
 
     def folder(self, key):
         if not isinstance(key, str) or not KEY.fullmatch(key):
@@ -49,7 +51,7 @@ class ThemeStudio:
         folder = self.folder(key)
         if not (folder / "project.json").is_file():
             raise ValueError("Theme project not found")
-        return json.loads((folder / "project.json").read_text())
+        return json.loads((folder / "project.json").read_text(encoding="utf-8"))
 
     def store(self, project):
         project["updated"] = datetime.now(UTC).isoformat()
@@ -206,7 +208,7 @@ class ThemeStudio:
         if action == "list":
             return {
                 "projects": [
-                    json.loads(p.read_text())
+                    json.loads(p.read_text(encoding="utf-8"))
                     for p in sorted(
                         self.root.glob("*/project.json"),
                         key=lambda p: p.stat().st_mtime,

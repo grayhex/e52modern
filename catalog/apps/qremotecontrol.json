@@ -45,5 +45,8 @@
   "target_profiles": [],
   "description_en": "PC remote-control client. Author source and instructions; no E52/E72 distribution is confirmed.",
   "delivery_reason_en": "No original E52/E72 SIS is published in the repository. Current Qt Quick/Qt 5 source does not establish S60 3rd FP2 compatibility; a compatible Qt client and PC server are required.",
-  "compatibility_basis_en": "No original E52/E72 SIS is published in the repository. Current Qt Quick/Qt 5 source does not establish S60 3rd FP2 compatibility; a compatible Qt client and PC server are required."
+  "compatibility_basis_en": "No original E52/E72 SIS is published in the repository. Current Qt Quick/Qt 5 source does not establish S60 3rd FP2 compatibility; a compatible Qt client and PC server are required.",
+  "backend_en": "External service availability has not been confirmed.",
+  "tls_en": "Modern TLS and server compatibility have not been tested.",
+  "signature_en": "Not inspected: no original installable distribution was obtained."
 }

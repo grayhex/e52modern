@@ -45,5 +45,8 @@
   "target_profiles": [],
   "description_en": "Photo rotation for touch Symbian devices. Unsupported on Nokia E52/E72.",
   "delivery_reason_en": "The original SIS requires Qt 4.7.4 and Qt Quick Components 1.1. The author targets 9.4/Anna/Belle; E52/E72 use Symbian 9.3 and are outside that platform.",
-  "compatibility_basis_en": "The original SIS requires Qt 4.7.4 and Qt Quick Components 1.1. The author targets 9.4/Anna/Belle; E52/E72 use Symbian 9.3 and are outside that platform."
+  "compatibility_basis_en": "The original SIS requires Qt 4.7.4 and Qt Quick Components 1.1. The author targets 9.4/Anna/Belle; E52/E72 use Symbian 9.3 and are outside that platform.",
+  "backend_en": "No external service is required for the main function.",
+  "tls_en": "Modern TLS and server compatibility have not been tested.",
+  "signature_en": "SIS structure inspected; a signature does not establish trust on the phone. See Certificate Inspector."
 }

@@ -45,5 +45,8 @@
   "target_profiles": [],
   "description_en": "Symbian command-line shell. Author sources are available; a full validated installer is not.",
   "delivery_reason_en": "The source includes s60/3rd_edition, but no full author release SIS. clogger-stub.SIS is a library ROM stub, not FShell. SDK/signing and capabilities depend on the commands and exact build.",
-  "compatibility_basis_en": "The source includes s60/3rd_edition, but no full author release SIS. clogger-stub.SIS is a library ROM stub, not FShell. SDK/signing and capabilities depend on the commands and exact build."
+  "compatibility_basis_en": "The source includes s60/3rd_edition, but no full author release SIS. clogger-stub.SIS is a library ROM stub, not FShell. SDK/signing and capabilities depend on the commands and exact build.",
+  "backend_en": "No external service is required for the main function.",
+  "tls_en": "Modern TLS and server compatibility have not been tested.",
+  "signature_en": "Not inspected: no original installable distribution was obtained."
 }

@@ -14,7 +14,7 @@ def main():
     resource.setrlimit(resource.RLIMIT_AS, (768 * 1024**2, 768 * 1024**2))
     resource.setrlimit(resource.RLIMIT_FSIZE, (32 * 1024**2, 32 * 1024**2))
     repo, project = Path(sys.argv[1]), Path(sys.argv[2])
-    spec = json.loads((project / "project.json").read_text())
+    spec = json.loads((project / "project.json").read_text(encoding="utf-8"))
     sys.path[:0] = [str(repo / "tools"), str(repo / "tools/s60")]
     import build_assets as ba
     import gen_skin
@@ -25,7 +25,7 @@ def main():
     if len(sys.argv) > 3 and sys.argv[3] == "bitmap":
         import tempfile
 
-        task = json.loads((project / "bitmap-task.json").read_text())
+        task = json.loads((project / "bitmap-task.json").read_text(encoding="utf-8"))
         rows = task["bitmaps"]
         with tempfile.TemporaryDirectory(dir=project) as scratch:
             scratch = Path(scratch)
@@ -102,7 +102,7 @@ def main():
     for name, image in images.items():
         image.save(assets / (name + ".png"))
     src = Path(gen_skin.generate("light", str(work), screen=(width, height)))
-    with (src / "skin.txt").open("a") as source:
+    with (src / "skin.txt").open("a", encoding="utf-8") as source:
         for uid in spec.get("icons", {}):
             image = Image.open(project / ("icon-" + uid + ".png")).convert("RGBA")
             stem = "app_" + uid

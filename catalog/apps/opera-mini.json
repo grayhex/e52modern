@@ -45,5 +45,8 @@
   "target_profiles": [],
   "description_en": "Opera Mini Java ME proxy browser. Source card: an original Java distribution could not be obtained.",
   "delivery_reason_en": "The historical official Java endpoints returned HTTP 503 during review; the current site offers Android. No original JAR/JAD, version or hash is confirmed. Automatic delivery is disabled; use only a legally obtained original.",
-  "compatibility_basis_en": "The historical official Java endpoints returned HTTP 503 during review; the current site offers Android. No original JAR/JAD, version or hash is confirmed. Automatic delivery is disabled; use only a legally obtained original."
+  "compatibility_basis_en": "The historical official Java endpoints returned HTTP 503 during review; the current site offers Android. No original JAR/JAD, version or hash is confirmed. Automatic delivery is disabled; use only a legally obtained original.",
+  "backend_en": "External service availability has not been confirmed.",
+  "tls_en": "Modern TLS and server compatibility have not been tested.",
+  "signature_en": "Not inspected: no original installable distribution was obtained."
 }
