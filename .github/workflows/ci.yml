@@ -46,6 +46,8 @@ jobs:
       - run: pip install -e '.[dev]'
       - name: Build skc and bmconv from vendored sources
         run: tools/s60/build.sh
+      - name: P1 native theme/resource integration tests
+        run: pytest tests/test_p1_workspace.py -ra
       - name: Environment survey
         run: |
           mkdir -p build/reports
@@ -192,6 +194,14 @@ jobs:
           docker exec device-manager python tools/check_gammu_contract.py
           docker exec device-manager python tools/check_device_container.py
           docker run --rm --network none symport-device-manager:ci python tools/check_ringtone_container.py
+      - name: P1 persistent-container API and native compiler checks
+        run: python tools/check_p1_container.py --image symport-device-manager:ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p1-container-report
+          path: build/reports/p1-container.json
+          if-no-files-found: ignore
 
   phone-workspace-browser:
     runs-on: ubuntu-latest

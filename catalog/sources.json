@@ -450,5 +450,345 @@
         "publisher_sha256": null
       }
     ]
+  },
+  "opera-mini": {
+    "homepage": "https://www.opera.com/mobile/mini",
+    "artifacts": [],
+    "reviewed_at": "2026-11-04",
+    "distribution_status": "manual-source-only",
+    "reason": "Официальные Java-каналы mini.opera.com вернули HTTP 503; действующий сайт предлагает Android. Версия, JAR/JAD и SHA-256 не подтверждены. Автозагрузка отключена; используйте только легально полученный оригинал."
+  },
+  "fshell": {
+    "homepage": "https://github.com/d3ru/FShell",
+    "artifacts": [],
+    "reviewed_at": "2026-11-04",
+    "distribution_status": "manual-source-only",
+    "reason": "В исходниках есть профиль s60/3rd_edition, но полного авторского SIS-релиза нет. clogger-stub.SIS — ROM-заглушка библиотеки, не FShell. Сборка/подпись и нужные capabilities зависят от команд."
+  },
+  "qremotecontrol": {
+    "homepage": "https://github.com/machinekoder/QRemoteControl-Client",
+    "artifacts": [],
+    "reviewed_at": "2026-11-04",
+    "distribution_status": "manual-source-only",
+    "reason": "Оригинальный репозиторий содержит клиент, но не опубликованный SIS для E52/E72. Текущий Qt Quick/Qt 5 код не подтверждает совместимость S60 3rd FP2; нужны соответствующие Qt runtime и сервер QRemoteControl на ПК."
+  },
+  "internet-radio": {
+    "homepage": "https://github.com/fedor4ever/internet-radio",
+    "artifacts": [],
+    "reviewed_at": "2026-11-04",
+    "distribution_status": "manual-source-only",
+    "reason": "Доступны исходники native InternetRadio 2.0 и Qt-варианта. Единственный ir3_qtinternetradio_stub.sis — ROM-stub без приложения. Полный авторский установщик не найден; доступность каталога станций не подтверждена."
+  },
+  "rotate-it": {
+    "homepage": "https://github.com/vitalii17/RotateIt/releases/tag/v0.2.1",
+    "artifacts": [
+      {
+        "name": "Rotate_It.sis",
+        "url": "https://github.com/vitalii17/RotateIt/releases/download/v0.2.1/Rotate_It.sis",
+        "size": 855268,
+        "sha256": "b8dd8f0baf31b7ebaddbde6c62af216c85d8899a492ed9375cb50847b826ed79",
+        "publisher_sha256": null
+      }
+    ],
+    "reviewed_at": "2026-11-04",
+    "distribution_status": "original-inspected-incompatible",
+    "reason": "Оригинальный SIS требует Qt 4.7.4 и Qt Quick Components 1.1. Автор указывает Symbian 9.4/Anna/Belle. E52/E72 используют 9.3 и не входят в целевую платформу.",
+    "inspection": {
+      "package": {
+        "uid": 3818856382,
+        "uid_matches_header": true,
+        "names": [
+          "Rotate It!"
+        ],
+        "vendor_unique_name": "Vitalii Shunkov",
+        "vendor_names": [
+          "Vitalii Shunkov"
+        ],
+        "version": [
+          0,
+          2,
+          1
+        ]
+      },
+      "checksums": {
+        "controller_crc_ok": true,
+        "data_crc_ok": true,
+        "uid_checksum_ok": true
+      },
+      "dependencies": {
+        "declared": 4,
+        "uids_best_effort": [
+          537013869,
+          537079271,
+          536995356,
+          537085662
+        ],
+        "items": [
+          {
+            "kind": "target-device",
+            "uid": 537013869,
+            "names": [
+              "S60ProductID"
+            ],
+            "from_version": [
+              0,
+              0,
+              0
+            ],
+            "to_version": null
+          },
+          {
+            "kind": "target-device",
+            "uid": 537079271,
+            "names": [
+              "S60ProductID"
+            ],
+            "from_version": [
+              0,
+              0,
+              0
+            ],
+            "to_version": null
+          },
+          {
+            "kind": "dependency",
+            "uid": 536995356,
+            "names": [
+              "Qt"
+            ],
+            "from_version": [
+              4,
+              7,
+              4
+            ],
+            "to_version": null
+          },
+          {
+            "kind": "dependency",
+            "uid": 537085662,
+            "names": [
+              "Qt Quick components for Symbian"
+            ],
+            "from_version": [
+              1,
+              1,
+              0
+            ],
+            "to_version": null
+          }
+        ]
+      },
+      "signed": true,
+      "trust": "not-verified",
+      "execution": "not-tested"
+    }
+  },
+  "nano-counter": {
+    "homepage": "https://github.com/vitalii17/NanoCounter/releases/tag/v0.1.1",
+    "artifacts": [
+      {
+        "name": "NanoCounter.sis",
+        "url": "https://github.com/vitalii17/NanoCounter/releases/download/v0.1.1/NanoCounter.sis",
+        "size": 26416,
+        "sha256": "d429181e3aa58afc022b46baa62fb373b3e2b9496b7898dc27fd4f3bb3d3580e",
+        "publisher_sha256": null
+      }
+    ],
+    "reviewed_at": "2026-11-04",
+    "distribution_status": "original-inspected-incompatible",
+    "reason": "Автор указывает Symbian 9.4–Belle FP2. SIS требует Qt 4.7.3 и платформы touch/Symbian^3. Не совместимо с Symbian 9.3 на E52/E72. CRC controller/data отсутствуют в оригинале, SHA-256 закреплён.",
+    "inspection": {
+      "package": {
+        "uid": 3778560056,
+        "uid_matches_header": true,
+        "names": [
+          "Nano Counter"
+        ],
+        "vendor_unique_name": "Vitalii Shunkov",
+        "vendor_names": [
+          "Vitalii Shunkov"
+        ],
+        "version": [
+          0,
+          1,
+          1
+        ]
+      },
+      "checksums": {
+        "controller_crc_ok": null,
+        "data_crc_ok": null,
+        "uid_checksum_ok": true
+      },
+      "dependencies": {
+        "declared": 3,
+        "uids_best_effort": [
+          537013869,
+          271069535,
+          536995356
+        ],
+        "items": [
+          {
+            "kind": "target-device",
+            "uid": 537013869,
+            "names": [
+              "S60ProductID"
+            ],
+            "from_version": [
+              0,
+              0,
+              0
+            ],
+            "to_version": null
+          },
+          {
+            "kind": "target-device",
+            "uid": 271069535,
+            "names": [
+              "S60ProductID"
+            ],
+            "from_version": [
+              0,
+              0,
+              0
+            ],
+            "to_version": null
+          },
+          {
+            "kind": "dependency",
+            "uid": 536995356,
+            "names": [
+              "Qt"
+            ],
+            "from_version": [
+              4,
+              7,
+              3
+            ],
+            "to_version": null
+          }
+        ]
+      },
+      "signed": true,
+      "trust": "not-verified",
+      "execution": "not-tested"
+    }
+  },
+  "filelist": {
+    "homepage": "https://github.com/ltomuta/filelist",
+    "artifacts": [
+      {
+        "name": "FileListQML_v1_1-1.sis",
+        "url": "https://raw.githubusercontent.com/ltomuta/filelist/be3528abaf6bdc28593a2184bdb0ab7318289e59/bin/FileListQML_v1_1-1.sis",
+        "size": 33548,
+        "sha256": "26a9cb03c7a3f609ab5639e97fa6a1d32c9ce0d12725b6c98e6d5e971cc721a4",
+        "publisher_sha256": null
+      }
+    ],
+    "reviewed_at": "2026-11-04",
+    "distribution_status": "original-inspected-incompatible",
+    "reason": "Авторский SIS требует Qt 4.7.4, Qt Mobility 1.2 и Qt Quick Components. Target-device UID относятся к Symbian^3/Anna. Не предлагать как совместимое с E52/E72.",
+    "inspection": {
+      "package": {
+        "uid": 3862599604,
+        "uid_matches_header": true,
+        "names": [
+          "FileListQML"
+        ],
+        "vendor_unique_name": "Vendor",
+        "vendor_names": [
+          "Vendor"
+        ],
+        "version": [
+          1,
+          1,
+          0
+        ]
+      },
+      "checksums": {
+        "controller_crc_ok": true,
+        "data_crc_ok": true,
+        "uid_checksum_ok": true
+      },
+      "dependencies": {
+        "declared": 5,
+        "uids_best_effort": [
+          537013869,
+          537079271,
+          536995356,
+          537085662,
+          537046153
+        ],
+        "items": [
+          {
+            "kind": "target-device",
+            "uid": 537013869,
+            "names": [
+              "S60ProductID"
+            ],
+            "from_version": [
+              0,
+              0,
+              0
+            ],
+            "to_version": null
+          },
+          {
+            "kind": "target-device",
+            "uid": 537079271,
+            "names": [
+              "S60ProductID"
+            ],
+            "from_version": [
+              0,
+              0,
+              0
+            ],
+            "to_version": null
+          },
+          {
+            "kind": "dependency",
+            "uid": 536995356,
+            "names": [
+              "Qt"
+            ],
+            "from_version": [
+              4,
+              7,
+              4
+            ],
+            "to_version": null
+          },
+          {
+            "kind": "dependency",
+            "uid": 537085662,
+            "names": [
+              "Qt Quick components for Symbian"
+            ],
+            "from_version": [
+              1,
+              0,
+              0
+            ],
+            "to_version": null
+          },
+          {
+            "kind": "dependency",
+            "uid": 537046153,
+            "names": [
+              "QtMobility"
+            ],
+            "from_version": [
+              1,
+              2,
+              0
+            ],
+            "to_version": null
+          }
+        ]
+      },
+      "signed": true,
+      "trust": "not-verified",
+      "execution": "not-tested"
+    }
   }
 }

@@ -8,5 +8,11 @@ export const initialChoice = (): PackageChoice => {
     file: null,
   };
 };
-export const packageLink = (route: string, source: string, reference: string, kind = 'app') =>
-  `#${route}?${new URLSearchParams({ source, reference, kind })}`;
+export const packageLink = (
+  route: string,
+  source: string,
+  reference: string,
+  kind = 'app',
+  profile?: string,
+) =>
+  `#${route}?${new URLSearchParams({ source, reference, kind, ...(profile ? { profile } : {}) })}`;

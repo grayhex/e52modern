@@ -17,7 +17,7 @@ import { Field, Modal, JsonReport } from '../components/workspace';
 
 export default function Catalog() {
   const api = useApi(),
-    { t, device, setDevice } = usePreferences(),
+    { t, language, device, setDevice } = usePreferences(),
     cache = useQueryClient();
   const state = useQuery({
     queryKey: ['catalog'],
@@ -30,12 +30,13 @@ export default function Catalog() {
     [detail, setDetail] = useState<CatalogApp | null>(null),
     [path, setPath] = useState(''),
     [setName, setSetName] = useState(''),
-    [allProfiles, setAllProfiles] = useState(false);
+    [allProfiles, setAllProfiles] = useState(false),
+    [profile, setProfile] = useState('nokia-e52');
   const plan = useMutation({
     mutationFn: () =>
       api.request(
         '/api/catalog',
-        { action: 'plan', ids: [...selected], profile: 'nokia-e52' },
+        { action: 'plan', ids: [...selected], profile },
         catalogPlanSchema,
       ),
   });
@@ -44,15 +45,20 @@ export default function Catalog() {
       api.request('/api/catalog', body, objectSchema),
     onSuccess: async () => {
       await cache.invalidateQueries({ queryKey: ['catalog'] });
+      await cache.invalidateQueries({ queryKey: ['collections'] });
     },
   });
   const confirm = useConfirmedAction<{ action: string; job?: string; app?: string }>();
+  const localized = (app: CatalogApp, key: string) =>
+    text(app[language === 'en' && typeof app[key + '_en'] === 'string' ? key + '_en' : key]);
   const visible =
     state.data?.apps.filter(
       (a) =>
         (a.category !== 'high-risk' || filters.category === 'high-risk') &&
         (allProfiles || !['unsupported', 'unavailable'].includes(a.compatibility)) &&
-        `${a.name} ${a.description}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()) &&
+        `${a.name} ${a.description} ${text(a.description_en)}`
+          .toLocaleLowerCase()
+          .includes(search.toLocaleLowerCase()) &&
         Object.entries(filters).every(([k, v]) =>
           !v || k === 'collection' ? !v || a.collection.includes(v) : text(a[k]) === v,
         ),
@@ -73,10 +79,15 @@ export default function Catalog() {
         <div className="react-fields">
           <Field label={t('Target profile', 'Целевой профиль')}>
             <select
-              value={allProfiles ? 'all' : 'nokia-e52'}
-              onChange={(e) => setAllProfiles(e.target.value === 'all')}
+              value={allProfiles ? 'all' : profile}
+              onChange={(e) => {
+                setAllProfiles(e.target.value === 'all');
+                if (e.target.value !== 'all') setProfile(e.target.value);
+                plan.reset();
+              }}
             >
-              <option value="nokia-e52">Nokia E52 / S60 3rd FP2</option>
+              <option value="nokia-e52">Nokia E52 · 240×320 / S60 3rd FP2</option>
+              <option value="nokia-e72">Nokia E72 · 320×240 / S60 3rd FP2</option>
               <option value="all">
                 {t('All compatibility states', 'Все статусы совместимости')}
               </option>
@@ -179,7 +190,7 @@ export default function Catalog() {
             </div>
             <span className="eyebrow">{app.category}</span>
             <h3>{app.name}</h3>
-            <p className="catalog-description">{app.description}</p>
+            <p className="catalog-description">{localized(app, 'description')}</p>
             <p>
               {app.version} · {app.format} · {app.network}
             </p>
@@ -194,6 +205,8 @@ export default function Catalog() {
                   'dev/lab',
                   app.delivery === 'automatic' ? 'catalog' : 'upload',
                   app.id,
+                  'app',
+                  profile,
                 )}
               >
                 {t('Test in emulator', 'Проверить в эмуляторе')}
@@ -204,17 +217,19 @@ export default function Catalog() {
                   'tools/certificates',
                   app.delivery === 'automatic' ? 'catalog' : 'upload',
                   app.id,
+                  'app',
+                  profile,
                 )}
               >
                 {t('Inspect', 'Анализ')}
               </a>
               {app.delivery === 'manual' && app.manual_url?.startsWith('https://') && (
                 <a className="text-link" href={app.manual_url} target="_blank" rel="noreferrer">
-                  {t('Download manually', 'Скачать вручную')} ↗
+                  {t('Author source', 'Источник автора')} ↗
                 </a>
               )}
             </div>
-            {app.delivery_reason && <p className="note">{app.delivery_reason}</p>}
+            {app.delivery_reason && <p className="note">{localized(app, 'delivery_reason')}</p>}
             {app.delivery === 'manual' && (
               <a className="text-link" href="#apps/installed">
                 {t('Transfer your package', 'Передать свой пакет')} →
@@ -232,17 +247,9 @@ export default function Catalog() {
             .join(' · ')}
         </p>
         <div className="form-row">
-          <Field label={t('Saved sets', 'Сохранённые наборы')}>
-            <select
-              defaultValue=""
-              onChange={(e) => change(new Set(state.data?.sets[e.target.value] ?? []))}
-            >
-              <option value="">{t('Choose set', 'Выберите набор')}</option>
-              {Object.keys(state.data?.sets ?? {}).map((n) => (
-                <option key={n}>{n}</option>
-              ))}
-            </select>
-          </Field>
+          <a className="btn ghost" href="#apps/kits">
+            {t('Manage collections & recovery', 'Наборы и восстановление')} →
+          </a>
           <Field label={t('Set name', 'Название набора')}>
             <input value={setName} onChange={(e) => setSetName(e.target.value)} />
           </Field>
@@ -250,7 +257,12 @@ export default function Catalog() {
             className="btn secondary"
             disabled={!setName || !selected.size}
             onClick={() =>
-              operation.mutate({ action: 'save-set', name: setName, ids: [...selected] })
+              operation.mutate({
+                action: 'collection-save',
+                name: setName,
+                profile,
+                ids: [...selected],
+              })
             }
           >
             {t('Save locally', 'Сохранить локально')}
@@ -267,7 +279,7 @@ export default function Catalog() {
           <button
             className="btn primary"
             disabled={!!blocked}
-            onClick={() => operation.mutate({ action: 'download', ids: [...selected] })}
+            onClick={() => operation.mutate({ action: 'download', ids: [...selected], profile })}
           >
             {t('Download set', 'Загрузить набор')}
           </button>
@@ -387,11 +399,18 @@ export default function Catalog() {
         ))}
       </Card>
       {confirm.dialog(async (value) => {
-        await operation.mutateAsync({ ...value, ids: [...selected], device, path, confirm: true });
+        await operation.mutateAsync({
+          ...value,
+          ids: [...selected],
+          profile,
+          device,
+          path,
+          confirm: true,
+        });
       })}
       {detail && (
         <Modal title={detail.name} onClose={() => setDetail(null)}>
-          <p>{detail.description}</p>
+          <p>{localized(detail, 'description')}</p>
           <dl className="device-details">
             {[
               'version',
@@ -408,7 +427,7 @@ export default function Catalog() {
             ].map((k) => (
               <div key={k}>
                 <dt>{k}</dt>
-                <dd>{text(detail[k])}</dd>
+                <dd>{localized(detail, k)}</dd>
               </div>
             ))}
           </dl>

@@ -149,7 +149,7 @@ export const groups: NavGroup[] = [
         icon: PenTool,
         en: 'Theme editor',
         ru: 'Редактор тем',
-        status: 'planned',
+        status: 'ready',
       },
       {
         id: 'personalize/wallpapers',

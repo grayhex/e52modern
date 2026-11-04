@@ -103,7 +103,10 @@ describe('sidebar', () => {
   it('shows a "soon" badge for planned pages only', () => {
     shell(sidebar({ openGroups: ['personalize'] }));
     const editor = screen.getByRole('link', { name: /Редактор тем/ });
-    expect(within(editor).getByText('Скоро')).toBeInTheDocument();
+    expect(within(editor).queryByText('Скоро')).toBeNull();
+    expect(
+      within(screen.getByRole('link', { name: /Обои/ })).getByText('Скоро'),
+    ).toBeInTheDocument();
     expect(
       within(screen.getByRole('link', { name: /Мастер рингтонов/ })).queryByText('Скоро'),
     ).toBeNull();

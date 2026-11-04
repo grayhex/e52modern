@@ -178,7 +178,11 @@ class Workbench:
         from symport.audio.studio import RingtoneStudio
         self.ringtones = RingtoneStudio(repo, self.devices, self.media)
         self.catalog = AppCatalog(repo, self.devices)
+        from symport.phone.diagnostics import DeviceDiagnostics
+        self.diagnostics = DeviceDiagnostics(repo, self.devices)
         self.library = ThemeLibrary(repo)
+        from symport.theme.studio import ThemeStudio
+        self.theme_studio = ThemeStudio(repo)
         self.lab = EmulatorLab(repo, self.resolve_lab_package, self.devices)
         from symport.firmware import FirmwareExplorer
         self.firmware = FirmwareExplorer(repo / 'build/symport/firmware')
@@ -192,6 +196,8 @@ class Workbench:
 
     def resolve_lab_package(self, data):
         source, key = data.get('source'), data.get('reference')
+        if source == 'theme-studio':
+            return self.theme_studio.file(key)
         if source == 'lab':
             report = self.lab.report(key)
             if not report.get('package'):
@@ -758,12 +764,16 @@ def make_handler(state: Workbench):
                 length = int(self.headers.get("Content-Length", "0"))
             except ValueError:
                 return self._json({"error": "Invalid length"}, 400)
-            if length <= 0 or length > ((64 * 1024 * 1024 * 4 // 3 + 4096) if self.path in ("/api/manager", "/api/bridge", "/api/lab", "/api/inspector", "/api/jailbreak") else (LIMIT * 4 // 3 + 4096 if self.path in ("/api/library", "/api/contacts") else 512_000 if self.path == "/api/media/export" else 12_000)):
+            if length <= 0 or length > ((64 * 1024 * 1024 * 4 // 3 + 4096) if self.path in ("/api/manager", "/api/bridge", "/api/lab", "/api/inspector", "/api/jailbreak") else (LIMIT * 4 // 3 + 4096 if self.path in ("/api/library", "/api/contacts", "/api/theme-studio") else 512_000 if self.path in ("/api/media/export", "/api/catalog") else 12_000)):
                 return self._json({"error": "Invalid body size"}, 413)
             try:
                 body = json.loads(self.rfile.read(length))
                 if not isinstance(body, dict):
                     raise ValueError("Expected JSON object")
+                if self.path == '/api/theme-studio':
+                    return self._json(state.theme_studio.execute(body))
+                if self.path == '/api/diagnostics':
+                    return self._json(state.diagnostics.execute(body))
                 if self.path == '/api/ringtone':
                     return self._json(state.ringtones.execute(body))
                 if self.path == '/api/connection':

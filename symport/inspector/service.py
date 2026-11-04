@@ -140,7 +140,8 @@ class Inspector:
         if not isinstance(target, dict):
             raise ValueError('Target must be an object')
         target = {k: str(target.get(k, ''))[:120] for k in ('model', 'rm', 'firmware', 'os')}
-        is_e52 = bool(re.search(r'\bE52\b', target['model'], re.I))
+        models = set(re.findall(r'\bE(52|72)\b', target['model'], re.I))
+        model_id = 'nokia-e' + next(iter(models)) if len(models) == 1 else None
         report = {'schema': 'symport.inspector/1', 'id': secrets.token_hex(16), 'name': name,
                   'sha256': hashlib.sha256(raw).hexdigest(), 'size': len(raw), 'package': info['package'],
                   'kind': 'theme' if hint == 'theme' or data.get('kind') == 'theme' else 'app',
@@ -164,12 +165,12 @@ class Inspector:
                     report['capabilities'] += binary.get('capabilities') or []
                     if binary.get('restricted_capabilities'):
                         issues.append('restricted-capabilities')
-                    if binary['kernel'] != 'eka2' or (is_e52 and binary['cpu'] not in ('armv4', 'armv5')):
+                    if binary['kernel'] != 'eka2' or (model_id and binary['cpu'] not in ('armv4', 'armv5')):
                         issues.append('unsupported-os')
         except ValueError as exc:
             report['limitations'].append(str(exc))
         if target['os'] and target['os'] != '9.3':
-            report['limitations'].append('Only the Nokia E52 Symbian 9.3 static target is evaluated by this screen.')
+            report['limitations'].append('Only Nokia E52/E72 Symbian 9.3 static targets are evaluated by this screen.')
         from symport.analysis.compat import FirmwareProfile, evaluate
         from symport.devices.profiles import load_profile
         from symport.report import Report
@@ -178,7 +179,7 @@ class Inspector:
         if provided is not None:
             if not isinstance(provided, dict) or len(str(provided)) > 1024*1024 or provided.get('schema') != 1:
                 raise ValueError('Invalid firmware profile')
-            if provided.get('device') != 'nokia-e52' or provided.get('firmware_version') != target['firmware'] or not re.search(r'\bE52\b', target['model'], re.I):
+            if not model_id or provided.get('device') != model_id or provided.get('firmware_version') != target['firmware']:
                 raise ValueError('Firmware profile must match the selected model and exact firmware version')
             dlls = provided.get('dlls')
             if not isinstance(dlls, dict) or len(dlls) > 10000:
@@ -187,15 +188,15 @@ class Inspector:
                 ordinals = value.get('ordinals') if isinstance(value, dict) else None
                 if len(name) > 160 or (ordinals is not None and (not isinstance(ordinals, list) or len(ordinals) > 4096 or any(type(o) is not int or not 0 <= o <= 65535 for o in ordinals))):
                     raise ValueError('Invalid DLL ordinal inventory')
-            firmware = FirmwareProfile(str(provided.get('id', 'user-profile')), 'nokia-e52', target['firmware'], str(provided.get('source', 'user-supplied')),
+            firmware = FirmwareProfile(str(provided.get('id', 'user-profile')), model_id, target['firmware'], str(provided.get('source', 'user-supplied')),
                                        {k.lower(): set(v['ordinals']) if isinstance(v, dict) and isinstance(v.get('ordinals'), list) else None for k,v in dlls.items()})
             report['firmware_profile'] = {'id': firmware.id, 'source': firmware.source, 'evidence': 'user-supplied; not device-attested'}
-        if not is_e52:
-            report['limitations'].append('Model profile unknown; Nokia E52 compatibility is not inferred for another model.')
-        profile = load_profile(Path(__file__).resolve().parents[2] / 'profiles/nokia-e52.toml')
+        if not model_id:
+            report['limitations'].append('Model profile unknown; E52/E72 compatibility is not inferred for another model.')
+        profile = load_profile(Path(__file__).resolve().parents[2] / ('profiles/' + (model_id or 'nokia-e52') + '.toml'))
         for binary in report['binaries']:
             checks = Report('inspector static compatibility')
-            binary['compatibility'] = evaluate(binary, profile, firmware, checks) if is_e52 else 'unknown'
+            binary['compatibility'] = evaluate(binary, profile, firmware, checks) if model_id else 'unknown'
             binary['checks'] = checks.to_dict()['checks']
         from symport.deps import analyze_package
         dlls, dll_source = self._firmware_dlls(data)
