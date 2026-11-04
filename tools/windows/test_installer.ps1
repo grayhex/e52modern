@@ -9,7 +9,9 @@ $uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{8F3C
 New-Item -ItemType Directory -Force $root | Out-Null
 
 function Run([string]$exe, [string[]]$arguments) {
-    $p = Start-Process -FilePath $exe -ArgumentList $arguments -Wait -PassThru
+    # Not -Wait: that also waits for the Bridge the installer starts after a silent update.
+    $p = Start-Process -FilePath $exe -ArgumentList $arguments -PassThru
+    if (-not $p.WaitForExit(240000)) { $p.Kill(); throw "$exe did not finish within 4 minutes" }
     if ($p.ExitCode -ne 0) { throw "$exe exited with $($p.ExitCode)" }
 }
 function Assert([bool]$condition, [string]$message) { if (-not $condition) { throw "FAILED: $message" } }
