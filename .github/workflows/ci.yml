@@ -106,7 +106,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate Docker Compose configuration
-        run: docker compose config -q
+        run: |
+          docker compose config -q
+          docker compose -f compose.deploy.yaml config -q
+          SYMPORT_HTTP_PORT=8778 docker compose -f compose.deploy.yaml config -q
       - name: Build Docker workbench image
         run: docker build -t e52modern-workbench:ci .
       - name: Launch workbench and check HTTP API

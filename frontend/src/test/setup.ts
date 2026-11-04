@@ -23,3 +23,9 @@ if (!Blob.prototype.arrayBuffer)
       reader.readAsArrayBuffer(this);
     });
   };
+if (!('ResizeObserver' in globalThis))
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };

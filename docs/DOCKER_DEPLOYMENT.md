@@ -1,5 +1,8 @@
 # Docker installation and daily workflow
 
+> **Без клонирования репозитория** (Portainer, UGREEN, NAS): [DEPLOY_PORTAINER.md](DEPLOY_PORTAINER.md) —
+> `compose.deploy.yaml` с готовым образом `ghcr.io/grayhex/s60modern`.
+
 ## Quick installation
 
 Requirements: Docker Engine/Desktop with Linux containers and Compose v2. Emulator Lab

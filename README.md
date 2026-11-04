@@ -8,6 +8,10 @@
 
 ## Запуск в Docker
 
+Готовый образ `ghcr.io/grayhex/s60modern` и установка **одним Compose-файлом** (Portainer, UGREEN, без клонирования):
+[docs/DEPLOY_PORTAINER.md](docs/DEPLOY_PORTAINER.md).
+
+
 Нужны Docker Engine / Docker Desktop с Linux-контейнерами и Compose v2.
 
 ```bash
@@ -81,6 +85,7 @@ USB-драйверы Nokia устанавливаются отдельно.
 [Зависимости](docs/screenshots/nokia-dependencies.png) ·
 [Компактное меню и заготовка](docs/screenshots/nokia-planned-compact.png) ·
 [Тёмная тема](docs/screenshots/nokia-overview-dark.png) ·
+[E52](docs/screenshots/nokia-overview-e52.png) · [E72](docs/screenshots/nokia-overview-e72.png) ·
 [Телефон](docs/screenshots/nokia-overview-mobile.png) ·
 [E72](docs/screenshots/e72-dashboard-dark.png)
 

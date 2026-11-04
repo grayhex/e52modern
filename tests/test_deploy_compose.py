@@ -1,0 +1,50 @@
+"""compose.deploy.yaml must work from one pasted file: published image, no build, no repo-relative paths."""
+from __future__ import annotations
+
+import re
+from pathlib import Path
+
+import pytest
+
+yaml = pytest.importorskip("yaml")
+ROOT = Path(__file__).resolve().parents[1]
+deploy = yaml.safe_load((ROOT / "compose.deploy.yaml").read_text(encoding="utf-8"))
+local = yaml.safe_load((ROOT / "compose.yaml").read_text(encoding="utf-8"))
+workflow = yaml.safe_load((ROOT / ".github/workflows/publish-image.yml").read_text(encoding="utf-8"))
+
+
+def test_single_file_uses_the_published_image_and_never_builds():
+    service = deploy["services"]["workbench"]
+    assert "build" not in service and "build" not in str(deploy["services"]["mgo-symbian"])
+    assert service["image"].startswith("${SYMPORT_IMAGE:-ghcr.io/grayhex/s60modern:")
+    text = (ROOT / "compose.deploy.yaml").read_text(encoding="utf-8")
+    assert "env_file" not in text and not re.search(r"""(^|[\s"':])\.{1,2}/""", text, re.M)
+    assert not any(isinstance(v, dict) and v.get("type") == "bind" for v in service["volumes"])
+
+
+def test_deployment_keeps_the_security_posture_of_the_local_compose():
+    service, base = deploy["services"]["workbench"], local["services"]["workbench"]
+    for key in ("cap_drop", "security_opt", "pids_limit", "init", "healthcheck", "command"):
+        assert service[key] == base[key], key
+    assert service["ports"][0].startswith("${SYMPORT_BIND:-127.0.0.1}:"), "must stay loopback-bound by default"
+    assert set(service["environment"]) == set(base["environment"])
+    assert deploy["networks"]["emulator"]["internal"] is True
+    assert deploy["services"]["mgo-symbian"]["profiles"] == ["emulator"]
+    assert deploy["services"]["mgo-symbian"]["image"] == local["services"]["mgo-symbian"]["image"]
+
+
+def test_publish_workflow_gates_every_architecture_on_a_smoke_test():
+    job = workflow["jobs"]["build"]
+    steps = [s.get("name", "") for s in job["steps"]]
+    smoke = next(i for i, n in enumerate(steps) if n.startswith("Smoke test"))
+    push = next(i for i, n in enumerate(steps) if n.startswith("Push by digest"))
+    assert smoke < push, "an image is pushed only after its smoke test passed"
+    platforms = {m["platform"]: m["required"] for m in job["strategy"]["matrix"]["include"]}
+    assert platforms == {"linux/amd64": True, "linux/arm64": False}
+    assert job["strategy"]["fail-fast"] is False
+    manifest = workflow["jobs"]["manifest"]
+    assert manifest["needs"] == "build" and "needs.build.result == 'success'" in manifest["if"]
+    tags = next(s for s in manifest["steps"] if s.get("id") == "meta")["with"]["tags"]
+    assert "value=latest,enable={{is_default_branch}}" in tags and "type=semver,pattern={{version}}" in tags
+    assert workflow["permissions"] == {"contents": "read"} and job["permissions"]["packages"] == "write"
+    assert workflow[True]["push"]["tags"] == ["v*.*.*"]

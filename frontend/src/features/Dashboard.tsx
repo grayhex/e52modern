@@ -63,6 +63,7 @@ export default function Dashboard() {
 function Overview() {
   const palette = useTheme().palette;
   const usedColor = palette.primary.main;
+  const emptyColor = palette.mode === 'dark' ? '#3a4c60' : '#e2e7ed';
   const freeColor = palette.mode === 'dark' ? '#547bb1' : '#a7bedd';
   const api = useApi();
   const { device, language, t } = usePreferences();
@@ -80,7 +81,10 @@ function Overview() {
     refetchInterval: 30000,
   });
   const operations = journal.data?.operations ?? [];
-  const space = storage(selected);
+  // Same view for every model: storage comes from the selected connection, else from any connected
+  // volume that reports counters (a phone identified over Gammu and its memory card are separate connections).
+  const volume = [selected, ...(devices.data?.devices ?? [])].find((d) => storage(d));
+  const space = storage(volume);
   const backups = (workspace.data?.backups ?? []).filter((b) => typeof b.created === 'string');
   const lastBackup = backups
     .map((b) => String(b.created))
@@ -155,13 +159,10 @@ function Overview() {
       progress: null,
       note: lastBackup
         ? `${backups.length} ${t('stored on the server', 'хранится на сервере')}`
-        : null,
+        : t('No full backup yet', 'Полной копии ещё нет'),
     },
   ];
-  const metrics = candidates.filter((c) => c.value !== null);
-  const unreported = candidates
-    .filter((c) => c.value === null && c.key !== 'backup')
-    .map((c) => c.label.toLowerCase());
+  const metrics = candidates;
   const updated = devices.dataUpdatedAt
     ? new Date(devices.dataUpdatedAt).toLocaleTimeString(locale, {
         hour: '2-digit',
@@ -274,11 +275,14 @@ function Overview() {
                 )}
               </Stack>
               <Typography variant="h2" component="h2" sx={{ fontSize: 30, fontWeight: 700, m: 0 }}>
-                {selected?.model ?? selected?.name ?? t('Symbian phone', 'Телефон Symbian')}
+                {profile?.name ??
+                  selected?.model ??
+                  selected?.name ??
+                  t('Symbian phone', 'Телефон Symbian')}
               </Typography>
               <Typography color="text.secondary">
                 {profile
-                  ? `${profile.symbian} · S60 ${profile.s60} · ${profile.screen.width}×${profile.screen.height}`
+                  ? `Symbian ${profile.symbian} · S60 ${profile.s60} · ${profile.screen.width}×${profile.screen.height} (${profile.screen.orientation === 'landscape' ? t('landscape', 'альбомная') : t('portrait', 'книжная')})`
                   : t(
                       'Model profile is not available for this connection.',
                       'Профиль модели для этого подключения недоступен.',
@@ -364,19 +368,12 @@ function Overview() {
       </Card>
 
       <Box
-        sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))' }}
+        sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))' }}
       >
         {metrics.map((m) => (
           <Metric {...m} key={m.key} />
         ))}
       </Box>
-      {unreported.length > 0 && (
-        <Typography variant="caption" color="text.secondary">
-          {t('Not reported by this transport: ', 'Не сообщается этим транспортом: ')}
-          {unreported.join(', ')}.
-        </Typography>
-      )}
-
       <Box
         sx={{
           display: 'grid',
@@ -388,73 +385,79 @@ function Overview() {
           title={t('Storage', 'Хранилище')}
           subtitle={space ? `${t('Total', 'Всего')}: ${formatBytes(space.total)}` : undefined}
         >
-          {space ? (
-            <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" spacing={2}>
-              <PieChart
-                width={190}
-                height={190}
-                hideLegend
-                margin={{ top: 4, bottom: 4, left: 4, right: 4 }}
-                series={[
-                  {
-                    innerRadius: 62,
-                    outerRadius: 90,
-                    paddingAngle: 2,
-                    cornerRadius: 3,
-                    data: [
-                      {
-                        id: 'used',
-                        value: space.used,
-                        label: t('Used', 'Занято'),
-                        color: usedColor,
-                      },
-                      {
-                        id: 'free',
-                        value: space.free,
-                        label: t('Free', 'Свободно'),
-                        color: freeColor,
-                      },
-                    ],
-                    valueFormatter: (item) => formatBytes(item.value),
-                  },
-                ]}
-              />
-              <Stack spacing={1.5}>
-                <Legend
-                  color={usedColor}
-                  label={t('Used', 'Занято')}
-                  value={`${formatBytes(space.used)} (${space.usedPercent}%)`}
-                />
-                <Legend
-                  color={freeColor}
-                  label={t('Free', 'Свободно')}
-                  value={`${formatBytes(space.free)} (${100 - space.usedPercent}%)`}
-                />
-                <Typography variant="caption" color="text.secondary">
-                  {t(
-                    'Counters of the mounted volume; they say nothing about phone memory or other cards.',
-                    'Счётчики подключённого тома; о памяти телефона и других картах они ничего не говорят.',
-                  )}
-                </Typography>
-              </Stack>
-            </Stack>
-          ) : (
-            <NoData
-              text={t(
-                'This connection does not report storage counters.',
-                'Это подключение не сообщает счётчики накопителя.',
-              )}
+          <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" spacing={2}>
+            <PieChart
+              width={190}
+              height={190}
+              hideLegend
+              margin={{ top: 4, bottom: 4, left: 4, right: 4 }}
+              series={[
+                {
+                  innerRadius: 62,
+                  outerRadius: 90,
+                  paddingAngle: space ? 2 : 0,
+                  cornerRadius: 3,
+                  data: space
+                    ? [
+                        {
+                          id: 'used',
+                          value: space.used,
+                          label: t('Used', 'Занято'),
+                          color: usedColor,
+                        },
+                        {
+                          id: 'free',
+                          value: space.free,
+                          label: t('Free', 'Свободно'),
+                          color: freeColor,
+                        },
+                      ]
+                    : [
+                        {
+                          id: 'none',
+                          value: 1,
+                          label: t('No data', 'Нет данных'),
+                          color: emptyColor,
+                        },
+                      ],
+                  valueFormatter: (item) => (space ? formatBytes(item.value) : '—'),
+                },
+              ]}
             />
-          )}
+            <Stack spacing={1.5}>
+              <Legend
+                color={usedColor}
+                label={t('Used', 'Занято')}
+                value={space ? `${formatBytes(space.used)} (${space.usedPercent}%)` : '—'}
+              />
+              <Legend
+                color={freeColor}
+                label={t('Free', 'Свободно')}
+                value={space ? `${formatBytes(space.free)} (${100 - space.usedPercent}%)` : '—'}
+              />
+              <Typography variant="caption" color="text.secondary">
+                {space
+                  ? t(
+                      'Counters of the mounted volume; they say nothing about phone memory or other cards.',
+                      'Счётчики подключённого тома; о памяти телефона и других картах они ничего не говорят.',
+                    )
+                  : t(
+                      'No connected volume reports storage counters.',
+                      'Ни один подключённый том не сообщает счётчики накопителя.',
+                    )}
+              </Typography>
+            </Stack>
+          </Stack>
         </Panel>
         <Panel
           title={t('SymPort operations, 7 days', 'Операции SymPort за 7 дней')}
           subtitle={`${operations.length} ${t('in the log', 'в журнале')}`}
         >
-          {operations.length ? (
-            <DayChart operations={operations} />
-          ) : (
-            <NoData text={t('No operations recorded yet.', 'Операций пока не записано.')} />
+          <DayChart operations={operations} />
+          {!operations.length && (
+            <Typography variant="caption" color="text.secondary">
+              {t('No operations recorded yet.', 'Операций пока не записано.')}
+            </Typography>
           )}
         </Panel>
       </Box>
@@ -732,9 +735,7 @@ function Metric({
               {label}
             </Typography>
             <Typography variant="h6" component="div" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-              {value ?? (
-                <span className="value-state--unknown">ⓘ {t('No data', 'Нет данных')}</span>
-              )}
+              {value ?? <span aria-label={t('No data', 'Нет данных')}>—</span>}
             </Typography>
           </Box>
         </Stack>
@@ -746,9 +747,12 @@ function Metric({
             aria-label={label}
           />
         )}
-        {note && (
+        {(note ??
+          (value === null
+            ? t('Not reported by this transport', 'Не сообщается транспортом')
+            : null)) && (
           <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 0.75 }}>
-            {note}
+            {note ?? t('Not reported by this transport', 'Не сообщается транспортом')}
           </Typography>
         )}
       </CardContent>
@@ -862,7 +866,14 @@ function DayChart({
           label: t('Day of month', 'День месяца'),
         },
       ]}
-      yAxis={[{ tickMinStep: 1 }]}
+      yAxis={[
+        {
+          tickMinStep: 1,
+          min: 0,
+          max: Math.max(1, ...days.map((d) => d.ok + d.other)),
+          valueFormatter: (v: number) => String(Math.round(v)),
+        },
+      ]}
       series={[
         {
           data: days.map((d) => d.ok),

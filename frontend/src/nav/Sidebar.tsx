@@ -267,7 +267,7 @@ function PhoneCard({ railed, tip }: { railed: boolean; tip: TipFactory }) {
     connected: t('Connected', 'Подключено'),
     disconnected: t('Disconnected', 'Отключено'),
   } as const;
-  const model = selected?.model ?? selected?.name ?? null;
+  const model = selected?.model_profile?.name ?? selected?.model ?? selected?.name ?? null;
   const title =
     model ??
     (state === 'connected'
