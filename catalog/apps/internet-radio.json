@@ -1,0 +1,49 @@
+{
+  "id": "internet-radio",
+  "name": "Internet Radio",
+  "category": "multimedia",
+  "developer": "Nokia / Symbian Foundation",
+  "description": "Исходники интернет-радио Nokia. ROM-stub не предлагается для установки.",
+  "version": "Native 1.1.0 source / Qt source",
+  "release_date": null,
+  "release_tag": null,
+  "source_commit": "61e1763b623915f1acf5064a8ab8a9d2ad5bc59e",
+  "platforms": [
+    "Native Symbian / Qt variants; exact distribution unknown"
+  ],
+  "format": "sis",
+  "homepage": "https://github.com/fedor4ever/internet-radio",
+  "license": "EPL-1.0 (Nokia source headers)",
+  "redistribution": "author-source-only",
+  "delivery": "manual",
+  "manual_url": "https://github.com/fedor4ever/internet-radio",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Внешние сервисы для основной функции не требуются.",
+  "tls": "Современные TLS/серверы не проверены.",
+  "signature": "Не проверена: оригинальный установочный дистрибутив не получен.",
+  "compatibility": "unavailable",
+  "e52_evidence": null,
+  "compatibility_basis": "Доступны исходники native InternetRadio 2.0 и Qt-варианта. Единственный ir3_qtinternetradio_stub.sis — ROM-stub без приложения. Полный авторский установщик не найден; доступность каталога станций не подтверждена.",
+  "sources": [
+    "https://github.com/fedor4ever/internet-radio",
+    "https://github.com/hstsethi/awesome-symbian/blob/ed79fd54fc5c46640faf65adac39d70f3cdf0a1b/readme.md"
+  ],
+  "checked_at": "2026-11-04",
+  "source_id": "internet-radio",
+  "limitations": [
+    "Доступны исходники native InternetRadio 2.0 и Qt-варианта. Единственный ir3_qtinternetradio_stub.sis — ROM-stub без приложения. Полный авторский установщик не найден; доступность каталога станций не подтверждена.",
+    "Работа на физической E52/E72 не проверена."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": "Доступны исходники native InternetRadio 2.0 и Qt-варианта. Единственный ir3_qtinternetradio_stub.sis — ROM-stub без приложения. Полный авторский установщик не найден; доступность каталога станций не подтверждена.",
+  "requirements": [
+    "Полный оригинальный SIS, соответствующие мультимедийные DLL/плагины и доступный поток станции."
+  ],
+  "target_profiles": [],
+  "description_en": "Nokia Internet Radio sources. A ROM stub is not offered as an installable player.",
+  "delivery_reason_en": "Native InternetRadio 2.0 and Qt sources are available. ir3_qtinternetradio_stub.sis contains ROM-stub metadata, not the player. No full author installer or live station-directory service was confirmed.",
+  "compatibility_basis_en": "Native InternetRadio 2.0 and Qt sources are available. ir3_qtinternetradio_stub.sis contains ROM-stub metadata, not the player. No full author installer or live station-directory service was confirmed."
+}

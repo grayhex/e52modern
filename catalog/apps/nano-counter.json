@@ -1,0 +1,49 @@
+{
+  "id": "nano-counter",
+  "name": "NanoCounter",
+  "category": "system",
+  "developer": "Vitalii Shunkov",
+  "description": "Счётчик нажатий для сенсорных Symbian. Не подходит для E52/E72.",
+  "version": "0.1.1",
+  "release_date": null,
+  "release_tag": null,
+  "source_commit": "c6270562e771d8e7bc956164fda321be21ae3933",
+  "platforms": [
+    "Symbian 9.4–Belle FP2"
+  ],
+  "format": "sis",
+  "homepage": "https://github.com/vitalii17/NanoCounter/releases/tag/v0.1.1",
+  "license": "MIT source",
+  "redistribution": "author-source-only",
+  "delivery": "manual",
+  "manual_url": "https://github.com/vitalii17/NanoCounter/releases/tag/v0.1.1",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Внешние сервисы для основной функции не требуются.",
+  "tls": "Современные TLS/серверы не проверены.",
+  "signature": "Структура SIS проверена; наличие подписи не устанавливает доверие телефона. См. Certificate Inspector.",
+  "compatibility": "unsupported",
+  "e52_evidence": null,
+  "compatibility_basis": "Автор указывает Symbian 9.4–Belle FP2. SIS требует Qt 4.7.3 и платформы touch/Symbian^3. Не совместимо с Symbian 9.3 на E52/E72. CRC controller/data отсутствуют в оригинале, SHA-256 закреплён.",
+  "sources": [
+    "https://github.com/vitalii17/NanoCounter/releases/tag/v0.1.1",
+    "https://github.com/hstsethi/awesome-symbian/blob/ed79fd54fc5c46640faf65adac39d70f3cdf0a1b/readme.md"
+  ],
+  "checked_at": "2026-11-04",
+  "source_id": "nano-counter",
+  "limitations": [
+    "Автор указывает Symbian 9.4–Belle FP2. SIS требует Qt 4.7.3 и платформы touch/Symbian^3. Не совместимо с Symbian 9.3 на E52/E72. CRC controller/data отсутствуют в оригинале, SHA-256 закреплён.",
+    "Работа на физической E52/E72 не проверена."
+  ],
+  "collection": [
+    "tools"
+  ],
+  "delivery_reason": "Автор указывает Symbian 9.4–Belle FP2. SIS требует Qt 4.7.3 и платформы touch/Symbian^3. Не совместимо с Symbian 9.3 на E52/E72. CRC controller/data отсутствуют в оригинале, SHA-256 закреплён.",
+  "requirements": [
+    "Qt 4.7.3; сенсорная платформа, не S60 3rd FP2."
+  ],
+  "target_profiles": [],
+  "description_en": "Tap counter for touch Symbian devices. Unsupported on Nokia E52/E72.",
+  "delivery_reason_en": "The author targets 9.4–Belle FP2. The SIS requires Qt 4.7.3 and touch/Symbian^3 product IDs. It is not for E52/E72 on 9.3. Original controller/data CRC fields are absent; the measured SHA-256 is pinned.",
+  "compatibility_basis_en": "The author targets 9.4–Belle FP2. The SIS requires Qt 4.7.3 and touch/Symbian^3 product IDs. It is not for E52/E72 on 9.3. Original controller/data CRC fields are absent; the measured SHA-256 is pinned."
+}

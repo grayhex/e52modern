@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { encode } from '../utils/files';
 import { initialChoice } from '../utils/packages';
 import { useApi, usePreferences } from '../state/app';
 import { bundleSchema } from '../api/deps';
-import { catalogSchema } from '../api/catalog';
+import Collections from './Collections';
 import { payload } from '../api/workspace';
 import { Card, ErrorMessage } from '../components/ui';
 import { PackagePicker } from '../components/PackagePicker';
 import { RuntimeFiles, TargetFields } from '../components/RuntimeInputs';
-import { defaultTarget } from '../components/targets';
+import { initialTarget } from '../components/targets';
 import { Download } from '../components/workspace';
 import { StatusBadge } from '../components/DependencyReport';
 
@@ -18,14 +18,10 @@ export default function Kits() {
   const api = useApi();
   const { t } = usePreferences();
   const [choice, setChoice] = useState(initialChoice);
-  const [target, setTarget] = useState(defaultTarget);
+  const [target, setTarget] = useState(initialTarget);
   const [firmwareId, setFirmwareId] = useState('');
   const [runtimes, setRuntimes] = useState<File[]>([]);
   const [incomplete, setIncomplete] = useState(false);
-  const catalog = useQuery({
-    queryKey: ['catalog'],
-    queryFn: ({ signal }) => api.request('/api/catalog', { action: 'list' }, catalogSchema, signal),
-  });
   const build = useMutation({
     mutationFn: async () => {
       const body = payload({
@@ -53,7 +49,6 @@ export default function Kits() {
       return api.request('/api/inspector', body, bundleSchema);
     },
   });
-  const sets = Object.entries(catalog.data?.sets ?? {});
   const kit = build.data;
   return (
     <>
@@ -154,27 +149,7 @@ export default function Kits() {
           </p>
         </Card>
       )}
-      <Card>
-        <h2>{t('Catalog sets', 'Наборы каталога')}</h2>
-        <p className="note">
-          {t(
-            'Saved lists of catalog applications; edit them in the ',
-            'Сохранённые списки приложений каталога; изменяйте их в ',
-          )}
-          <a href="#apps/catalog">{t('App catalog', 'каталоге приложений')}</a>.
-        </p>
-        {sets.length === 0 ? (
-          <p className="empty">{t('No saved sets yet.', 'Сохранённых наборов пока нет.')}</p>
-        ) : (
-          <ul>
-            {sets.map(([name, ids]) => (
-              <li key={name}>
-                <strong>{name}</strong> — {ids.join(', ')}
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
+      <Collections />
     </>
   );
 }

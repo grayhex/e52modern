@@ -1,0 +1,49 @@
+{
+  "id": "fshell",
+  "name": "FShell",
+  "category": "development",
+  "developer": "Accenture / Symbian Foundation",
+  "description": "Командная оболочка Symbian. Доступны исходники; готовый проверенный установщик отсутствует.",
+  "version": "Source tree (no full release)",
+  "release_date": null,
+  "release_tag": null,
+  "source_commit": "60781839df208eae281dde0350bc3d2a572fbb69",
+  "platforms": [
+    "S60 3rd Edition (source build profile)"
+  ],
+  "format": "sis",
+  "homepage": "https://github.com/d3ru/FShell",
+  "license": "EPL-1.0 (source; core/src/license.h)",
+  "redistribution": "author-source-only",
+  "delivery": "manual",
+  "manual_url": "https://github.com/d3ru/FShell",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Внешние сервисы для основной функции не требуются.",
+  "tls": "Современные TLS/серверы не проверены.",
+  "signature": "Не проверена: оригинальный установочный дистрибутив не получен.",
+  "compatibility": "untested",
+  "e52_evidence": null,
+  "compatibility_basis": "В исходниках есть профиль s60/3rd_edition, но полного авторского SIS-релиза нет. clogger-stub.SIS — ROM-заглушка библиотеки, не FShell. Сборка/подпись и нужные capabilities зависят от команд.",
+  "sources": [
+    "https://github.com/d3ru/FShell",
+    "https://github.com/hstsethi/awesome-symbian/blob/ed79fd54fc5c46640faf65adac39d70f3cdf0a1b/readme.md"
+  ],
+  "checked_at": "2026-11-04",
+  "source_id": "fshell",
+  "limitations": [
+    "В исходниках есть профиль s60/3rd_edition, но полного авторского SIS-релиза нет. clogger-stub.SIS — ROM-заглушка библиотеки, не FShell. Сборка/подпись и нужные capabilities зависят от команд.",
+    "Работа на физической E52/E72 не проверена."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": "В исходниках есть профиль s60/3rd_edition, но полного авторского SIS-релиза нет. clogger-stub.SIS — ROM-заглушка библиотеки, не FShell. Сборка/подпись и нужные capabilities зависят от команд.",
+  "requirements": [
+    "SDK S60 3rd Edition, open signing; capabilities проверяются для конкретной сборки."
+  ],
+  "target_profiles": [],
+  "description_en": "Symbian command-line shell. Author sources are available; a full validated installer is not.",
+  "delivery_reason_en": "The source includes s60/3rd_edition, but no full author release SIS. clogger-stub.SIS is a library ROM stub, not FShell. SDK/signing and capabilities depend on the commands and exact build.",
+  "compatibility_basis_en": "The source includes s60/3rd_edition, but no full author release SIS. clogger-stub.SIS is a library ROM stub, not FShell. SDK/signing and capabilities depend on the commands and exact build."
+}

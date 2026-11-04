@@ -1,0 +1,49 @@
+{
+  "id": "opera-mini",
+  "name": "Opera Mini (Java ME)",
+  "category": "internet",
+  "developer": "Opera Software",
+  "description": "Прокси-браузер Opera Mini. Карточка источника: оригинальный Java ME дистрибутив сейчас не получен.",
+  "version": "Legacy Java ME version unconfirmed",
+  "release_date": null,
+  "release_tag": null,
+  "source_commit": null,
+  "platforms": [
+    "Java ME MIDP 2.0"
+  ],
+  "format": "jar+jad",
+  "homepage": "https://www.opera.com/mobile/mini",
+  "license": "Proprietary freeware; no redistribution grant confirmed",
+  "redistribution": "author-source-only",
+  "delivery": "manual",
+  "manual_url": "https://www.opera.com/mobile/mini",
+  "dependencies": [],
+  "network": "online",
+  "backend": "Состояние внешних сервисов не подтверждено.",
+  "tls": "Современные TLS/серверы не проверены.",
+  "signature": "Не проверена: оригинальный установочный дистрибутив не получен.",
+  "compatibility": "unavailable",
+  "e52_evidence": null,
+  "compatibility_basis": "Официальные Java-каналы mini.opera.com вернули HTTP 503; действующий сайт предлагает Android. Версия, JAR/JAD и SHA-256 не подтверждены. Автозагрузка отключена; используйте только легально полученный оригинал.",
+  "sources": [
+    "https://www.opera.com/mobile/mini",
+    "https://github.com/hstsethi/awesome-symbian/blob/ed79fd54fc5c46640faf65adac39d70f3cdf0a1b/readme.md"
+  ],
+  "checked_at": "2026-11-04",
+  "source_id": "opera-mini",
+  "limitations": [
+    "Официальные Java-каналы mini.opera.com вернули HTTP 503; действующий сайт предлагает Android. Версия, JAR/JAD и SHA-256 не подтверждены. Автозагрузка отключена; используйте только легально полученный оригинал.",
+    "Работа на физической E52/E72 не проверена."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": "Официальные Java-каналы mini.opera.com вернули HTTP 503; действующий сайт предлагает Android. Версия, JAR/JAD и SHA-256 не подтверждены. Автозагрузка отключена; используйте только легально полученный оригинал.",
+  "requirements": [
+    "Оригинальные JAR и соответствующий JAD; доступность сервиса Opera Mini не проверена."
+  ],
+  "target_profiles": [],
+  "description_en": "Opera Mini Java ME proxy browser. Source card: an original Java distribution could not be obtained.",
+  "delivery_reason_en": "The historical official Java endpoints returned HTTP 503 during review; the current site offers Android. No original JAR/JAD, version or hash is confirmed. Automatic delivery is disabled; use only a legally obtained original.",
+  "compatibility_basis_en": "The historical official Java endpoints returned HTTP 503 during review; the current site offers Android. No original JAR/JAD, version or hash is confirmed. Automatic delivery is disabled; use only a legally obtained original."
+}

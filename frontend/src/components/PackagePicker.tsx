@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useApi, usePreferences } from '../state/app';
 import { catalogSchema } from '../api/catalog';
+import { themeStudioSchema } from '../api/p1';
 import { Field } from './workspace';
 import { useWorkspace } from '../hooks/useWorkspace';
 import type { PackageChoice } from '../utils/packages';
@@ -23,16 +24,24 @@ export function PackagePicker({
     queryFn: ({ signal }) => api.request('/api/catalog', { action: 'list' }, catalogSchema, signal),
     enabled: value.source === 'catalog',
   });
+  const themes = useQuery({
+    queryKey: ['theme-studio'],
+    queryFn: ({ signal }) =>
+      api.request('/api/theme-studio', { action: 'list' }, themeStudioSchema, signal),
+    enabled: value.source === 'theme-studio',
+  });
   const list =
-    value.source === 'build'
-      ? state.data?.packages
-      : value.source === 'library'
-        ? state.data?.library
-        : value.source === 'catalog'
-          ? catalog.data?.apps.filter((a) => a.delivery === 'automatic')
-          : value.source === 'lab'
-            ? labSources
-            : [];
+    value.source === 'theme-studio'
+      ? themes.data?.projects.filter((p) => p.built_revision === p.revision && p.build)
+      : value.source === 'build'
+        ? state.data?.packages
+        : value.source === 'library'
+          ? state.data?.library
+          : value.source === 'catalog'
+            ? catalog.data?.apps.filter((a) => a.delivery === 'automatic')
+            : value.source === 'lab'
+              ? labSources
+              : [];
   return (
     <div className="react-fields">
       <Field label={t('Package source', 'Источник пакета')}>
@@ -43,7 +52,7 @@ export function PackagePicker({
               ...value,
               source: e.target.value,
               reference: '',
-              kind: e.target.value === 'library' ? 'theme' : value.kind,
+              kind: ['library', 'theme-studio'].includes(e.target.value) ? 'theme' : value.kind,
             })
           }
         >
@@ -51,6 +60,7 @@ export function PackagePicker({
             ['upload', 'Upload', 'Файл'],
             ['catalog', 'Catalog', 'Каталог'],
             ['library', 'Library', 'Библиотека'],
+            ['theme-studio', 'Theme Studio', 'Редактор тем'],
             ['build', 'Build', 'Сборка'],
             ...(deviceSource
               ? [

@@ -118,7 +118,7 @@ def color_tables(p):
             "QsnOtherColors": other, "QsnHighlightColors": highlight, "QsnComponentColors": component}
 
 
-def generate(variant, root=ROOT):
+def generate(variant, root=ROOT, screen=(240, 320)):
     cfg = VARIANTS[variant]
     p = ba.PALETTES[variant]
     assets = os.path.join(root, "theme", "assets", variant)
@@ -130,7 +130,7 @@ def generate(variant, root=ROOT):
 
     # фон
     bg = Image.open(os.path.join(assets, "background.png")).convert("RGB")
-    assert bg.size == (240, 320), bg.size
+    assert bg.size == tuple(screen), bg.size
     bg.save(os.path.join(gfx, "bg_screen.bmp"), "BMP")
 
     L = []

@@ -1,5 +1,6 @@
 import { encode } from '../utils/files';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
+import { initialTarget } from '../components/targets';
 import { initialChoice } from '../utils/packages';
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -14,12 +15,7 @@ export default function Inspector() {
   const api = useApi(),
     { t, device, setDevice } = usePreferences();
   const [choice, setChoice] = useState(initialChoice),
-    [target, setTarget] = useState<Record<string, string>>({
-      model: 'Nokia E52',
-      rm: '',
-      firmware: '',
-      os: '9.3',
-    }),
+    [target, setTarget] = useState<Record<string, string>>(initialTarget),
     [path, setPath] = useState(
       () => new URLSearchParams(location.hash.split('?')[1]).get('path') ?? '',
     ),

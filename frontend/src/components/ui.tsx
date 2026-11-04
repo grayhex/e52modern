@@ -46,17 +46,19 @@ export function DeviceSelect({
   value,
   onChange,
   capability,
+  label,
 }: {
   value: string;
   onChange: (id: string) => void;
   capability?: string;
+  label?: string;
 }) {
   const { data } = useDevices();
   const id = useId();
   const { t } = usePreferences();
   return (
     <div>
-      <label htmlFor={id}>{t('Connection', 'Подключение')}</label>
+      <label htmlFor={id}>{label ?? t('Connection', 'Подключение')}</label>
       <select id={id} value={value} onChange={(event) => onChange(event.target.value)}>
         <option value="">{t('Select connection', 'Выберите подключение')}</option>
         {data?.devices

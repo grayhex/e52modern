@@ -76,8 +76,8 @@ class Catalog:
                 and (not filters.get('collection') or filters['collection'] in entry['collection'])]
 
     def plan(self, selected: list[str], device: str = 'nokia-e52') -> dict:
-        if device != 'nokia-e52':
-            raise ValueError('Compatibility profile is currently available only for Nokia E52')
+        if device not in ('nokia-e52', 'nokia-e72'):
+            raise ValueError('Choose Nokia E52 or E72 compatibility profile')
         if not isinstance(selected, list) or not 0 < len(selected) <= 50 or any(not isinstance(i, str) for i in selected):
             raise ValueError('Select 1–50 applications')
         ordered, visiting, done, problems = [], set(), set(), []
@@ -91,6 +91,8 @@ class Catalog:
                 problems.append('Missing dependency/application: ' + str(key))
                 return
             visiting.add(key)
+            if entry.get('target_profiles') and device not in entry['target_profiles']:
+                problems.append(entry['name'] + ': selected model is outside the declared target profiles')
             if entry['delivery'] == 'manual':
                 problems.append(entry['name'] + ': manual download only; use the author link and normal package transfer')
             elif entry['compatibility'] in ('unsupported', 'unavailable') or not entry['source_id']:

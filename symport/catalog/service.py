@@ -33,6 +33,8 @@ class AppCatalog:
         self.downloader = Downloader(self.root / 'cache')
         self.lock = threading.RLock()
         self.active = None
+        from .collections import Collections
+        self.collections = Collections(self)
         # A restored process cannot resume in-flight network/device operations safely.
         for path in (self.root / 'jobs').glob('*.json'):
             job = json.loads(path.read_text(encoding="utf-8"))
@@ -53,6 +55,9 @@ class AppCatalog:
 
     def execute(self, data: dict) -> dict:
         action = data.get('action')
+        if action in ('collections', 'collection-save', 'collection-import', 'collection-export', 'collection-delete', 'recovery-plan', 'recovery-transfer'):
+            with self.lock:
+                return self.collections.execute(data)
         if action == 'list':
             return self.state(data.get('filters'))
         if action == 'plan':

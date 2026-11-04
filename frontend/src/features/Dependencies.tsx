@@ -9,7 +9,7 @@ import { Card, ErrorMessage } from '../components/ui';
 import { PackagePicker } from '../components/PackagePicker';
 import DependencyReport from '../components/DependencyReport';
 import { RuntimeFiles, TargetFields } from '../components/RuntimeInputs';
-import { defaultTarget } from '../components/targets';
+import { initialTarget } from '../components/targets';
 import { Download } from '../components/workspace';
 
 /** Application Dependency & Runtime Manager: what a package needs, checked against the chosen phone. */
@@ -17,7 +17,7 @@ export default function Dependencies() {
   const api = useApi();
   const { t } = usePreferences();
   const [choice, setChoice] = useState(initialChoice);
-  const [target, setTarget] = useState(defaultTarget);
+  const [target, setTarget] = useState(initialTarget);
   const [firmwareId, setFirmwareId] = useState('');
   const [runtimes, setRuntimes] = useState<File[]>([]);
   const analyze = useMutation({

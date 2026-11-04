@@ -148,7 +148,7 @@ backups and emulator firmware/results keep their existing persistent storage.
 
 ## Frontend build
 
-Docker builds React 19 + strict TypeScript with Node 22 in a separate stage, then
+Docker builds React 19 + strict TypeScript with Node 24 in a separate stage, then
 copies the static assets into the Python runtime. No Node service or extra port is
 needed. `/` opens React; `/classic` is the transition rollback entry. Set
 `SYMPORT_FRONTEND=classic` in `.env` and recreate Workbench to select the previous

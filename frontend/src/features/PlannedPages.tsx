@@ -1,33 +1,7 @@
-import { Image, PenTool, FlaskConical, TestTube } from 'lucide-react';
+import { Image, FlaskConical, TestTube } from 'lucide-react';
 import type { PlannedSpec } from '../nav/Planned';
 
 export const plannedSpecs: Record<string, PlannedSpec> = {
-  'personalize/theme-editor': {
-    icon: PenTool,
-    title: ['Theme editor', 'Редактор тем'],
-    summary: [
-      'A visual editor for S60 skin resources. Today themes are generated from the E52 CLEAR palette and sources, not edited by hand.',
-      'Визуальный редактор ресурсов скина S60. Сейчас темы генерируются из палитры и исходников E52 CLEAR, а не правятся вручную.',
-    ],
-    capabilities: [
-      [
-        'Edit palette and element colours with a static preview',
-        'Правка палитры и цветов элементов со статическим превью',
-      ],
-      [
-        'Replace icons and backgrounds inside the 240×320 geometry',
-        'Замена значков и фонов в геометрии 240×320',
-      ],
-      [
-        'Build, inspect and package the result with the existing toolchain',
-        'Сборка, проверка и упаковка существующим набором инструментов',
-      ],
-    ],
-    related: [
-      { route: 'personalize/themes', label: ['Themes', 'Темы оформления'] },
-      { route: 'dev/lab', label: ['Emulator Lab', 'Emulator Lab'] },
-    ],
-  },
   'personalize/wallpapers': {
     icon: Image,
     title: ['Wallpapers', 'Обои'],

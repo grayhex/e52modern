@@ -1,0 +1,49 @@
+{
+  "id": "rotate-it",
+  "name": "Rotate It!",
+  "category": "system",
+  "developer": "Vitalii Shunkov",
+  "description": "Поворот фотографий для сенсорных Symbian. Не подходит для E52/E72.",
+  "version": "0.2.1",
+  "release_date": null,
+  "release_tag": null,
+  "source_commit": "621089c334e740b99bc7686d5724b79655adfbad",
+  "platforms": [
+    "Symbian 9.4 / Anna / Belle"
+  ],
+  "format": "sis",
+  "homepage": "https://github.com/vitalii17/RotateIt/releases/tag/v0.2.1",
+  "license": "MIT source; bundled Exiv2 has separate terms",
+  "redistribution": "author-source-only",
+  "delivery": "manual",
+  "manual_url": "https://github.com/vitalii17/RotateIt/releases/tag/v0.2.1",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Внешние сервисы для основной функции не требуются.",
+  "tls": "Современные TLS/серверы не проверены.",
+  "signature": "Структура SIS проверена; наличие подписи не устанавливает доверие телефона. См. Certificate Inspector.",
+  "compatibility": "unsupported",
+  "e52_evidence": null,
+  "compatibility_basis": "Оригинальный SIS требует Qt 4.7.4 и Qt Quick Components 1.1. Автор указывает Symbian 9.4/Anna/Belle. E52/E72 используют 9.3 и не входят в целевую платформу.",
+  "sources": [
+    "https://github.com/vitalii17/RotateIt/releases/tag/v0.2.1",
+    "https://github.com/hstsethi/awesome-symbian/blob/ed79fd54fc5c46640faf65adac39d70f3cdf0a1b/readme.md"
+  ],
+  "checked_at": "2026-11-04",
+  "source_id": "rotate-it",
+  "limitations": [
+    "Оригинальный SIS требует Qt 4.7.4 и Qt Quick Components 1.1. Автор указывает Symbian 9.4/Anna/Belle. E52/E72 используют 9.3 и не входят в целевую платформу.",
+    "Работа на физической E52/E72 не проверена."
+  ],
+  "collection": [
+    "tools"
+  ],
+  "delivery_reason": "Оригинальный SIS требует Qt 4.7.4 и Qt Quick Components 1.1. Автор указывает Symbian 9.4/Anna/Belle. E52/E72 используют 9.3 и не входят в целевую платформу.",
+  "requirements": [
+    "Qt 4.7.4, Qt Quick Components 1.1; не S60 3rd FP2."
+  ],
+  "target_profiles": [],
+  "description_en": "Photo rotation for touch Symbian devices. Unsupported on Nokia E52/E72.",
+  "delivery_reason_en": "The original SIS requires Qt 4.7.4 and Qt Quick Components 1.1. The author targets 9.4/Anna/Belle; E52/E72 use Symbian 9.3 and are outside that platform.",
+  "compatibility_basis_en": "The original SIS requires Qt 4.7.4 and Qt Quick Components 1.1. The author targets 9.4/Anna/Belle; E52/E72 use Symbian 9.3 and are outside that platform."
+}

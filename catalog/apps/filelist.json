@@ -1,0 +1,49 @@
+{
+  "id": "filelist",
+  "name": "FileList QML",
+  "category": "multimedia",
+  "developer": "Nokia / Microsoft Mobile",
+  "description": "Пример медиабраузера Qt Quick. На E52/E72 используйте встроенную медиагалерею SymPort.",
+  "version": "1.1.0",
+  "release_date": null,
+  "release_tag": null,
+  "source_commit": "be3528abaf6bdc28593a2184bdb0ab7318289e59",
+  "platforms": [
+    "Symbian touch / Symbian^3"
+  ],
+  "format": "sis",
+  "homepage": "https://github.com/ltomuta/filelist",
+  "license": "Microsoft Mobile sample license (Licence.txt); device-limited, not BSD/MIT",
+  "redistribution": "Microsoft-Mobile-device-limited-license",
+  "delivery": "manual",
+  "manual_url": "https://github.com/ltomuta/filelist",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Внешние сервисы для основной функции не требуются.",
+  "tls": "Современные TLS/серверы не проверены.",
+  "signature": "Структура SIS проверена; наличие подписи не устанавливает доверие телефона. См. Certificate Inspector.",
+  "compatibility": "unsupported",
+  "e52_evidence": null,
+  "compatibility_basis": "Авторский SIS требует Qt 4.7.4, Qt Mobility 1.2 и Qt Quick Components. Target-device UID относятся к Symbian^3/Anna. Не предлагать как совместимое с E52/E72.",
+  "sources": [
+    "https://github.com/ltomuta/filelist",
+    "https://github.com/hstsethi/awesome-symbian/blob/ed79fd54fc5c46640faf65adac39d70f3cdf0a1b/readme.md"
+  ],
+  "checked_at": "2026-11-04",
+  "source_id": "filelist",
+  "limitations": [
+    "Авторский SIS требует Qt 4.7.4, Qt Mobility 1.2 и Qt Quick Components. Target-device UID относятся к Symbian^3/Anna. Не предлагать как совместимое с E52/E72.",
+    "Работа на физической E52/E72 не проверена."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": "Авторский SIS требует Qt 4.7.4, Qt Mobility 1.2 и Qt Quick Components. Target-device UID относятся к Symbian^3/Anna. Не предлагать как совместимое с E52/E72.",
+  "requirements": [
+    "Qt 4.7.4, Qt Mobility >=1.2.0, Qt Quick Components >=1.0.0."
+  ],
+  "target_profiles": [],
+  "description_en": "Qt Quick media-browser example. Use the built-in SymPort gallery with E52/E72.",
+  "delivery_reason_en": "The original SIS requires Qt 4.7.4, Qt Mobility 1.2 and Qt Quick Components, and targets Symbian^3/Anna. It must not be advertised as E52/E72 compatible.",
+  "compatibility_basis_en": "The original SIS requires Qt 4.7.4, Qt Mobility 1.2 and Qt Quick Components, and targets Symbian^3/Anna. It must not be advertised as E52/E72 compatible."
+}

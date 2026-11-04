@@ -15,16 +15,16 @@
 Нужны Docker Engine / Docker Desktop с Linux-контейнерами и Compose v2.
 
 ```bash
-git clone https://github.com/grayhex/e52modern.git
-cd e52modern
+git clone https://github.com/grayhex/s60modern.git
+cd s60modern
 tools/install.sh
 ```
 
 Windows PowerShell:
 
 ```powershell
-git clone https://github.com/grayhex/e52modern.git
-cd e52modern
+git clone https://github.com/grayhex/s60modern.git
+cd s60modern
 .\tools\install.ps1
 ```
 
@@ -43,7 +43,7 @@ cd e52modern
 1. [Скачайте Windows Bridge](https://github.com/grayhex/e52modern/actions/workflows/windows-bridge.yml):
    последняя успешная сборка → **SymPortBridge-Windows-x64**.
 2. Распакуйте архив и запустите `SymPortBridge.exe`. Настройки и автозапуск — в трее.
-3. В SymPort откройте **Подключение → Запросить доступ** и подтвердите адрес в Windows.
+3. В SymPort откройте **Настройки → Подключение → Запросить доступ** и подтвердите адрес в Windows.
 4. Подключите Nokia, выберите **PC Suite**, нажмите **Найти телефон**.
 
 Агент подключается к серверу исходящим соединением: входящий порт на Windows
@@ -57,6 +57,8 @@ USB-драйверы Nokia устанавливаются отдельно.
 
 [Windows Bridge](docs/WINDOWS_BRIDGE.md) · [USB, Bluetooth и совместимость](docs/TRANSPORTS.md)
 
+[Первое подключение E52/E72: чтение, копии и проверка передачи](docs/FIRST_CONNECTION_E52.md)
+
 ## Что можно делать
 
 | Раздел | Возможности |
@@ -68,11 +70,18 @@ USB-драйверы Nokia устанавливаются отдельно.
 | Контакты | Чтение, редактирование, дубли, Google CSV и Apple/Google vCard, экспорт и синхронизация с предпросмотром |
 | SMS | Чтение, поиск, переписки, JSON/CSV и копии. Отправка — с подтверждением через проверенный профиль подключения |
 | Календарь | События и задачи, iCalendar, безопасное создание/изменение и анализ конфликтов |
-| Приложения и темы | Каталог (33 записи; в т.ч. [X-plore](docs/XPLORE.md) и [Jellyfin for S60](docs/JELLYFIN_S60.md) EN/RU), проверка SIS/SISX/JAR, передача пакетов, [комплекты с runtime](docs/DEPENDENCIES.md), локальная библиотека тем и E52 CLEAR |
+| Приложения и темы | Каталог (40 записей; в т.ч. [X-plore](docs/XPLORE.md) и [Jellyfin for S60](docs/JELLYFIN_S60.md) EN/RU), проверка SIS/SISX/JAR, передача пакетов, [комплекты с runtime](docs/DEPENDENCIES.md), локальная библиотека тем и E52 CLEAR |
+| [Наборы и восстановление](docs/P1_WORKSPACE.md) | Шаблоны, пользовательские наборы, JSON с версиями/SHA-256 и зависимостями, план восстановления для E52/E72, пакетная передача с подтверждением и журналом |
+| [Advanced Theme Studio](docs/P1_WORKSPACE.md) | Палитра, обои и иконки по UID; предпросмотр 240×320 / 320×240, импорт SIS-тем, просмотр/замена поддерживаемых MBM-битмапов и целых MBM/MIF/SKN, сборка и экспорт неподписанного SIS |
+| [Диагностика](docs/P1_WORKSPACE.md) | Реальные измерения адаптера, история до 500 снимков на подключение, графики с пропусками неизвестных значений, JSON/CSV без IMEI и приватных данных |
 | Certificate Inspector | Сертификаты, подписи, UID, capabilities, рекомендации по ошибкам установки и **[анализ зависимостей и runtime](docs/DEPENDENCIES.md)** (Qt, Qt Mobility, PyS60, Open C, платформы, граф) относительно выбранной модели и прошивки |
 | [Firmware & ROM Explorer](docs/FIRMWARE_EXPLORER.md) | Статический просмотр загруженной пользователем прошивки (ZIP дерева `Z:` или core ROM, экспериментально): дерево, поиск, E32/MBM/MIF, зависимости, сравнение двух прошивок |
 | Emulator Lab | MGO/EKA2L1, пользовательская прошивка, управление сеансом, проверка пакетов/тем, снимки и отчёты |
 | Разработка | CLI, профили E52 240×320 и E72 320×240, SDK, сборки и протокол испытаний |
+
+[Источники и ограничения новых приложений](docs/CATALOG_P1_RESEARCH.md): Opera Mini, FShell, QRemoteControl и Internet Radio представлены авторскими ссылками там, где подходящий оригинальный установщик не подтверждён. Утилиты для Symbian 9.4/Anna/Belle не отмечены как совместимые с E52/E72.
+
+![Advanced Theme Studio: реальный проект CLEAR и сборка SIS для E72](docs/screenshots/p1-theme-studio-dark-en.png)
 
 Передача пакета не означает его установку: завершите её на экране Nokia. Статическая совместимость, успешная установка и запуск на E52/E72 — разные уровни; в SymPort проверены только статические и тестовые.
 Рингтон назначается в настройках телефона после передачи. Ringtone Studio
@@ -80,6 +89,8 @@ USB-драйверы Nokia устанавливаются отдельно.
 
 ![Обзор устройства](docs/screenshots/nokia-overview.png)
 
+[Наборы и восстановление](docs/screenshots/p1-collections-dark-en.png) ·
+[История диагностики](docs/screenshots/p1-diagnostics-dark-en.png) ·
 [Файловый менеджер](docs/screenshots/nokia-files.png) ·
 [Firmware & ROM Explorer](docs/screenshots/nokia-firmware.png) ·
 [Зависимости](docs/screenshots/nokia-dependencies.png) ·
@@ -119,7 +130,8 @@ USB-драйверы Nokia устанавливаются отдельно.
 и процедуры восстановления. Загрузка прошивки в эмулятор — отдельный сценарий.
 
 E72 использует экран 320×240 и QWERTY. Портретные ресурсы E52 CLEAR не становятся
-ландшафтными автоматически; проверяйте темы под соответствующий экран.
+ландшафтными автоматически. В Theme Studio выберите профиль E72 для сборки
+ресурсов 320×240 и проверьте результат в своей прошивке.
 
 ## Данные и безопасность
 

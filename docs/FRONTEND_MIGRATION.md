@@ -34,7 +34,7 @@ retained for comparison and regression tests; new features belong in `frontend/`
 * **Иконки** — `lucide-react`. Уведомления о лицензиях (`THIRD_PARTY_NOTICES.txt`) формируются из `package-lock.json` для всех
   production-зависимостей.
 * Новые страницы: Firmware & ROM Explorer, Зависимости и совместимость, Комплекты приложений, Установочные пакеты, заготовки «В разработке».
-* Node: файловая библиотека объявляет `engines.node >=24`; клиент собирается и тестируется на Node 22 (предупреждение npm).
+* Node: файловая библиотека объявляет `engines.node >=24`; клиент, Docker и CI используют Node 24 LTS.
 
 ## Architecture
 
@@ -92,7 +92,7 @@ successful boot of user firmware.
 
 ## Develop, build and deploy
 
-Node 22+, Python setup from [DEVELOPMENT.md](DEVELOPMENT.md):
+Node 24+, Python setup from [DEVELOPMENT.md](DEVELOPMENT.md):
 
 ```bash
 npm ci --prefix frontend
@@ -125,6 +125,8 @@ npm run build --prefix frontend
 node tools/check_react_ui.cjs
 node tools/check_react_workspace.cjs
 node tools/check_p0_ui.cjs
+tools/s60/build.sh
+node tools/check_p1_ui.cjs
 ```
 
 Browser checks need Playwright/Chromium, Python's development extras and FFmpeg.

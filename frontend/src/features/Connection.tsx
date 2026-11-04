@@ -77,6 +77,42 @@ export default function Connection() {
     <>
       <h1>{t('Connection', 'Подключение')}</h1>
       <Card>
+        <h2>{t('First E52 / E72 connection', 'Первое подключение E52 / E72')}</h2>
+        <ol className="p1-checklist">
+          <li>
+            {t(
+              'Charge the phone, unlock it, connect a data cable and choose PC Suite. Close Nokia Suite if it holds the COM port.',
+              'Зарядите и разблокируйте телефон, подключите кабель передачи данных и выберите PC Suite. Закройте Nokia Suite, если она занимает COM-порт.',
+            )}
+          </li>
+          <li>
+            {t(
+              'Start Bridge on the PC connected to Nokia. Approve this SymPort address, find the phone and select its connection below.',
+              'Запустите Bridge на ПК, к которому подключена Nokia. Разрешите адрес SymPort, найдите телефон и выберите подключение ниже.',
+            )}
+          </li>
+          <li>
+            <a href="#tools/diagnostics">{t('Read diagnostics', 'Прочитайте диагностику')}</a>
+            {t(
+              ': check model, RM, firmware and available services. A memory-card drive is a separate file-only connection.',
+              ': проверьте модель, RM, прошивку и доступные службы. Накопитель карты — отдельное подключение только для файлов.',
+            )}
+          </li>
+          <li>
+            {t(
+              'First read and export contacts, SMS and calendar where supported, then create backups. Review changes before writing.',
+              'Сначала прочитайте и экспортируйте контакты, SMS и календарь, где это поддерживается, и создайте копии. Перед записью проверяйте план изменений.',
+            )}
+          </li>
+          <li>
+            {t(
+              'For the first transfer choose a small file in a new folder. Read it back before sending a package. SIS installation is completed on the phone.',
+              'Для первой передачи выберите небольшой файл в новой папке. Скачайте его обратно перед передачей пакетов. Установка SIS завершается на телефоне.',
+            )}
+          </li>
+        </ol>
+      </Card>
+      <Card>
         <span className="chip">
           {state.data?.mode === 'direct'
             ? t('Local transports', 'Локальные транспорты')

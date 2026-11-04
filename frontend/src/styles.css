@@ -12,3 +12,130 @@
 @import './style.css' layer(legacy);
 @import '../../symport/web_assets/nokia-classic.css' layer(legacy);
 @import './file-browser.css';
+
+/* P1 private collections, real telemetry and native-resolution skin previews. */
+.p1-app-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.5rem;
+  max-height: 320px;
+  overflow: auto;
+  margin: 1rem 0;
+}
+.p1-app-selection label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.6rem;
+  border: 1px solid var(--line, #ccc);
+  border-radius: 8px;
+}
+.p1-app-selection input {
+  width: auto;
+  min-height: 0;
+  margin-top: 0.2rem;
+}
+.p1-app-selection small {
+  display: block;
+  opacity: 0.75;
+  font-size: 0.75rem;
+}
+.p1-theme-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.75fr) minmax(300px, 1.25fr);
+  gap: 1rem;
+  align-items: start;
+}
+.p1-theme-phone {
+  position: relative;
+  width: min(210px, 100%);
+  margin: 1rem auto;
+  line-height: 0;
+}
+.p1-theme-phone > img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.p1-theme-screen {
+  position: absolute;
+  left: 15.6438%;
+  top: 13.8933%;
+  width: 68.1107%;
+  height: 38.1405%;
+  background: #000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.p1-theme-screen svg {
+  width: 100%;
+  height: 100%;
+  font-family: Arial, sans-serif;
+}
+.p1-theme-phone--e72 {
+  width: min(270px, 100%);
+}
+.p1-theme-phone--e72 .p1-theme-screen {
+  left: 13.87%;
+  top: 19.24%;
+  width: 72.7%;
+  height: 25.5%;
+}
+.p1-palette {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.p1-palette input[type='color'] {
+  width: 100%;
+  height: 34px;
+  min-height: 34px;
+  padding: 3px;
+}
+.p1-resource {
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line, #ccc);
+}
+.p1-hash,
+.p1-resource code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: 0.75rem;
+}
+.p1-bitmap {
+  display: block;
+  max-width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  background: repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%) 50% / 16px 16px;
+}
+.p1-chart {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+@media (max-width: 900px) {
+  .p1-theme-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.p1-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.6rem 0;
+}
+.p1-consent input[type='checkbox'] {
+  width: auto;
+  min-height: 0;
+  flex: 0 0 auto;
+  margin: 0.15rem 0 0;
+}
+.p1-icon-asset {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

@@ -17,6 +17,7 @@ const Catalog = lazy(() => import('./features/Catalog'));
 const Installed = lazy(() => import('./features/Installed'));
 const Packages = lazy(() => import('./features/Packages'));
 const Dependencies = lazy(() => import('./features/Dependencies'));
+const ThemeStudio = lazy(() => import('./features/ThemeStudio'));
 const Kits = lazy(() => import('./features/Kits'));
 const Backups = lazy(() => import('./features/Backups'));
 const Workbench = lazy(() => import('./features/Workbench'));
@@ -136,6 +137,8 @@ function RouteView({ route }: { route: string }) {
       return <Dependencies />;
     case 'apps/kits':
       return <Kits />;
+    case 'personalize/theme-editor':
+      return <ThemeStudio />;
     case 'personalize/themes':
       return <Workbench page="themes" />;
     case 'personalize/ringtones':
