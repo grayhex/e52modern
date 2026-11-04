@@ -212,7 +212,3 @@ Smoke проверяет настоящий maintenance-запуск EKA2L1, д�
 [браузер](validation/mgo-browser-without-rom.json). Эти проверки включены в CI;
 они не содержат ROM и не заявляют успешный boot E52.
 
-![Lab с настоящим MGO, без ROM](screenshots/emulator-lab-desktop.png)
-
-[Мобильный интерфейс](screenshots/emulator-lab-mobile.png) ·
-[Реальная ошибка установщика](screenshots/emulator-lab-firmware-error.png).

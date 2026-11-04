@@ -72,7 +72,6 @@ let currentPage;
     }
     await page.getByRole("button", { name: "Настройки", exact: true }).click();
     await page.selectOption("#language", "en");
-    await page.selectOption("#theme", "dark");
     const wizard = page.locator(".wizard");
     const step = (id, status) => wizard.locator(`[data-step="${id}"][data-status="${status}"]`);
     // Local transports: Bridge and pairing are not needed, and no phone is invented.
@@ -106,7 +105,7 @@ let currentPage;
     const levels = await wizard.locator(".wizard-levels li").evaluateAll((items) => items.map((li) => li.dataset.on));
     if (levels.join() !== "true,true,true,true,false")
       throw Error("Five levels must stay apart: " + levels.join());
-    await page.screenshot({ path: path.join(shots, "connection-wizard-dark-en.png"), fullPage: true });
+    await page.screenshot({ path: path.join(shots, "connection-wizard-light-en.png"), fullPage: true });
     // De-identified report: nothing private, whatever the phone said.
     const href = await wizard.locator('a[download="symport-first-connection-report.json"]').getAttribute("href");
     const report = Buffer.from(href.split(",")[1], "base64").toString("utf8");
@@ -126,14 +125,13 @@ let currentPage;
     if (!(await page.locator("#language").count()))
       await page.getByRole("button", { name: "Settings", exact: true }).click();
     await page.selectOption("#language", "ru");
-    await page.selectOption("#theme", "light");
     await wizard.getByRole("heading", { name: "Мастер первого подключения" }).waitFor();
     await page.setViewportSize({ width: 390, height: 844 });
     if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
       throw Error("Mobile overflow");
     await page.screenshot({ path: path.join(shots, "connection-wizard-light-ru-mobile.png"), fullPage: true });
     if (errors.length) throw Error(errors.join("\n"));
-    console.log("PASS connection wizard: real BridgeServer probe/pairing/declined/relay, steps and five levels, lost Bridge, de-identified report, RU/EN, dark/light, mobile. Synthetic phone; not a physical E52.");
+    console.log("PASS connection wizard: real BridgeServer probe/pairing/declined/relay, steps and five levels, lost Bridge, de-identified report, RU/EN, light theme, mobile. Synthetic phone; not a physical E52.");
   } catch (error) {
     try { console.error((await currentPage.locator('.wizard').innerText()).slice(0, 2500)); } catch {}
     throw error;

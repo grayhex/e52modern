@@ -22,6 +22,8 @@ type Preferences = {
   setTheme: (value: 'system' | 'light' | 'dark') => void;
   t: (en: string, ru: string) => string;
 };
+/** Dark theme is switched off for now: the interface is light, in the original Nokia colours. */
+export const DARK_THEME_ENABLED = false;
 const PreferencesContext = createContext<Preferences | null>(null);
 function saved(key: string) {
   try {
@@ -41,10 +43,12 @@ export function PreferencesProvider({ children }: PropsWithChildren) {
   const [language, setLanguageState] = useState<'ru' | 'en'>(
     saved('symport-language') === 'en' ? 'en' : 'ru',
   );
-  const [theme, setThemeState] = useState<Preferences['theme']>(() => {
+  const [chosenTheme, setThemeState] = useState<Preferences['theme']>(() => {
     const value = saved('symport-theme');
     return value === 'dark' || value === 'light' ? value : 'system';
   });
+  // A saved 'dark'/'system' choice is ignored while dark mode is disabled (and kept for later).
+  const theme: Preferences['theme'] = DARK_THEME_ENABLED ? chosenTheme : 'light';
   const [device, setDeviceState] = useState('');
   const [contactIndex, setContactIndex] = useState<ContactIndex | null>(null);
   useEffect(() => {

@@ -2,6 +2,8 @@
 let uiLanguage='ru',uiTheme='system',uiTranslations={en:{},ru:{},patterns:[]};
 try{uiLanguage=localStorage.getItem('symport-language')==='en'?'en':'ru';uiTheme=localStorage.getItem('symport-theme')||'system';}catch{}
 if(!['system','light','dark'].includes(uiTheme))uiTheme='system';
+// Dark mode is switched off for now: always light, in the original Nokia colours.
+const uiDarkEnabled=false;if(!uiDarkEnabled)uiTheme='light';
 const uiMedia=matchMedia('(prefers-color-scheme: dark)'),uiOriginal=new WeakMap();
 function uiApplyTheme(){document.documentElement.dataset.theme=uiTheme==='system'?(uiMedia.matches?'dark':'light'):uiTheme;}
 uiApplyTheme();uiMedia.addEventListener('change',uiApplyTheme);
@@ -43,7 +45,7 @@ const uiConfirm=window.confirm.bind(window),uiAlert=window.alert.bind(window);
 window.confirm=message=>uiConfirm(tr(message));window.alert=message=>uiAlert(tr(message));
 const uiObserver=new MutationObserver(records=>{for(const record of records){if(record.type==='childList')for(const n of record.addedNodes)uiTranslateNode(n);else uiTranslateNode(record.target);}});
 uiObserver.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label','alt']});
-document.getElementById('ui-language').value=uiLanguage;document.getElementById('ui-theme').value=uiTheme;
+document.getElementById('ui-language').value=uiLanguage;document.getElementById('ui-theme').value=uiTheme;if(!uiDarkEnabled)document.getElementById('ui-theme').closest('.preference-control,label')?.setAttribute('hidden','');
 document.getElementById('ui-language').onchange=e=>{uiLanguage=e.target.value;try{localStorage.setItem('symport-language',uiLanguage);}catch{}uiApplyLanguage();};
-document.getElementById('ui-theme').onchange=e=>{uiTheme=e.target.value;try{localStorage.setItem('symport-theme',uiTheme);}catch{}uiApplyTheme();};
+document.getElementById('ui-theme').onchange=e=>{uiTheme=uiDarkEnabled?e.target.value:'light';try{localStorage.setItem('symport-theme',uiTheme);}catch{}uiApplyTheme();};
 fetch('/translations.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw Error('Translation catalog unavailable');return r.json();}).then(data=>{uiTranslations=data;uiApplyLanguage();}).catch(()=>{});

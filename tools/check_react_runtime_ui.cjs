@@ -22,7 +22,6 @@ fs.mkdirSync(shots, { recursive: true });
     await page.goto(base + "/next/#dev/lab");
     await page.getByRole("button", { name: "Настройки", exact: true }).click();
     await page.selectOption("#language", "en");
-    await page.selectOption("#theme", "dark");
     async function call(body) {
       return page.evaluate(async (body) => {
         const token = document.querySelector(

@@ -76,7 +76,5 @@ mathematics, tampering with recomputed valid CRC, omitted CRC, wrong firmware pr
 confirmation gates, unchanged bytes and HTTP authentication. Browser checks exercise the
 real certificate UI and diagnosis. No successful install on a physical E52 is claimed.
 
-![Certificate Inspector — English / Nimbus Dark](screenshots/inspector-dark-en.png)
-
 Validation on 2026-11-03: 246 tests, browser workflows and Docker HTTP inspection
 of the independent signed SDK fixture. [Docker evidence](validation/security-docker.json).
