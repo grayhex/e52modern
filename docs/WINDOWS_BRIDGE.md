@@ -6,9 +6,15 @@ No Electron, firmware flashing, ROM, Nokia drivers or applet binaries are includ
 
 ## Install and connect
 
-1. Download **SymPortBridge-Windows-x64** from a successful [Windows Bridge build](https://github.com/grayhex/e52modern/actions/workflows/windows-bridge.yml).
-2. Extract the entire bundle to a permanent user folder. Run `SymPortBridge.exe`.
-   Builds are currently unsigned. Check `SHA256SUMS.txt`; do not disable Windows protection globally.
+1. Download **SymPortBridge-Setup-x.y.z.exe** and `SHA256SUMS.txt` from the
+   [Releases page](https://github.com/grayhex/s60modern/releases) (tags `bridge-vX.Y.Z`) and
+   compare the hash (`Get-FileHash .\SymPortBridge-Setup-*.exe`). The installer is **per-user**:
+   no administrator rights, no drivers, installed to `%LOCALAPPDATA%\Programs\SymPort Bridge`
+   with a Start-menu entry and an optional sign-in autostart. Settings and the pairing key live in
+   `%LOCALAPPDATA%\SymPortBridge` and survive updates and (by default) uninstalling.
+2. Run it. Builds are **not code-signed** (no paid certificate), so Windows SmartScreen shows
+   “Windows protected your PC / unknown publisher”: choose **More info → Run anyway** only after
+   the SHA-256 matches. The portable `SymPortBridge-portable-x64.zip` remains available.
 3. Connect the Nokia USB cable, select **PC Suite** and install a trusted Nokia
    connectivity driver separately if no COM port appears. Close Nokia Suite when
    it holds that same COM port. Mass Storage only exposes an accessible card.
@@ -41,6 +47,43 @@ Access lasts two hours, is kept in memory and is revoked by **Disconnect Bridge*
 **Revoke web access** in the tray, or exit. Restarting the agent requires pairing
 again. The relay never retries a claimed phone operation automatically. If a
 connection fails during a write, read the phone before repeating the operation.
+
+## Updates
+
+An installed Bridge checks GitHub Releases for newer `bridge-vX.Y.Z` releases once a day (Settings →
+*Check for updates*, on by default; tray menu → **Check for updates…** any time). It **only
+notifies**; it downloads and installs **nothing without your confirmation of the exact version**.
+After you confirm, it downloads the installer, verifies size and SHA-256, waits until no phone
+operation is running (a running operation blocks the update), then runs the installer silently:
+the old copy is closed, files are replaced in place, settings are kept and the new version
+starts. A portable copy cannot update itself and points to the Releases page.
+
+Safeguards: only this project's GitHub release hosts and exactly `bridge-vX.Y.Z` URLs are accepted;
+the manifest (`bridge-update.json`) must describe its own release; no downgrade; a mismatched
+size/hash deletes the download. Optional Ed25519 signature: once `UPDATE_PUBLIC_KEY`
+(`symport/bridge/update.py`) is set, unsigned or wrongly signed manifests are rejected even if a
+release asset were replaced. Key setup (free, once):
+
+```
+python tools/windows/update_key.py generate
+# put the PUBLIC value into UPDATE_PUBLIC_KEY and commit it;
+# store the PRIVATE seed as the GitHub Actions secret BRIDGE_UPDATE_SIGNING_KEY
+```
+
+Releasing: bump `symport/bridge/__init__.py` `VERSION`, tag `bridge-vX.Y.Z` and push the tag; the
+workflow builds, tests the installer (fresh install, update over a *running* copy, data kept,
+uninstall, `/REMOVEDATA=1`) and publishes installer, portable zip, `SHA256SUMS.txt` and the manifest.
+Rollback: install an older `SymPortBridge-Setup-x.y.z.exe` from Releases manually (Windows allows
+installing over, the installer itself does not downgrade automatically).
+
+**Code signing without a paid certificate.** Authenticode signing is what removes the SmartScreen
+warning; reputation also builds over time. Free options for open-source projects: apply to the
+[SignPath Foundation](https://signpath.org/) programme, or Azure Trusted Signing (paid, low cost).
+Neither is configured; until then the checksum and the optional update signature above are the
+integrity guarantees, and the warning is expected.
+
+Uninstall via *Settings → Apps* (asks whether to delete settings and the pairing key; silent:
+`unins000.exe /VERYSILENT /REMOVEDATA=1`). No Nokia drivers are installed or removed.
 
 ## Tray and configuration
 

@@ -73,7 +73,7 @@ def load_config(root: Path) -> dict:
         or any(not isinstance(o, str) or not origin_allowed(o, {o}) for o in origins)
     ):
         raise ValueError("Invalid allowed origins")
-    for key in ("auto_usb", "websocket"):
+    for key in ("auto_usb", "websocket", "update_check"):
         if key in result and type(result[key]) is not bool:
             raise ValueError("Invalid boolean setting")
     for key in ("gammu_config", "connections_file"):
