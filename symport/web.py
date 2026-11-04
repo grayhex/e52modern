@@ -179,7 +179,9 @@ class Workbench:
         self.catalog = AppCatalog(repo, self.devices)
         self.library = ThemeLibrary(repo)
         self.lab = EmulatorLab(repo, self.resolve_lab_package, self.devices)
-        self.inspector = Inspector(repo, self.resolve_lab_package, self.devices, self.lab)
+        from symport.firmware import FirmwareExplorer
+        self.firmware = FirmwareExplorer(repo / 'build/symport/firmware')
+        self.inspector = Inspector(repo, self.resolve_lab_package, self.devices, self.lab, self.firmware)
         self.jailbreak = JailbreakManager(repo, self.devices)
         self.token = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
@@ -678,6 +680,18 @@ def make_handler(state: Workbench):
                     return self._json(state.ringtones.create(self.rfile,length))
                 except (ValueError,OSError) as exc:
                     return self._json({'error':str(exc)},400)
+            if urlsplit(self.path).path == '/api/firmware/upload':
+                if self.headers.get('Content-Type', '').split(';')[0] != 'application/octet-stream':
+                    return self._json({'error': 'Binary firmware upload required'}, 415)
+                try:
+                    self.connection.settimeout(300)
+                    args = parse_qs(urlsplit(self.path).query)
+                    if self.headers.get('Transfer-Encoding') or len(self.headers.get_all('Content-Length', [])) != 1:
+                        raise ValueError('Exactly one Content-Length is required')
+                    length = int(self.headers.get('Content-Length', '0'))
+                    return self._json(state.firmware.store.create(self.rfile, length, args.get('name', [''])[0], args.get('label', [''])[0]))
+                except (ValueError, OSError) as exc:
+                    return self._json({'error': str(exc)}, 400)
             if urlsplit(self.path).path == '/api/lab/firmware':
                 if self.headers.get('Content-Type', '').split(';')[0] != 'application/octet-stream':
                     return self._json({'error': 'Binary firmware upload required'}, 415)
@@ -724,6 +738,8 @@ def make_handler(state: Workbench):
                         return self._json(state.bridge_relay.status() if state.bridge_relay else {'mode': 'direct', 'connected': True})
                 if self.path == '/api/inspector':
                     return self._json(state.inspector.execute(body))
+                if self.path == '/api/firmware':
+                    return self._json(state.firmware.execute(body))
                 if self.path == '/api/jailbreak':
                     return self._json(state.jailbreak.execute(body))
                 if self.path == '/api/lab':

@@ -111,6 +111,7 @@ def _inspect(data: bytes) -> tuple[dict, list[bytes]]:
     files: list[dict] = []
     deps_declared = 0
     dep_uids: list[int] = []
+    dep_items: list[dict] = []
     unparsed: list[int] = []
     while not k.done():
         t = k.peek_type()
@@ -128,6 +129,7 @@ def _inspect(data: bytes) -> tuple[dict, list[bytes]]:
         elif t == f.T_PREREQUISITES:
             _, pre, _ = k.field(f.T_PREREQUISITES)
             pc = Cursor(pre)
+            array_index = 0
             while not pc.done():
                 _, items = pc.array(f.T_DEPENDENCY)
                 deps_declared += len(items)
@@ -136,6 +138,8 @@ def _inspect(data: bytes) -> tuple[dict, list[bytes]]:
                     if ic2.peek_type() == f.T_UID:
                         _, p, _ = ic2.field(f.T_UID)
                         dep_uids.append(struct.unpack("<I", p)[0])
+                    dep_items.append(_dependency(it, "target-device" if array_index == 0 else "dependency"))
+                array_index += 1
         elif t == f.T_SIGNATURE_CHAIN:
             _, sig, _ = k.field(f.T_SIGNATURE_CHAIN)
             sc = Cursor(sig)
@@ -146,7 +150,7 @@ def _inspect(data: bytes) -> tuple[dict, list[bytes]]:
     out["files"] = files
     out["signed"] = signature_count > 0
     out["signature_count"] = signature_count
-    out["dependencies"] = {"declared": deps_declared, "uids_best_effort": dep_uids}
+    out["dependencies"] = {"declared": deps_declared, "uids_best_effort": dep_uids, "items": dep_items}
     if unparsed:
         out["undecoded_blocks"] = unparsed
 
@@ -183,6 +187,36 @@ def _inspect(data: bytes) -> tuple[dict, list[bytes]]:
     else:
         out["data_note"] = "multiple data units: embedded file hashes not checked"
     return out, blobs
+
+
+def _dependency(payload: bytes, kind: str) -> dict:
+    """One prerequisite: UID, optional version range and localised names.
+
+    ``kind`` is ``target-device`` for the first prerequisite array (platform / product IDs the package
+    declares support for) and ``dependency`` for the second (packages that must already be installed).
+    """
+    item: dict = {"kind": kind, "uid": None, "names": [], "from_version": None, "to_version": None}
+    c = Cursor(payload)
+    while not c.done():
+        t, p, _ = c.field()
+        if t == f.T_UID and len(p) >= 4:
+            item["uid"] = struct.unpack("<I", p[:4])[0]
+        elif t == f.T_VERSION_RANGE:
+            vc = Cursor(p)
+            versions = []
+            while not vc.done():
+                _, v, _ = vc.field(f.T_VERSION)
+                if len(v) >= 12:
+                    versions.append(list(struct.unpack("<3i", v[:12])))
+            item["from_version"] = versions[0] if versions else None
+            item["to_version"] = versions[1] if len(versions) > 1 else None
+        elif t == f.T_ARRAY:
+            ac = Cursor(p)
+            ac.read_u32()
+            while not ac.done():
+                _, sp, _ = ac.field(in_array=True)
+                item["names"].append(sp.decode("utf-16-le", errors="replace"))
+    return item
 
 
 def _file_description(payload: bytes) -> dict:
