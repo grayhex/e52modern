@@ -19,7 +19,8 @@ fs.mkdirSync(shots, { recursive: true });
       }),
       errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
-    await page.goto(base + "/next/#lab");
+    await page.goto(base + "/next/#dev/lab");
+    await page.getByRole("button", { name: "Настройки", exact: true }).click();
     await page.selectOption("#language", "en");
     await page.selectOption("#theme", "dark");
     async function call(body) {
@@ -56,7 +57,8 @@ fs.mkdirSync(shots, { recursive: true });
         .isDisabled())
     )
       throw Error("Start enabled without firmware");
-    if ((await page.locator(".nav-link .asset-icon").count()) !== 20)
+    // 5 menu groups, 25 pages in the menu (Lucide icons) after the navigation restructure.
+    if ((await page.locator(".nav-link svg.nav-icon").count()) !== 25)
       throw Error("Navigation graphics missing");
     await page.getByLabel("Format", { exact: true }).selectOption("vpl");
     await page.getByLabel("VPL + FPSX", { exact: true }).setInputFiles([

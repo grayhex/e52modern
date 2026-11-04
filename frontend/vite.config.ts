@@ -1,7 +1,9 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
-  plugins: [react()],
+  // Tailwind generates the utility classes used by @harryy/react-file-browser (see src/file-browser.css).
+  plugins: [react(), tailwindcss()],
   base: '/next/',
   build: { outDir: '../symport/react_assets', emptyOutDir: true },
   server: {

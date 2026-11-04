@@ -4,7 +4,13 @@ import { packageLink } from '../utils/packages';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi, usePreferences } from '../state/app';
-import { catalogSchema, catalogPlanSchema, type CatalogApp } from '../api/catalog';
+import {
+  catalogSchema,
+  catalogPlanSchema,
+  guideSchema,
+  runtimeRequirementsSchema,
+  type CatalogApp,
+} from '../api/catalog';
 import { objectSchema, text, type payload as PayloadType } from '../api/workspace';
 import { Card, DeviceSelect, ErrorMessage } from '../components/ui';
 import { Field, Modal, JsonReport } from '../components/workspace';
@@ -185,7 +191,7 @@ export default function Catalog() {
               <a
                 className="btn ghost"
                 href={packageLink(
-                  'lab',
+                  'dev/lab',
                   app.delivery === 'automatic' ? 'catalog' : 'upload',
                   app.id,
                 )}
@@ -195,7 +201,7 @@ export default function Catalog() {
               <a
                 className="btn ghost"
                 href={packageLink(
-                  'inspector',
+                  'tools/certificates',
                   app.delivery === 'automatic' ? 'catalog' : 'upload',
                   app.id,
                 )}
@@ -210,7 +216,7 @@ export default function Catalog() {
             </div>
             {app.delivery_reason && <p className="note">{app.delivery_reason}</p>}
             {app.delivery === 'manual' && (
-              <a className="text-link" href="#installed">
+              <a className="text-link" href="#apps/installed">
                 {t('Transfer your package', 'Передать свой пакет')} →
               </a>
             )}
@@ -415,8 +421,66 @@ export default function Catalog() {
                 </a>
               </p>
             ))}
+          <CatalogExtras app={detail} />
           <JsonReport value={detail} />
         </Modal>
+      )}
+    </>
+  );
+}
+
+function CatalogExtras({ app }: { app: CatalogApp }) {
+  const { t } = usePreferences();
+  const guide = guideSchema.safeParse(app.guide);
+  const runtimes = runtimeRequirementsSchema.safeParse(app.runtime_requirements);
+  const conflicts = Array.isArray(app.conflicts_with) ? app.conflicts_with.map(String) : [];
+  return (
+    <>
+      {runtimes.success && runtimes.data.length > 0 && (
+        <div className="note">
+          <strong>
+            {t(
+              'Runtime required (not verified on the phone)',
+              'Нужна среда выполнения (на телефоне не проверена)',
+            )}
+          </strong>
+          <ul>
+            {runtimes.data.map((r) => (
+              <li key={r.runtime}>
+                {r.name} {r.min_version ? `≥ ${r.min_version}` : ''} — {r.declared_in}.{' '}
+                {t(
+                  'SymPort does not supply it and cannot see whether it is installed.',
+                  'SymPort её не поставляет и не видит, установлена ли она.',
+                )}
+              </li>
+            ))}
+          </ul>
+          <a className="text-link" href={packageLink('apps/dependencies', 'catalog', app.id)}>
+            {t('Check dependencies →', 'Проверить зависимости →')}
+          </a>
+        </div>
+      )}
+      {conflicts.length > 0 && (
+        <p className="note">
+          {t('Shares one application identity with: ', 'Один идентификатор приложения с: ')}
+          {conflicts.join(', ')}.{' '}
+          {t('Install only one of them.', 'Устанавливайте только одно из них.')}
+        </p>
+      )}
+      {guide.success && (
+        <section aria-label={guide.data.title}>
+          <h3>{guide.data.title}</h3>
+          <ol>
+            {guide.data.steps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+          {guide.data.docs?.startsWith('https://') && (
+            <a className="text-link" href={guide.data.docs} target="_blank" rel="noreferrer">
+              {t('Author documentation', 'Документация автора')}
+            </a>
+          )}
+        </section>
       )}
     </>
   );

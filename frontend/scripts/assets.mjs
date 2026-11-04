@@ -9,19 +9,34 @@ for (const name of ['fonts', 'brand', 'phones'])
     { recursive: true },
   );
 
+// Notices for every production dependency in the lock file (what can end up in the bundle), with
+// the licence text when the package ships one and the SPDX id otherwise.
+const lock = JSON.parse(readFileSync(new URL('package-lock.json', root), 'utf8'));
 const notices = [];
-for (const name of [
-  'react',
-  'react-dom',
-  'scheduler',
-  '@tanstack/react-query',
-  '@tanstack/query-core',
-  'zod',
-  'wavesurfer.js',
-]) {
+const names = Object.entries(lock.packages)
+  .filter(([key, entry]) => key.startsWith('node_modules/') && !entry.dev && !entry.optional)
+  .map(([key]) => key.slice('node_modules/'.length))
+  .filter((name, index, all) => all.indexOf(name) === index)
+  .sort();
+for (const name of names) {
   const base = new URL('node_modules/' + name + '/', root);
-  const metadata = JSON.parse(readFileSync(new URL('package.json', base), 'utf8'));
-  const license = readFileSync(new URL('LICENSE', base), 'utf8');
-  notices.push(name + ' ' + metadata.version + '\n' + license);
+  let metadata;
+  try {
+    metadata = JSON.parse(readFileSync(new URL('package.json', base), 'utf8'));
+  } catch {
+    continue;
+  }
+  let license = '';
+  for (const file of ['LICENSE', 'LICENSE.md', 'LICENSE.txt', 'license', 'License.md', 'LICENCE']) {
+    try {
+      license = readFileSync(new URL(file, base), 'utf8');
+      break;
+    } catch {
+      /* try the next conventional file name */
+    }
+  }
+  notices.push(
+    `${name} ${metadata.version} (${typeof metadata.license === 'string' ? metadata.license : JSON.stringify(metadata.license ?? 'see package')})\n${license}`,
+  );
 }
 writeFileSync(new URL('public/THIRD_PARTY_NOTICES.txt', root), notices.join('\n\n---\n\n'));

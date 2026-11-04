@@ -44,3 +44,17 @@ export const catalogPlanSchema = z.object({
   requirements: z.record(z.string(), z.array(z.string())),
 });
 export type CatalogApp = z.infer<typeof appSchema>;
+export const guideSchema = z.object({
+  title: z.string(),
+  steps: z.array(z.string()),
+  docs: z.string().optional(),
+});
+export const runtimeRequirementsSchema = z.array(
+  z.object({
+    runtime: z.string(),
+    name: z.string(),
+    min_version: z.string().nullish(),
+    declared_in: z.string(),
+    status: z.string(),
+  }),
+);

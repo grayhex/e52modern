@@ -27,8 +27,10 @@ const steps = [
 ] as const;
 export default function Workbench({
   page,
+  heading = true,
 }: {
   page: 'themes' | 'apps' | 'device' | 'overview' | 'activity';
+  heading?: boolean;
 }) {
   const api = useApi(),
     { t, device, setDevice } = usePreferences(),
@@ -88,7 +90,11 @@ export default function Workbench({
   } as const;
   return (
     <>
-      <h1>{t(titles[page][0], titles[page][1])}</h1>
+      {heading ? (
+        <h1>{t(titles[page][0], titles[page][1])}</h1>
+      ) : (
+        <h2>{t(titles[page][0], titles[page][1])}</h2>
+      )}
       <ErrorMessage
         error={
           state.error ?? operation.error ?? library.error ?? importTheme.error ?? saveReport.error
@@ -159,10 +165,13 @@ export default function Workbench({
                 >
                   {t('Download', 'Скачать')}
                 </a>
-                <a className="btn ghost" href={packageLink('lab', 'library', p.id, 'theme')}>
+                <a className="btn ghost" href={packageLink('dev/lab', 'library', p.id, 'theme')}>
                   {t('Test in emulator', 'Проверить в эмуляторе')}
                 </a>
-                <a className="btn ghost" href={packageLink('inspector', 'library', p.id, 'theme')}>
+                <a
+                  className="btn ghost"
+                  href={packageLink('tools/certificates', 'library', p.id, 'theme')}
+                >
                   {t('Inspect', 'Анализ')}
                 </a>
                 <button
@@ -439,10 +448,13 @@ export default function Workbench({
               >
                 {t('Download', 'Скачать')}
               </a>
-              <a className="btn ghost" href={packageLink('inspector', 'build', p.id, p.kind)}>
+              <a
+                className="btn ghost"
+                href={packageLink('tools/certificates', 'build', p.id, p.kind)}
+              >
                 {t('Inspect', 'Анализ')}
               </a>
-              <a className="btn ghost" href={packageLink('lab', 'build', p.id, p.kind)}>
+              <a className="btn ghost" href={packageLink('dev/lab', 'build', p.id, p.kind)}>
                 {t('Test in emulator', 'Проверить в эмуляторе')}
               </a>
             </div>
@@ -494,7 +506,7 @@ export default function Workbench({
     </>
   );
 }
-export function Updates() {
+export function Updates({ heading = true }: { heading?: boolean }) {
   const { t, device, setDevice } = usePreferences(),
     devices = useDevices(),
     phone = devices.data?.devices.find((d) => d.id === device);
@@ -515,7 +527,11 @@ export function Updates() {
   ];
   return (
     <>
-      <h1>{t('Firmware updates', 'Обновления прошивки')}</h1>
+      {heading ? (
+        <h1>{t('Firmware updates', 'Обновления прошивки')}</h1>
+      ) : (
+        <h2>{t('Firmware updates', 'Обновления прошивки')}</h2>
+      )}
       <Card>
         <DeviceSelect value={device} onChange={setDevice} />
         <dl className="dashboard-grid">

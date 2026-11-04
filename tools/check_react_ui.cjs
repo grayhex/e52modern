@@ -33,6 +33,7 @@ const server = spawn(python, ["-c", script, root], {
         viewport: { width: 1366, height: 768 },
       }),
       errors = [];
+    page.setDefaultTimeout(15000);
     page.on("pageerror", (error) => errors.push(error.message));
     for (let i = 0; i < 50; i++) {
       try {
@@ -43,35 +44,68 @@ const server = spawn(python, ["-c", script, root], {
       }
     }
     await page
-      .getByRole("heading", { name: "Обзор телефона", exact: true })
+      .getByRole("heading", { name: "Обзор устройства", exact: true })
       .waitFor();
+    await page.getByRole("button", { name: "Настройки", exact: true }).click();
     await page.selectOption("#language", "en");
     await page.selectOption("#theme", "dark");
-    await page.getByRole("link", { name: "Files", exact: true }).click();
+    await page.getByRole("link", { name: "File manager", exact: true }).click();
     await page.getByLabel("Connection", { exact: true }).selectOption("card");
-    await page
-      .getByRole("button", { name: "hello.txt", exact: false })
-      .waitFor();
-    const download = page.waitForEvent("download");
-    await page.getByRole("button", { name: "hello.txt", exact: false }).click();
-    const file = await download;
+    const browserView = page.locator(".phone-files");
+    await browserView.getByRole("checkbox", { name: "Select hello.txt" }).waitFor();
+    await browserView.getByRole("checkbox", { name: "Select hello.txt" }).click();
+    await browserView.getByRole("button", { name: "Download", exact: true }).click();
+    // The library prepares the download and offers a link; a top-level navigation must be an attachment.
+    const [file] = await Promise.all([
+      page.waitForEvent("download"),
+      page.getByRole("link", { name: "Open prepared download" }).click(),
+    ]);
     const dest = path.join(root, "download.txt");
     await file.saveAs(dest);
     if (fs.readFileSync(dest, "utf8") !== "actual private bytes")
       throw Error("Wrong download");
-    await page.getByRole("button", { name: "Delete", exact: true }).click();
-    await page.getByRole("dialog").waitFor();
-    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await browserView.getByRole("button", { name: "Delete", exact: true }).click();
+    await browserView.getByRole("dialog").waitFor();
+    await browserView.getByRole("button", { name: "Cancel", exact: true }).click();
     if (!fs.existsSync(path.join(root, "volume/hello.txt")))
       throw Error("Cancelled delete executed");
-    await page.getByLabel("New folder", { exact: true }).fill("new-folder");
-    await page.getByRole("button", { name: "Create", exact: true }).click();
-    await page.getByRole("button", { name: "Confirm", exact: true }).click();
-    await page
-      .getByRole("button", { name: "new-folder", exact: false })
-      .waitFor();
+    await browserView.getByRole("button", { name: "New folder", exact: true }).click();
+    await browserView.getByRole("dialog").getByRole("textbox").fill("new-folder");
+    await browserView.getByRole("button", { name: "Create folder", exact: true }).click();
+    for (let i = 0; i < 40 && !fs.existsSync(path.join(root, "volume/new-folder")); i++)
+      await page.waitForTimeout(250);
+    if (!fs.existsSync(path.join(root, "volume/new-folder")))
+      throw Error("mkdir UI state: " + JSON.stringify(fs.readdirSync(path.join(root, "volume"))) + root + " " + (await browserView.innerText()).replace(/\n+/g, " / ").slice(0, 600));
     if (!fs.statSync(path.join(root, "volume/new-folder")).isDirectory())
       throw Error("Directory not created");
+    // Existing files are never overwritten: uploading the same name must not change the bytes.
+    const clash = path.join(root, "hello.txt");
+    fs.writeFileSync(clash, "replacement");
+    await browserView.locator("input[type=file]").first().setInputFiles(clash);
+    // The browser asks what to do with the clash; "replace" is not offered because the device layer refuses it.
+    const clashDialog = browserView.getByRole("dialog");
+    await clashDialog.waitFor();
+    if (await clashDialog.getByRole("button", { name: /replace/i }).count())
+      throw Error("Replace must not be offered for phone files");
+    await clashDialog.getByRole("button", { name: /skip/i }).first().click();
+    await clashDialog.waitFor({ state: "hidden" });
+    await page.waitForTimeout(500);
+    if (fs.readFileSync(path.join(root, "volume/hello.txt"), "utf8") !== "actual private bytes")
+      throw Error("Existing phone file was overwritten");
+    // Preview goes through the same-origin phone-file endpoint: actual bytes, no sniffing, no scripts.
+    await browserView.getByText("hello.txt").first().dblclick();
+    await browserView.getByText("actual private bytes").waitFor();
+    await page.keyboard.press("Escape");
+    // Legacy URLs redirect to the new structure without adding history entries.
+    await page.goto("http://127.0.0.1:8786/next/#inspector?source=upload");
+    await page.locator("#page-tools-certificates h1").waitFor();
+    if (!(await page.evaluate(() => location.hash)).startsWith("#tools/certificates?source=upload"))
+      throw Error("Legacy inspector URL was not redirected with its query");
+    // Compact rail: icons only, accessible names kept.
+    await page.getByRole("button", { name: "Collapse menu to icons" }).click();
+    await page.getByRole("link", { name: "Device overview", exact: true }).waitFor();
+    if (await page.locator(".nav-text").first().isVisible()) throw Error("Compact rail still shows labels");
+    await page.getByRole("button", { name: "Expand menu" }).click();
     await page.setViewportSize({ width: 390, height: 844 });
     if (
       await page.evaluate(

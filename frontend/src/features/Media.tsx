@@ -274,7 +274,7 @@ function Gallery({ device }: { device: string }) {
                 <a
                   className="btn ghost"
                   href={
-                    '#ringtone?' +
+                    '#personalize/ringtones?' +
                     new URLSearchParams({ device, path: item.path, revision: item.revision })
                   }
                 >

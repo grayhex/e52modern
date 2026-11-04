@@ -58,6 +58,9 @@ class Catalog:
         for entry in self.entries.values():
             if entry['source_id'] and entry['source_id'] not in self.sources:
                 raise ValueError('Unknown curated source: ' + entry['source_id'])
+            for other in entry.get('conflicts_with', []):
+                if other not in self.entries:
+                    raise ValueError('Unknown conflicting application: ' + str(other))
 
     def list(self, filters: dict | None = None) -> list[dict]:
         filters = filters or {}
@@ -101,6 +104,11 @@ class Catalog:
             ordered.append(key)
         for key in selected:
             visit(key)
+        for key in ordered:
+            for other in self.entries[key].get('conflicts_with', []):
+                if other in ordered:
+                    problems.append(self.entries[key]['name'] + ' conflicts with ' + self.entries[other]['name']
+                                    + ': they share one application identity; choose one')
         filenames = {}
         for key in ordered:
             for artifact in self.sources.get(self.entries[key]['source_id'], {}).get('artifacts', []):
@@ -113,4 +121,6 @@ class Catalog:
         return {'ids': ordered, 'added_dependencies': [key for key in ordered if key not in selected],
                 'bytes': size, 'problems': problems, 'device': device,
                 'requirements': {key: self.entries[key].get('requirements', []) for key in ordered},
+                'runtime_requirements': {key: self.entries[key]['runtime_requirements'] for key in ordered
+                                         if self.entries[key].get('runtime_requirements')},
                 'warning': 'E52 hardware compatibility and installation are not established by package validation.'}

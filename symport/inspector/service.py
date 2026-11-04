@@ -37,8 +37,47 @@ def diagnose(message):
 
 
 class Inspector:
-    def __init__(self, repo, resolver, devices, lab):
+    def __init__(self, repo, resolver, devices, lab, firmware=None):
         self.root, self.resolver, self.devices, self.lab = repo / 'build/symport/inspector', resolver, devices, lab
+        self.firmware = firmware
+
+    def _firmware_dlls(self, data):
+        """DLL names and their provenance from a stored firmware index, or (None, None)."""
+        key = data.get('firmware_id')
+        if key is None:
+            return None, None
+        if self.firmware is None:
+            raise ValueError('Firmware Explorer is unavailable')
+        names, source = self.firmware.dll_names(key)
+        return names, source
+
+    def _resolve_sis(self, item):
+        name, raw, _hint = self.resolver(item)
+        if Path(name).suffix.lower() not in ('.sis', '.sisx'):
+            raise ValueError('Dependency analysis supports SIS/SISX packages')
+        validate_package(name, raw)
+        return name, raw
+
+    def dependencies(self, data):
+        from symport.deps import analyze_package, provided_summary
+        name, raw = self._resolve_sis(data)
+        runtimes = data.get('runtimes') or []
+        if not isinstance(runtimes, list) or len(runtimes) > 12:
+            raise ValueError('Provide up to 12 runtime packages')
+        provided = [provided_summary(self._resolve_sis(item)[1]) for item in runtimes]
+        dlls, source = self._firmware_dlls(data)
+        return analyze_package(raw, name=name, target=data.get('target'), firmware_dlls=dlls, firmware_source=source, provided=provided)
+
+    def bundle(self, data):
+        from symport.deps import build_bundle
+        name, raw = self._resolve_sis(data)
+        runtimes = data.get('runtimes') or []
+        if not isinstance(runtimes, list) or len(runtimes) > 12:
+            raise ValueError('Provide up to 12 runtime packages')
+        resolved = [self._resolve_sis(item) for item in runtimes]
+        dlls, source = self._firmware_dlls(data)
+        return build_bundle(name, raw, resolved, target=data.get('target'), firmware_dlls=dlls, firmware_source=source,
+                            allow_incomplete=data.get('allow_incomplete') is True)
 
     def report(self, key):
         if not isinstance(key, str) or not HEX.fullmatch(key):
@@ -57,6 +96,10 @@ class Inspector:
         action = data.get('action')
         if action == 'diagnose':
             return diagnose(data.get('message'))
+        if action == 'dependencies':
+            return self.dependencies(data)
+        if action == 'bundle':
+            return self.bundle(data)
         if action == 'report':
             return self.report(data.get('id'))
         if action == 'list':
@@ -154,6 +197,11 @@ class Inspector:
             checks = Report('inspector static compatibility')
             binary['compatibility'] = evaluate(binary, profile, firmware, checks) if is_e52 else 'unknown'
             binary['checks'] = checks.to_dict()['checks']
+        from symport.deps import analyze_package
+        dlls, dll_source = self._firmware_dlls(data)
+        if dlls is None and firmware is not None:
+            dlls, dll_source = set(firmware.dlls), 'user-supplied firmware profile'
+        report['dependency_analysis'] = analyze_package(raw, name=name, target=target, firmware_dlls=dlls, firmware_source=dll_source)
         report['capabilities'] = sorted(set(report['capabilities']))
         report['issues'] = list(dict.fromkeys(issues))
         report['compatibility'] = 'incompatible' if 'unsupported-os' in issues or signatures['status'] == 'invalid' else 'unknown'

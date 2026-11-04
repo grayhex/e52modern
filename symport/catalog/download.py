@@ -15,7 +15,8 @@ from urllib.parse import urlsplit
 
 from .packages import MAX_PACKAGE, validate_package
 
-HOSTS = frozenset({'github.com', 'release-assets.githubusercontent.com', 'raw.githubusercontent.com'})
+# Only hosts of curated, hash-pinned sources: GitHub releases and the author's own download page for X-plore.
+HOSTS = frozenset({'github.com', 'release-assets.githubusercontent.com', 'raw.githubusercontent.com', 'www.lonelycatgames.com'})
 
 
 def public_https(url: str, resolver=socket.getaddrinfo) -> None:

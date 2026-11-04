@@ -18,7 +18,7 @@ bridge-build = ["pyinstaller>=6.13,<7"]
 phone = ["python-gammu>=3.2.6,<4"]
 media = ["pillow>=10"]
 theme = ["pillow>=10"]
-dev = ["pytest>=8", "ruff>=0.5", "pillow>=10"]
+dev = ["pytest>=8", "ruff>=0.5", "pillow>=10", "pyyaml>=6"]
 
 [project.scripts]
 symport = "symport.cli:main"

@@ -1,0 +1,77 @@
+/* Utilities for @harryy/react-file-browser only: no Tailwind preflight, so the rest of the app is untouched.
+   The library ships no CSS and reads --fb-* tokens; they are bound to the Nokia Classic tokens here. */
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@source '../node_modules/@harryy/react-file-browser/dist';
+
+:root {
+  --fb-accent: var(--nokia-brand);
+  --fb-accent-soft: var(--nokia-brand-soft);
+  --fb-bg: var(--nokia-surface-alt);
+  --fb-surface: var(--nokia-surface);
+  --fb-surface-2: var(--nokia-surface-strong);
+  --fb-border: var(--nokia-border);
+  --fb-border-strong: var(--nokia-brand-border);
+  --fb-text: var(--nokia-text);
+  --fb-muted: var(--nokia-muted);
+  --fb-ok: var(--nokia-success);
+  --fb-ok-soft: var(--nokia-success-soft);
+  --fb-warn: var(--nokia-warning);
+  --fb-warn-soft: var(--nokia-warning-soft);
+  --fb-danger: var(--nokia-danger);
+  --fb-danger-soft: var(--nokia-danger-soft);
+  --fb-folder: #d9a441;
+  --fb-radius: var(--nokia-radius-panel);
+  --fb-gap: 0.25rem;
+  --fb-shadow: var(--nokia-shadow);
+}
+/* Scoped Tailwind-preflight equivalent for the browser (above the older CSS, below utilities). The library
+   renders its menus, dialogs and transfer widget inside this wrapper, so scoping is sufficient. */
+@layer base {
+  .phone-files,
+  .phone-files *,
+  .phone-files *::before,
+  .phone-files *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
+  }
+  .phone-files button,
+  .phone-files input,
+  .phone-files select,
+  .phone-files textarea {
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    background-color: transparent;
+    border-radius: 0;
+    min-height: 0;
+    opacity: 1;
+  }
+  .phone-files button:not(:disabled) {
+    cursor: pointer;
+  }
+  .phone-files svg,
+  .phone-files img {
+    display: block;
+  }
+  .phone-files ul,
+  .phone-files ol {
+    list-style: none;
+  }
+  .phone-files table {
+    border-collapse: collapse;
+    width: auto;
+  }
+  .phone-files h1,
+  .phone-files h2,
+  .phone-files h3,
+  .phone-files p {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  .phone-files a {
+    color: inherit;
+  }
+}

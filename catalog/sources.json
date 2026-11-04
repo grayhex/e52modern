@@ -414,5 +414,41 @@
         "publisher_sha256": null
       }
     ]
+  },
+  "jellyfin-s60-en": {
+    "homepage": "https://github.com/Hinduc0der/jellyfin-s60v3/releases/tag/v0.3.22",
+    "artifacts": [
+      {
+        "name": "jellyfin-0.3.22-EN.sis",
+        "url": "https://github.com/Hinduc0der/jellyfin-s60v3/releases/download/v0.3.22/jellyfin-0.3.22-EN.sis",
+        "size": 111308,
+        "sha256": "c73af8600fbe1f4b745ea5a24d7d361bb3ceb340f7dc636c68d60bab5c180cab",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "jellyfin-s60-ru": {
+    "homepage": "https://github.com/Hinduc0der/jellyfin-s60v3/releases/tag/v0.3.22",
+    "artifacts": [
+      {
+        "name": "jellyfin-0.3.22-RU.sis",
+        "url": "https://github.com/Hinduc0der/jellyfin-s60v3/releases/download/v0.3.22/jellyfin-0.3.22-RU.sis",
+        "size": 111980,
+        "sha256": "be1b6cf50261d3db22c45ca7aa07d2e322e7ecccf1cd68f99e19d8a28acd7b9c",
+        "publisher_sha256": null
+      }
+    ]
+  },
+  "xplore": {
+    "homepage": "https://www.lonelycatgames.com/apps/xplore-symbian",
+    "artifacts": [
+      {
+        "name": "x-plore_s60_3rd_1_64.sisx",
+        "url": "https://www.lonelycatgames.com/?wpdmdl=509",
+        "size": 510612,
+        "sha256": "283c9a0b952e9f959e44b0138c61397decb165fa0354bab74c54a18a73ae2d5c",
+        "publisher_sha256": null
+      }
+    ]
   }
 }

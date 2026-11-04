@@ -1,0 +1,58 @@
+{
+  "id": "xplore",
+  "name": "X-plore (S60 3rd)",
+  "category": "system",
+  "developer": "Lonely Cat Games",
+  "description": "Двухпанельный файловый менеджер для Symbian: просмотр, копирование и архивы. Официальная сборка автора 1.64 для S60 3rd/5th.",
+  "version": "1.64",
+  "release_date": "2020-01-15",
+  "release_tag": null,
+  "source_commit": "5defbcca52356800f29c6c0e0aa334d9e2c89052",
+  "platforms": [
+    "Symbian 9.x",
+    "S60 3rd Edition",
+    "S60 5th Edition"
+  ],
+  "format": "sisx",
+  "homepage": "https://www.lonelycatgames.com/apps/xplore-symbian",
+  "license": "Исходники: Apache-2.0 (общественное достояние с 2015); бинарник 1.64 — бесплатная официальная сборка автора",
+  "redistribution": "official-download-only",
+  "delivery": "automatic",
+  "manual_url": "https://www.lonelycatgames.com/download/x-plore_s60_3rd_1_64-sisx",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Работает с файлами телефона и карты; сетевые функции для основной работы не нужны.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "SIS подписан самоподписанным сертификатом «Lonely Cat Games»; срок действия истёк 2025-10-23. SymPort не обходит проверки: телефон может отклонить установку (см. Certificate Inspector).",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "SIS объявляет S60 3rd Edition (0x101F7961, как в профиле E52) и S60 5th; выполнение на E52 не проверялось, сертификат просрочен.",
+  "sources": [
+    "https://www.lonelycatgames.com/apps/xplore-symbian",
+    "https://github.com/mice777/X-plore-Symbian"
+  ],
+  "checked_at": "2026-11-04",
+  "source_id": "xplore",
+  "limitations": [
+    "Сертификат пакета просрочен; установка на E52 не проверялась.",
+    "Воспроизводимая сборка из исходников не реализована: нужны Visual Studio 2008, SDK S60 3rd и Windows-утилиты автора (docs/XPLORE.md).",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline",
+    "recommended"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Только S60 3rd/5th Edition; зависимых пакетов в SIS не объявлено"
+  ],
+  "guide": {
+    "title": "X-plore: установка",
+    "steps": [
+      "Скачайте пакет через каталог (источник — сайт автора, SHA-256 закреплён).",
+      "Передайте SIS на телефон и откройте его в диспетчере файлов.",
+      "Подтвердите установку на экране телефона; при отказе по сертификату запишите точный текст ошибки."
+    ],
+    "docs": "https://www.lonelycatgames.com/apps/xplore-symbian"
+  }
+}

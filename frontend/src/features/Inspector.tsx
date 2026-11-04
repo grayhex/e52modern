@@ -276,7 +276,7 @@ export default function Inspector() {
             ))}
           </>
         )}
-        <a className="text-link" href="#jailbreak">
+        <a className="text-link" href="#tools/jailbreak">
           Experimental Jailbreak Manager →
         </a>
       </Card>
@@ -295,7 +295,8 @@ export default function Inspector() {
           },
           objectSchema,
         );
-        if (action === 'emulate') location.assign('#lab?report=' + encodeURIComponent(text(r.id)));
+        if (action === 'emulate')
+          location.assign('#dev/lab?report=' + encodeURIComponent(text(r.id)));
         else setStatus(text(r.status));
       })}
     </>

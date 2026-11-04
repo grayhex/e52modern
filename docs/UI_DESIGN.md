@@ -1,8 +1,35 @@
-# Дизайн SymPort: Nimbus
+# Дизайн SymPort: Nokia Classic
 
-Текущий визуальный референс — приложенный `nimbus-the-wallet-built-for-everyone-DESIGN.md`.
-Его параметры применены к существующим сценариям SymPort: телефон, данные,
-каталог, темы и разработка. Предметная область кошелька в приложение не переносится.
+Интерфейс React приведён к **Nokia Classic** — деловой облик Nokia PC Suite / Eseries эпохи S60 3rd FP2
+(2008–2010) в современной адаптации. Спецификация — [design/nokia-classic.md](design/nokia-classic.md);
+Nimbus (cyan `#22D3EE`, blue `#0E74E9`, радиус 16 px) больше не основа интерфейса. Откат на прежний
+вид — `/classic` (старый HTML, не тронут).
+
+Фирменный цвет **`#124191`** подтверждён источником; остальные значения — проектные токены
+«в духе эпохи», а не восстановленный брендбук Nokia. Логотип — собственный вектор классического
+сплошного wordmark (`web_assets/brand`), официальная связь с Nokia не заявляется. Шрифты Nokia не
+используются (стек `Segoe UI, Tahoma, Arial`).
+
+| Параметр | Реализация |
+|---|---|
+| Токены | `symport/web_assets/nokia-classic.css`: `--nokia-*` (light/dark), старые `--bg/--panel/--blue…` указывают на них |
+| Каскад | `frontend/src/styles.css`: `@layer legacy, theme, base, utilities`; прежние CSS и Nokia Classic — в `legacy`, утилиты Tailwind только для файлового браузера — выше |
+| Акцент | `#124191` (light); в dark — `#91B8FF` для контраста, логотип — белый вариант |
+| Поверхности | canvas `#F1F3F6`, панели белые, граница `#CBD3DC`, радиус 5–7 px, без тяжёлых теней |
+| Статусы | цвет + иконка + текст (`status-chip`), зелёный только для успеха/подключения |
+| Навигация | боковая панель 232 px, активный пункт — `brand-soft` и полоса 3 px слева; см. [NAVIGATION.md](NAVIGATION.md) |
+| Дашборд | MUI (Card, Chip, LinearProgress, Stack) + `@mui/x-charts`, тема `dashboard/muiTheme.ts` на токенах Nokia; только значения, которые отдаёт транспорт |
+| Файловый браузер | `@harryy/react-file-browser`, токены `--fb-*` привязаны к `--nokia-*` |
+| Иконки | Lucide, 18 px, `currentColor`, подписи сохранены |
+| Доступность | skip-link, фокус-кольцо, `aria-current`, `aria-expanded`, `inert` для скрытого меню, reduced-motion, касания ≥ 44 px на телефоне |
+
+Не реализовано из спецификации (честно): набор before/after-снимков для всех разделов и light/dark на 390 px
+для каждой страницы; Ringtone Studio, Emulator Lab и Jailbreak получили токены и общие компоненты, но не
+перерисованы отдельно. Скриншоты в [screenshots/](screenshots/) сняты с работающего UI.
+
+## История: Nimbus
+
+Ниже — прежнее описание Nimbus; оно сохранено для `/classic` и контекста.
 
 | Параметр | Реализация |
 |---|---|

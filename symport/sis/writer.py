@@ -1,11 +1,12 @@
 """Experimental deterministic SIS 9.x writer for arbitrary installed files.
 
 Profile (matches the reference implementation's canonical package, minus the E32-only rules):
-unsigned, English only, stored (uncompressed) data, SHA-1 file hashes, install type SA, no
-dependency/prerequisite elements, no conditional blocks, no embedded SIS, creation date fixed
-for reproducibility.
+unsigned, English only, stored (uncompressed) data, SHA-1 file hashes, install type SA, optional
+prerequisite elements (target platform IDs and package dependencies, encoded as in real
+MakeSIS output), no conditional blocks, no embedded SIS, creation date fixed for reproducibility.
 
-NOT validated by MakeSIS/SignSIS or on a phone. Dependencies declared in a .pkg are NOT encoded.
+NOT validated by MakeSIS/SignSIS or on a phone. Dependencies declared in a .pkg are NOT encoded
+unless passed explicitly through ``SisPackage.platforms`` / ``SisPackage.dependencies``.
 """
 from __future__ import annotations
 
@@ -25,12 +26,22 @@ class SisFile:
 
 
 @dataclass
+class SisDependency:
+    uid: int
+    name: str
+    min_version: tuple[int, int, int] = (0, 0, 0)
+    max_version: tuple[int, int, int] | None = None
+
+
+@dataclass
 class SisPackage:
     uid: int
     name: str
     vendor: str
     version: tuple[int, int, int] = (1, 0, 0)
     files: list[SisFile] = field(default_factory=list)
+    platforms: list[int] = field(default_factory=list)          # "S60ProductID" target-device UIDs
+    dependencies: list[SisDependency] = field(default_factory=list)
 
 
 def validate(pkg: SisPackage) -> list[str]:
@@ -63,6 +74,14 @@ def validate(pkg: SisPackage) -> list[str]:
     return problems
 
 
+def _dependency(uid: int, name: str, low, high=None) -> bytes:
+    versions = f.field(f.T_VERSION, b"".join(f.u32(v) for v in low))
+    if high is not None:
+        versions += f.field(f.T_VERSION, b"".join(f.u32(v) for v in high))
+    payload = f.field(f.T_UID, f.u32(uid)) + f.field(f.T_VERSION_RANGE, versions) + f.strings(name)
+    return f.field(f.T_DEPENDENCY, payload, in_array=True)
+
+
 def build(pkg: SisPackage) -> bytes:
     problems = validate(pkg)
     if problems:
@@ -93,7 +112,10 @@ def build(pkg: SisPackage) -> bytes:
         info + f.field(f.T_SUPPORTED_OPTIONS, f.array(f.T_SUPPORTED_OPTION))
         + f.field(f.T_SUPPORTED_LANGUAGES,
                   f.array(f.T_LANGUAGE, f.field(f.T_LANGUAGE, f.u32(1), True)))
-        + f.field(f.T_PREREQUISITES, f.array(f.T_DEPENDENCY) + f.array(f.T_DEPENDENCY))
+        + f.field(f.T_PREREQUISITES,
+                  f.array(f.T_DEPENDENCY, b"".join(_dependency(u, "S60ProductID", (0, 0, 0)) for u in pkg.platforms))
+                  + f.array(f.T_DEPENDENCY, b"".join(_dependency(d.uid, d.name, d.min_version, d.max_version)
+                                                      for d in pkg.dependencies)))
         + f.field(f.T_PROPERTIES, f.array(f.T_PROPERTY)) + block
         + f.field(f.T_DATA_INDEX, f.u32(0)))
     compressed = f.compressed_raw(controller)

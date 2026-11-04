@@ -4,7 +4,7 @@ from __future__ import annotations
 import struct
 
 # field type ids (as used by the reference implementation / SIS 9.x format)
-T_STRING, T_ARRAY, T_COMPRESSED, T_VERSION = 1, 2, 3, 4
+T_STRING, T_ARRAY, T_COMPRESSED, T_VERSION, T_VERSION_RANGE = 1, 2, 3, 4, 5
 T_DATE, T_TIME, T_DATETIME, T_UID, T_LANGUAGE = 6, 7, 8, 9, 11
 T_CONTENTS, T_CONTROLLER, T_INFO, T_SUPPORTED_LANGUAGES = 12, 13, 14, 15
 T_SUPPORTED_OPTIONS, T_PREREQUISITES, T_DEPENDENCY, T_PROPERTIES, T_PROPERTY = 16, 17, 18, 19, 20
