@@ -95,4 +95,3 @@ Tests cover path/ZIP exclusions, key non-retention, wrong targets, server gates,
 backup, confirmed staging, manual observations and rollback conflict protection. Browser
 E2E uses synthetic benign fixtures and a temporary volume, not a physical E52 jailbreak.
 
-![Controlled manual workflow and rollback — English / Nimbus Dark](screenshots/jailbreak-dark-en.png)
