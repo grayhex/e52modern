@@ -369,10 +369,18 @@ export default function Workbench({
             <div className="react-fields">
               {['rm', 'firmware', 'notes'].map((k) => (
                 <Field key={k} label={k === 'notes' ? t('Notes', 'Заметки') : k}>
-                  <input
-                    value={text(report[k])}
-                    onChange={(e) => setProtocol({ ...report, [k]: e.target.value })}
-                  />
+                  {k === 'notes' ? (
+                    <textarea
+                      rows={2}
+                      value={text(report[k])}
+                      onChange={(e) => setProtocol({ ...report, [k]: e.target.value })}
+                    />
+                  ) : (
+                    <input
+                      value={text(report[k])}
+                      onChange={(e) => setProtocol({ ...report, [k]: e.target.value })}
+                    />
+                  )}
                 </Field>
               ))}
             </div>
