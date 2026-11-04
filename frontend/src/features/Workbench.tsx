@@ -66,6 +66,12 @@ export default function Workbench({
     },
   });
   const report = protocol ?? state.data?.device_report ?? {};
+  const saveReport = useMutation({
+    mutationFn: () => api.request('/api/device-report', payload(report), objectSchema),
+    onSuccess: async () => {
+      await cache.invalidateQueries({ queryKey: ['workspace'] });
+    },
+  });
   function run(action: string, extra: z.infer<typeof objectSchema> = {}) {
     operation.mutate({ action, ...extra });
   }
@@ -83,7 +89,11 @@ export default function Workbench({
   return (
     <>
       <h1>{t(titles[page][0], titles[page][1])}</h1>
-      <ErrorMessage error={state.error ?? operation.error ?? library.error ?? importTheme.error} />
+      <ErrorMessage
+        error={
+          state.error ?? operation.error ?? library.error ?? importTheme.error ?? saveReport.error
+        }
+      />
       {page === 'themes' && (
         <>
           <Card>
@@ -397,12 +407,8 @@ export default function Workbench({
             ))}
             <button
               className="btn primary"
-              onClick={() =>
-                confirm.ask(t('Save your manual observations?', 'Сохранить ручные наблюдения?'), {
-                  endpoint: 'device-report',
-                  ...report,
-                })
-              }
+              disabled={saveReport.isPending}
+              onClick={() => saveReport.mutate()}
             >
               {t('Save protocol', 'Сохранить протокол')}
             </button>
@@ -474,9 +480,7 @@ export default function Workbench({
             },
             objectSchema,
           );
-        } else if (body.endpoint === 'device-report')
-          await api.request('/api/device-report', payload(data), objectSchema);
-        else await operation.mutateAsync(data);
+        } else await operation.mutateAsync(data);
         await cache.invalidateQueries({ queryKey: ['workspace'] });
       })}
     </>
