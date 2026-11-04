@@ -9,7 +9,7 @@
 | Запись | Файл | Размер | SHA-256 |
 |---|---|---|---|
 | Jellyfin for S60 (English) | `jellyfin-0.3.22-EN.sis` | 111 308 | `c73af8600fbe1f4b745ea5a24d7d361bb3ceb340f7dc636c68d60bab5c180cab` |
-| Jellyfin for S60 (Русский) | `jellyfin-0.3.22-RU.sis` | 111 980 | `be1b6cf50261d3db22c45ca7aa07d2e322e7ecccf1cd68f99e19d8a28acd7b9c` |
+| Jellyfin for S60 (RU) | `jellyfin-0.3.22-RU.sis` | 111 980 | `be1b6cf50261d3db22c45ca7aa07d2e322e7ecccf1cd68f99e19d8a28acd7b9c` |
 
 Получение — официальный GitHub Release, SHA-256 закреплён в `catalog/sources.json` (хеш, опубликованный автором, у релиза не
 указан, поэтому `publisher_sha256: null`; значение измерено при проверке источника). Загрузчик проверяет размер и SHA-256, структуру SIS и

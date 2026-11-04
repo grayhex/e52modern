@@ -65,7 +65,7 @@
     "docs": "https://github.com/Hinduc0der/jellyfin-s60v3/tree/v0.3.22/docs"
   },
   "id": "jellyfin-s60-ru",
-  "name": "Jellyfin for S60 (Русский)",
+  "name": "Jellyfin for S60 (RU)",
   "description": "Клиент Jellyfin для телефонов S60 3rd Edition: библиотека, продолжение просмотра и музыка; видео отдаёт RTSP-companion. Русский интерфейс.",
   "source_id": "jellyfin-s60-ru",
   "conflicts_with": [

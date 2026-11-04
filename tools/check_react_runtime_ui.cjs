@@ -20,6 +20,7 @@ fs.mkdirSync(shots, { recursive: true });
       errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
     await page.goto(base + "/next/#dev/lab");
+    await page.getByRole("button", { name: "Настройки", exact: true }).click();
     await page.selectOption("#language", "en");
     await page.selectOption("#theme", "dark");
     async function call(body) {

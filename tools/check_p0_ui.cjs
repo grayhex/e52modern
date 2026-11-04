@@ -74,7 +74,7 @@ const server = spawn(python, ["-m", "symport.web", "--repo", root, "--port", Str
     await modal.getByText(/companion/i).first().waitFor();
     await modal.getByText(/untested|не проверен/i).first().waitFor().catch(() => {});
     await page.keyboard.press("Escape");
-    await page.locator(".catalog-app", { hasText: "Jellyfin for S60 (Русский)" }).waitFor();
+    await page.locator(".catalog-app", { hasText: "Jellyfin for S60 (RU)" }).waitFor();
     await page.locator(".catalog-app", { hasText: "X-plore" }).first().waitFor();
 
     // --- Firmware & ROM Explorer

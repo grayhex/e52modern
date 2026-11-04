@@ -1064,7 +1064,10 @@
     "В справочнике есть более новая версия. Запись на телефон отключена до появления проверенной процедуры восстановления.": "A newer version is listed. Physical-device flashing is disabled until a verified recovery procedure is available.",
     "Клавиатура": "Keypad",
     "Настройки звука": "Sound settings",
-    "Дополнительные настройки звука": "Advanced audio settings"
+    "Дополнительные настройки звука": "Advanced audio settings",
+    "Клиент Jellyfin для телефонов S60 3rd Edition: библиотека, продолжение просмотра и музыка; видео отдаёт RTSP-companion. Английский интерфейс.": "Jellyfin client for S60 3rd Edition phones: library, continue watching and music; video is served by the RTSP companion. English interface.",
+    "Клиент Jellyfin для телефонов S60 3rd Edition: библиотека, продолжение просмотра и музыка; видео отдаёт RTSP-companion. Русский интерфейс.": "Jellyfin client for S60 3rd Edition phones: library, continue watching and music; video is served by the RTSP companion. Russian interface.",
+    "Двухпанельный файловый менеджер для Symbian: просмотр, копирование и архивы. Официальная сборка автора 1.64 для S60 3rd/5th.": "Two-pane file manager for Symbian: browsing, copying and archives. Official author build 1.64 for S60 3rd/5th."
   },
   "ru": {
     "${key}": "${ключ}",
