@@ -1,3 +1,6 @@
+// An operation is offered when verified, or when it is a read that has not been probed yet (the read itself is the probe).
+const matrixOperations={'calendar-read':['calendar.read','tasks.read'],'contacts-read':['contacts.read'],'sms-read':['sms.read']};
+function capabilityOffered(device,name){if((device.capabilities||[]).includes(name)||(name==='calendar-read'&&(device.capabilities||[]).includes('tasks-read')))return true;return (matrixOperations[name]||[]).some(op=>{const state=device.capability_matrix?.[op];return state&&state.attempt!=='blocked'});}
 "use strict";
 const suite=id=>document.getElementById(id);
 let contactRows=[],selectedContacts=new Set(),contactPage=0;
@@ -12,7 +15,7 @@ function suiteDevices(devices){
  for(const select of document.querySelectorAll('.suite-device')){
   const value=select.value;select.replaceChildren();
   const placeholder=el('option','','Выберите подключённый телефон');placeholder.value='';select.append(placeholder);
-  for(const device of devices.filter(d=>(d.connected||(d.configured&&select.dataset.transferOnly))&&(!select.dataset.filesOnly||d.capabilities.includes('files'))&&(!select.dataset.transferOnly||d.capabilities.includes('transfer'))&&(!select.dataset.mediaOnly||d.capabilities.includes('media-read'))&&(!select.dataset.capability||(d.capabilities.includes(select.dataset.capability)||(select.dataset.capability==='calendar-read'&&d.capabilities.includes('tasks-read')))))){
+  for(const device of devices.filter(d=>(d.connected||(d.configured&&select.dataset.transferOnly))&&(!select.dataset.filesOnly||d.capabilities.includes('files'))&&(!select.dataset.transferOnly||d.capabilities.includes('transfer'))&&(!select.dataset.mediaOnly||d.capabilities.includes('media-read'))&&(!select.dataset.capability||capabilityOffered(d,select.dataset.capability)))){
    const option=el('option','',(device.name||device.model||device.id)+' · '+tr(device.configured&&!device.connected?'Configured':device.connection_kind||device.transport));option.value=device.id;option.dataset.capabilities=JSON.stringify(device.capabilities);select.append(option);
   }
   if([...select.options].some(o=>o.value===value))select.value=value;

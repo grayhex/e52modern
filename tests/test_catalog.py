@@ -351,7 +351,9 @@ def test_insufficient_space_never_starts_network_or_writes(tmp_path):
 
     class NoSpace:
         def devices(self):
-            return [{"id": "phone", "connected": True, "capabilities": ["files"], "free": 0}]
+            from tests.capfake import row
+
+            return [row({"id": "phone", "connected": True, "free": 0}, available=["files.list"])]
 
         def execute(self, data):
             pytest.fail("Phone writes must not start")
@@ -371,7 +373,8 @@ def test_catalog_uses_transport_receipt_without_inventing_readback(tmp_path, cap
     catalog_fixture(tmp_path)
     class Transport:
         def devices(self):
-            return [{'id':'bt', 'connected':connected, 'configured':True, 'free':None, 'capabilities':['transfer', capability]}]
+            from tests.capfake import row
+            return [row({'id':'bt', 'connected':connected, 'configured':True, 'free':None}, untested_writes=['packages.transfer', 'files.stage' if capability == 'files-stage' else 'packages.opp-push'])]
         def execute(self, data):
             assert data['action'] == 'software-transfer' and data['confirm'] is True
             if capability == 'opp-push':

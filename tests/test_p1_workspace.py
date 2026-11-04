@@ -151,7 +151,10 @@ def test_partial_recovery_requires_ack_and_respects_model(collections):
             }
         )
     service.devices.transport.devices = lambda: [
-        {"id": "card", "connected": True, "model": "Nokia E72", "capabilities": ["transfer"]}
+        __import__("tests.capfake", fromlist=["row"]).row(
+            {"id": "card", "connected": True, "model": "Nokia E72"},
+            untested_writes=["packages.transfer"],
+        )
     ]
     p = service.execute({"action": "recovery-plan", **req})
     assert any("differs" in r for r in p["problems"])
@@ -187,7 +190,9 @@ class ObservedTransport:
             "firmware": "081.003",
             "connected": True,
             "transport": "test-double",
-            "capabilities": ["device-details"],
+            "capability_matrix": __import__("tests.capfake", fromlist=["row"]).row(
+                {}, available=["identity.read"]
+            )["capability_matrix"],
             "imei": "123456789012345",
             "battery": 0,
         }

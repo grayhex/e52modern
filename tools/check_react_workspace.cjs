@@ -25,7 +25,8 @@ from symport.phone.local import LocalTransports
 r=Path(sys.argv[1]);v=r/'volume';(v/'Images').mkdir(parents=True);Image.new('RGB',(640,480),'#22d3ee').save(v/'Images/sample.jpg');(v/'sample.wav').write_bytes(audio_bytes(8));(v/'hello.txt').write_text('Keep this original');(r/'fixture.zip').write_bytes(archive_bytes());(r/'app.sis').write_bytes(sis());(r/'theme.sis').write_bytes(sis(True))
 os.environ.update(SYMPORT_DEVICE_ROOTS=json.dumps({'card':str(v)}),SYMPORT_GAMMU_CONFIG='mock-only',SYMPORT_CONNECTIONS_FILE='',SYMPORT_MGO_URL='',SYMPORT_BRIDGE_URL='')
 w=Workbench(r);local=LocalTransports(r);phone=MockPhone();local.personal.invoke=phone.invoke
-local.devices=lambda:local.files.devices()+[dict(phone.identity,id='gammu',transport='gammu',connected=True,model='Nokia E52 (mock transport)',firmware='081.003',capabilities=['device-details','personal-data','contacts-read','calendar-read','tasks-read','sms-read'],capability_status={k:{'status':'available'} for k in phone.records},sms_send_verified=False)]
+from tests.capfake import row as capability_row
+local.devices=lambda:local.files.devices()+[capability_row(dict(phone.identity,id='gammu',transport='gammu',connected=True,model='Nokia E52 (mock transport)',firmware='081.003',sms_send_verified=False),available=['identity.read','contacts.read','calendar.read','tasks.read','sms.read'])]
 w.devices.transport=local;w.lab.agent=MockMgo()
 ThreadingHTTPServer(('127.0.0.1',8787),make_handler(w)).serve_forever()`;
 const server = spawn(python, ["-c", script, root], {

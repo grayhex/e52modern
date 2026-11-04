@@ -60,6 +60,9 @@ class LocalTransports:
                             "connection_kind",
                             "connected",
                             "capabilities",
+                            "capability_matrix",
+                            "capability_fingerprint",
+                            "capabilities_checked_at",
                             "evidence",
                             "configured_target",
                         )

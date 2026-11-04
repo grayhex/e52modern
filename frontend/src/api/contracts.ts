@@ -1,6 +1,14 @@
 import { z } from 'zod';
 const maybeText = z.string().nullish();
 const maybeNumber = z.number().nullish();
+export const capabilityStateSchema = z.object({
+  mode: z.enum(['read', 'write']),
+  status: z.enum(['available', 'not-tested', 'unsupported', 'error']),
+  attempt: z.enum(['verified', 'unverified', 'confirmed-only', 'blocked']),
+  source: z.string(),
+  evidence: z.string(),
+  checked_at: z.string(),
+});
 export const deviceSchema = z.object({
   id: z.string(),
   name: maybeText,
@@ -18,6 +26,9 @@ export const deviceSchema = z.object({
   imei: maybeText,
   evidence: maybeText,
   capabilities: z.array(z.string()),
+  capability_matrix: z.record(z.string(), capabilityStateSchema).optional(),
+  capability_fingerprint: z.string().optional(),
+  capabilities_checked_at: z.string().optional(),
   sms_send_verified: z.boolean().optional(),
   usb_mode: maybeText,
   life_timer_hours: maybeNumber,
@@ -59,6 +70,8 @@ export const connectionSchema = z.object({
   connected: z.boolean(),
   relay_token: z.string().optional(),
 });
+export type CapabilityState = z.infer<typeof capabilityStateSchema>;
+export const recheckSchema = z.object({ device: deviceSchema });
 export type Device = z.infer<typeof deviceSchema>;
 export type FileEntry = z.infer<typeof filesSchema>['entries'][number];
 export type Json = string | number | boolean | null | Json[] | { [key: string]: Json };

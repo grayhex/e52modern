@@ -94,7 +94,7 @@ describe('dashboard is identical for E52 and E72', () => {
     ])
       expect(bare.headings).toContain(title);
   });
-  it('takes storage from another connected volume when the identified phone has none', async () => {
+  it('does not borrow storage from an unrelated volume when the identified phone has none', async () => {
     const volume = {
       id: 'card',
       transport: 'mounted-volume',
@@ -104,7 +104,8 @@ describe('dashboard is identical for E52 and E72', () => {
       free: 2 * 1024 ** 3,
     };
     const out = await structure([phone('E52'), volume]);
-    expect(out.text).toContain('Занято6.0 ГиБ');
-    expect(out.text).not.toContain('Ни один подключённый том');
+    // The card is a separate connection: its counters appear only after the user links it.
+    expect(out.text).not.toContain('6.0 ГиБ');
+    expect(out.text).toContain('Это подключение не сообщает счётчики накопителя');
   });
 });

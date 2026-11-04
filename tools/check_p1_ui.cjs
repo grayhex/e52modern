@@ -21,7 +21,8 @@ os.environ.update(SYMPORT_BRIDGE_URL='',SYMPORT_GAMMU_CONFIG='',SYMPORT_CONNECTI
 w=Workbench(r);files=MountedVolumes({'card':v})
 class Transport:
  def devices(self):
-  return files.devices()+[{'id':'telemetry','transport':'TEST DOUBLE','connected':True,'model':'Nokia E52 (TEST DOUBLE)','rm':'RM-469','firmware':'081.003','battery':0,'signal':80,'capabilities':['device-details']}]
+  from tests.capfake import row as capability_row
+  return files.devices()+[capability_row({'id':'telemetry','transport':'TEST DOUBLE','connected':True,'model':'Nokia E52 (TEST DOUBLE)','rm':'RM-469','firmware':'081.003','battery':0,'signal':80},available=['identity.read'])]
  def execute(self,data):
   if data.get('device')=='telemetry':return {'battery':0,'signal':80,'free':1000,'total':2000}
   return files.execute(data)

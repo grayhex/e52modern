@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { useApi, usePreferences } from '../state/app';
 import { keys, useDevices } from '../api/queries';
 import { Card, DeviceSelect, ErrorMessage } from '../components/ui';
+import CapabilityMatrix from '../components/CapabilityMatrix';
 import { objectSchema, text, entries, strings } from '../api/workspace';
 
 export default function Connection() {
@@ -211,13 +212,7 @@ export default function Connection() {
         <Card key={row.id}>
           <h2>{row.name ?? row.model ?? row.id}</h2>
           <p>{row.evidence}</p>
-          <div className="dashboard-capabilities">
-            {row.capabilities.map((cap) => (
-              <span className="chip" key={cap}>
-                {cap}
-              </span>
-            ))}
-          </div>
+          <CapabilityMatrix device={row} />
           <button
             className="btn secondary"
             disabled={!row.connection_kind || diagnostics.isPending}
