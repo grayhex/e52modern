@@ -13,6 +13,7 @@ permissions:
 jobs:
   portable:
     runs-on: windows-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
