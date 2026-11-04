@@ -422,6 +422,17 @@ def make_handler(state: Workbench):
             if not self._host_ok():
                 return self._json({"error": "Host not allowed"}, 403)
             url = urlsplit(self.path)
+            if url.path == '/next' or url.path.startswith('/next/'):
+                relative = url.path.removeprefix('/next').lstrip('/') or 'index.html'
+                root = Path(__file__).parent / 'react_assets'
+                target = root / relative
+                if any(part in ('.','..') for part in relative.split('/')) or '\\' in relative or not target.is_file() or target.is_symlink() or not target.resolve().is_relative_to(root.resolve()):
+                    return self._json({'error':'React build not found. Run npm ci and npm run build in frontend.'},404)
+                import mimetypes
+                body = target.read_bytes()
+                if relative == 'index.html':
+                    body = body.replace(b'__SESSION_TOKEN__',state.token.encode())
+                return self._send(body,mimetypes.guess_type(str(target))[0] or 'application/octet-stream',session=relative=='index.html')
             static = {
                 "/": ("index.html", "text/html; charset=utf-8"),
                 "/app.css": ("app.css", "text/css; charset=utf-8"),

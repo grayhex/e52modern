@@ -20,3 +20,8 @@ roms/
 
 .env
 Nokia symbian*.zip
+node_modules/
+symport/react_assets/
+frontend/tsconfig.tsbuildinfo
+frontend/coverage/
+frontend/public/

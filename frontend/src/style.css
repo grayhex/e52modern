@@ -1,0 +1,81 @@
+@font-face {
+  font-family: Inter;
+  src: url('/fonts/Inter.ttf');
+}
+@font-face {
+  font-family: JetBrains;
+  src: url('/fonts/JetBrainsMono.ttf');
+}
+.topbar .form-row {
+  margin: 0;
+  align-items: center;
+}
+.topbar select {
+  margin: 0;
+  width: auto;
+}
+.react-file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  padding: 4px;
+}
+.react-file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+}
+.react-file-grid .react-file {
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+dialog {
+  max-width: min(500px, calc(100vw - 24px));
+  border: 1px solid var(--border);
+  background: var(--panel, #fff);
+  color: var(--text);
+  border-radius: 16px;
+  padding: 20px;
+}
+dialog::backdrop {
+  background: #041c2e99;
+}
+.phone-dashboard:has(.dashboard-phone) {
+  grid-template-columns: 88px minmax(0, 1fr);
+}
+.phone-dashboard:not(:has(.dashboard-phone)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.dashboard-phone {
+  height: auto;
+}
+@media (max-width: 760px) {
+  .topbar {
+    height: auto;
+    min-height: 45px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .sidebar-menu nav {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  .sidebar-menu .nav-link {
+    white-space: nowrap;
+  }
+  .sidebar-panel {
+    width: auto;
+  }
+}
