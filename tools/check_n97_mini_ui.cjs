@@ -84,9 +84,27 @@ const port = new Promise((resolve, reject) => {
       await home
         .getByRole("heading", { name: "Nokia N97 mini", exact: true })
         .waitFor();
-      await home
-        .getByRole("img", { name: "Generic phone illustration" })
-        .waitFor();
+      const handset = home.getByRole("img", {
+        name: "Nokia N97 mini",
+        exact: true,
+      });
+      await handset.waitFor();
+      assert(
+        await handset.evaluate(async (image) => {
+          await image.decode();
+          return image.naturalWidth > 0;
+        }),
+      );
+      const aspect = await handset.evaluate((image) => {
+        const box = image.getBoundingClientRect();
+        return Math.abs(
+          box.width / box.height - image.naturalWidth / image.naturalHeight,
+        );
+      });
+      assert(
+        aspect < 0.01,
+        "Mini handset must retain its original proportions",
+      );
       assert((await home.innerText()).includes("640×360"));
       assert((await home.innerText()).includes("9.4"));
       assert(
@@ -330,7 +348,7 @@ const port = new Promise((resolve, reject) => {
     });
     assert.deepEqual(errors, []);
     console.log(
-      "PASS N97 mini: 390/768/1366 dashboard/generic artwork, native PIM read+exports, unavailable SMS, actual enrolled-volume files, 5th vs 3rd Inspector, catalog and RU/EN blocked themes. Explicit synthetic adapter; no hardware claim.",
+      "PASS N97 mini: 390/768/1366 dashboard/actual model artwork without stretching, native PIM read+exports, unavailable SMS, actual enrolled-volume files, 5th vs 3rd Inspector, catalog and RU/EN blocked themes. Explicit synthetic adapter; no hardware claim.",
     );
   } finally {
     if (browser) await browser.close();

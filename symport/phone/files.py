@@ -19,8 +19,9 @@ from .contracts import LIMIT
 
 
 class MountedVolumes:
-    def __init__(self, roots: dict[str, str]):
+    def __init__(self, roots: dict[str, str], *, identities: dict[str, str] | None = None):
         self.roots = {k: Path(v).absolute() for k, v in roots.items()}
+        self.identities = dict(identities or {})
 
     def devices(self) -> list[dict]:
         result = []
@@ -28,7 +29,7 @@ class MountedVolumes:
             connected = root.is_dir() and not root.is_symlink()
             usage = shutil.disk_usage(root) if connected else None
             stat = root.stat() if connected else None
-            root_identity = hashlib.sha256(str((str(root), stat.st_dev if stat else None, stat.st_ino if stat else None)).encode()).hexdigest()
+            root_identity = hashlib.sha256(str((str(root), stat.st_dev if stat else None, stat.st_ino if stat else None, self.identities.get(key))).encode()).hexdigest()
             row = {"connection_identity": root_identity, "id": key, "transport": "mounted-volume", "connected": connected,
                    "model": None, "rm": None, "firmware": None, "battery": None,
                    "free": usage.free if usage else None,

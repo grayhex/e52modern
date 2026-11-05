@@ -13,6 +13,7 @@ import time
 from types import SimpleNamespace
 
 import pytest
+from PIL import Image
 
 from symport.catalog.compatibility import assessment
 from symport.catalog.model import Catalog
@@ -53,9 +54,21 @@ def test_specific_verified_name_forms_have_priority_over_n97(name):
     assert documented_model(name)["model"] == "N97 MINI"
     assert p["symbian"] == "9.4" and p["s60"] == "5th"
     assert p["screen"]["width"] == 360 and p["screen"]["height"] == 640
-    assert p["image"] is None and p["artwork"] is None
+    assert p["image"] == "/phones/nokia-n97-mini.png" and p["artwork"] is None
     assert p["measured"] is False and p["hardware"] == "not-tested"
     assert p["theme_studio"]["status"] == "unsupported"
+
+
+def test_mini_has_a_separate_transparent_handset_asset_without_enabling_theme_geometry():
+    profile = identify("N97 mini")
+    path = REPO / "symport/web_assets" / profile["image"].lstrip("/")
+    with Image.open(path) as image:
+        assert image.mode == "RGBA" and image.height >= 1000
+        assert image.getpixel((0, 0))[3] == 0
+        left, top, right, bottom = image.getbbox()
+        # Closed Mini body: ~52.5 mm / 113 mm, with no non-uniform stretch.
+        assert abs((right - left) / (bottom - top) - 52.5 / 113) < 0.04
+    assert profile["artwork"] is None and "nokia-n97-mini" not in theme_profiles()
 
 
 @pytest.mark.parametrize("name", ["N97", "Nokia N97 (RM-505)", "N97 RM-555"])
@@ -236,6 +249,23 @@ def test_changed_gammu_config_invalidates_a_pending_write_without_another_discov
     assert not calls  # Nothing was read from or written to the newly configured phone.
 
 
+def test_native_identity_separates_same_model_phones_on_the_same_profile(tmp_path, monkeypatch):
+    monkeypatch.setattr("symport.phone.gammu_adapter.gammu_native.available", lambda: True)
+    cfg = tmp_path / "gammurc"
+    cfg.write_text("[gammu]\ndevice=COM7\nconnection=at\n")
+    adapter = GammuAdapter(tmp_path, "phone", str(cfg), kind="gammu-usb")
+    details = {"model": "Nokia N97 mini", "manufacturer": "Nokia", "fingerprint": "phone-A"}
+    adapter.personal.execute = lambda *args: dict(details)
+    first = adapter.device()
+    adapter.personal.plans["old-plan"] = {"private": "phone A"}
+    adapter.personal.snapshots["old-snapshot"] = {"private": "phone A"}
+    details["fingerprint"] = "phone-B"
+    second = adapter.device()
+    assert first["capability_fingerprint"] != second["capability_fingerprint"]
+    assert first["connection_identity"] != second["connection_identity"]
+    assert not adapter.personal.plans and not adapter.personal.snapshots
+
+
 def test_replaced_windows_disk_on_same_letter_resets_only_its_old_proofs(tmp_path, monkeypatch):
     from symport.bridge.main import Agent
 
@@ -254,7 +284,11 @@ def test_replaced_windows_disk_on_same_letter_resets_only_its_old_proofs(tmp_pat
     agent.server = SimpleNamespace(origins=set())
     monkeypatch.setattr("symport.bridge.main.load_config", lambda _: {"auto_usb": True})
     monkeypatch.setattr("symport.bridge.main.load_profiles", lambda _: [])
-    monkeypatch.setattr("symport.bridge.main.LocalTransports", lambda _: object())
+
+    def local_transports(_, *, volume_identities):
+        return SimpleNamespace(volume_identities=dict(volume_identities))
+
+    monkeypatch.setattr("symport.bridge.main.LocalTransports", local_transports)
     for key in ("SYMPORT_DEVICE_ROOTS", "SYMPORT_GAMMU_CONFIG", "SYMPORT_CONNECTIONS_FILE"):
         monkeypatch.setenv(key, "")
     agent.refresh_config()
@@ -266,6 +300,22 @@ def test_replaced_windows_disk_on_same_letter_resets_only_its_old_proofs(tmp_pat
     assert agent.manager.observed.proofs == {"manual": {}}
     assert agent.manager.rows == {"manual": {}}
     assert agent._enrolled_identities == agent._volume_identities
+    assert agent.manager.transport.volume_identities == agent._volume_identities
+
+
+def test_host_volume_identity_changes_fingerprint_even_if_path_and_stat_are_reused(tmp_path):
+    first = MountedVolumes(
+        {"slot": str(tmp_path)}, identities={"slot": "usb-A:volume-A"}
+    ).devices()[0]
+    same = MountedVolumes({"slot": str(tmp_path)}, identities={"slot": "usb-A:volume-A"}).devices()[
+        0
+    ]
+    replacement = MountedVolumes(
+        {"slot": str(tmp_path)}, identities={"slot": "usb-A:volume-B"}
+    ).devices()[0]
+    assert first["capability_fingerprint"] == same["capability_fingerprint"]
+    assert first["capability_fingerprint"] != replacement["capability_fingerprint"]
+    assert "volume-A" not in json.dumps(first) and str(tmp_path) not in json.dumps(first)
 
 
 def test_enrolled_volume_is_not_mini_pim_or_internal_c_and_proofs_do_not_follow_a_new_root(
@@ -367,6 +417,7 @@ def test_windows_serial_and_disk_candidates_are_only_hints(monkeypatch):
         script = args[-1]
         assert "Win32_DiskDrive" in script and "InterfaceType -eq 'USB'" in script
         assert "DriveType -eq 3" in script and "$env:SystemDrive" in script
+        assert "VolumeSerialNumber" in script  # A new card in the same handset is a new volume.
         rows = [
             {
                 "root": "E:/",

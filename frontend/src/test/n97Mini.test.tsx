@@ -14,7 +14,7 @@ afterEach(() => {
   location.hash = '';
 });
 describe('N97 mini targets and theme exclusion', () => {
-  it('selects 9.4, preserves both orientations and has no invented artwork', () => {
+  it('selects 9.4, preserves both orientations and uses its own handset artwork', () => {
     const model = profileById('nokia-n97-mini');
     expect(targetForProfile('nokia-n97-mini')).toEqual({
       model: 'Nokia N97 mini',
@@ -22,7 +22,8 @@ describe('N97 mini targets and theme exclusion', () => {
       rm: '',
       firmware: '',
     });
-    expect(model?.image).toBeNull();
+    expect(model?.image).toBe('/phones/nokia-n97-mini.png');
+    expect(model?.artwork).toBeNull(); // Decorative handset, not an enabled theme preview.
     expect(model?.screen_modes).toEqual([
       { width: 360, height: 640, orientation: 'portrait' },
       { width: 640, height: 360, orientation: 'landscape' },

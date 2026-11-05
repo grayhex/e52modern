@@ -24,3 +24,6 @@ certified; key legends and metal shading are an illustration.
 `nokia-e72.png`: original generated product illustration for the dashboard (2026-11-03).
 It depicts a silver/black QWERTY E72. Display dimensions in application profiles are
 320×240; the artwork is decorative and is not an emulator coordinate map or a photo.
+
+`nokia-n97-mini.png`: separate photorealistic bronze/dark-brown Mini, with its slider closed
+and a blank screen. [Reference, asset details and scope](N97-MINI-ARTWORK.md).

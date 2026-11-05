@@ -59,7 +59,8 @@
 
 `nokia-n97-mini` имеет собственные aliases, `exact_aliases`, `screen_modes` и native platform UID.
 Наиболее специфичные имена распознаются раньше `N97`; неподтверждённые suffix/RM не угадываются.
-`image`/`artwork` равны null: показывается подписанная generic-иллюстрация.
+`image` указывает на отдельный реалистичный корпус N97 mini с прозрачным фоном; `artwork` остаётся
+null, поскольку декоративное изображение не включает preview тем или эмуляторный экран.
 `theme_studio.status=unsupported` — свойство инструмента, не транспортная capability. Mini
 остаётся целью Inspector/каталога/наборов, но не входит в `theme_profiles()`; backend и worker
 не могут запустить для неё пайплайн S60 3rd. [Описание](NOKIA_N97_MINI.md).

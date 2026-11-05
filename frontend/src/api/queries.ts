@@ -8,7 +8,13 @@ export const keys = {
   history: ['history'] as const,
 };
 /** Query roots whose second key element is a connection id. */
-export const DEVICE_SCOPED_ROOTS = ['files', 'personal', 'media', 'diagnostics'] as const;
+export const DEVICE_SCOPED_ROOTS = [
+  'files',
+  'personal',
+  'media',
+  'media-thumbnails',
+  'diagnostics',
+] as const;
 export function useDevices() {
   const api = useApi();
   return useQuery({
@@ -18,6 +24,12 @@ export function useDevices() {
     refetchInterval: 30000,
     retry: false,
   });
+}
+/** Remount private drafts/confirmations when the selected phone or filesystem changes. */
+export function useConnectionKey(id: string) {
+  const { data, isError } = useDevices();
+  const device = data?.devices.find((item) => item.id === id);
+  return !isError && device ? connectionKey(device) : 'unavailable';
 }
 /**
  * Drops everything cached for a connection as soon as it stops being the same connection:

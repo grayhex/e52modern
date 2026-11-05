@@ -24,9 +24,10 @@ a real phone/transport probe answers.
 
 Firmware version, product code, current screen/slider state, write permissions and mounted volumes
 remain unknown until reported. The documented 8 GB internal mass memory and microSDHC design does
-not create a drive mapping or a free-space counter. There is no verified Mini handset illustration
-in this change: Dashboard and Inspector use the existing **labelled generic placeholder**, without
-passing it off as a miniature N97 body or a live screen.
+not create a drive mapping or a free-space counter. Dashboard, model selection and Inspector use
+a separate photorealistic **N97 mini** handset asset, based on the original bronze/black product
+reference, with preserved proportions and a blank screen. It is an illustration, not a connected
+device's live display. [Artwork source and details](../symport/web_assets/phones/N97-MINI-ARTWORK.md).
 
 ## Connect through the existing Bridge
 
@@ -58,7 +59,13 @@ USB mode, Bluetooth destination and filesystem root/device/inode changes alter f
 PIM previews are discarded on changed config/observed identity or disconnect; write proofs do not
 follow a different root. Auto-discovered USB disk identity changes refresh enrollment and clear
 old proofs, even when Windows reuses the same drive letter. Config fingerprints use an ephemeral
-HMAC; no raw configuration, PIN, root path, USB identifier or contact content is added to logs.
+HMAC; native identity also separates same-model handsets on the same profile, using that session
+key rather than adding a durable identifier. No raw configuration, PIN, root path, USB identifier
+or contact content is added to logs.
+The browser clears private PIM rows, pending confirmations, gallery previews and file drafts when
+the selected connection fingerprint changes or disappears; a reused connection id is insufficient.
+For auto-discovered Windows volumes, the physical USB identity and logical volume serial are
+included in the opaque fingerprint even if the path and filesystem stat values are reused.
 
 ## Common workflows
 

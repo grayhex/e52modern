@@ -185,7 +185,16 @@ class GammuAdapter:
                     device["evidence"] = (
                         "Gammu unavailable, configuration invalid or phone unreachable"
                     )
-            phone_identity = tuple(device.get(key) for key in ('connected','model','rm','firmware'))
+            native_identity = device.get("fingerprint")
+            if native_identity:
+                # Native identity distinguishes two same-model phones on the same profile.
+                # Salt it per adapter session rather than publishing a durable device identifier.
+                device["connection_identity"] = hmac.new(
+                    self._identity_key,
+                    (connection_identity + "\0" + str(native_identity)).encode(),
+                    hashlib.sha256,
+                ).hexdigest()
+            phone_identity = tuple(device.get(key) for key in ('connected','model','rm','firmware')) + (native_identity,)
             if self._phone_identity != phone_identity:
                 self.personal.snapshots.clear()
                 self.personal.plans.clear()

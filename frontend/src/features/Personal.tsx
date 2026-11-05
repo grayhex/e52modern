@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { useApi, usePreferences } from '../state/app';
-import { useDevices } from '../api/queries';
+import { useConnectionKey, useDevices } from '../api/queries';
 import {
   contactSchema,
   fileSchema,
@@ -31,6 +31,7 @@ const names = {
 } as const;
 export default function Personal({ domain: initial }: { domain: Domain }) {
   const { device, setDevice, t } = usePreferences();
+  const connection = useConnectionKey(device);
   const [domain, setDomain] = useState(initial);
   return (
     <>
@@ -51,7 +52,7 @@ export default function Personal({ domain: initial }: { domain: Domain }) {
           )}
         </div>
       </Card>
-      <Workspace key={`${device}:${domain}`} device={device} domain={domain} />
+      <Workspace key={`${device}:${domain}:${connection}`} device={device} domain={domain} />
     </>
   );
 }

@@ -127,7 +127,7 @@ class Agent:
                     json.dump({"schema": 1, "connections": profiles}, file)
                 temporary.replace(generated)
                 os.environ["SYMPORT_CONNECTIONS_FILE"] = str(generated)
-                self.manager.transport = LocalTransports(self.root)
+                self.manager.transport = LocalTransports(self.root, volume_identities=self._volume_identities)
                 self._enrolled_roots = dict(self._auto_roots)
                 self._enrolled_identities = dict(self._volume_identities)
                 self.server.origins = set(config.get("origins", []))
