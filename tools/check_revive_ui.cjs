@@ -95,6 +95,7 @@ const port = new Promise((resolve, reject) => {
     await page.getByRole("heading", { name: "SymPort Revive", level: 1 }).waitFor();
     await page.getByRole("heading", { name: "No phone connection" }).waitFor();
     assert(await overflow(page), "overflow in empty state");
+    await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
     await page.screenshot({ path: path.join(shots, "empty-en.png"), fullPage: true });
     await page.close();
 
@@ -111,6 +112,7 @@ const port = new Promise((resolve, reject) => {
       assert(await overflow(page), "overflow at " + width);
       await page.getByRole("button", { name: /Network and certificates/ }).click();
       await page.locator('[data-op="clock-check"]').waitFor();
+      await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
       await page.screenshot({ path: path.join(shots, "e52-" + width + ".png"), fullPage: true });
       await page.close();
     }
@@ -164,6 +166,7 @@ const port = new Promise((resolve, reject) => {
     await page.getByLabel("Application type").selectOption("qt");
     await page.locator('[data-support="not-applicable"]').waitFor();
     assert(await overflow(page), "overflow in TLS section");
+    await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
     await page.screenshot({ path: path.join(shots, "tls-1366.png"), fullPage: true });
     await page.close();
 
@@ -212,6 +215,7 @@ const port = new Promise((resolve, reject) => {
     await reborn.locator('[data-stage="installed"]').getByRole("button", { name: "Yes" }).click();
     await page.waitForFunction(() => document.querySelector('[data-testid="reborn-outcome"]')?.dataset.outcome === "installed-reported-unchecked");
     assert(await overflow(page), "overflow in the Reborn wizard");
+    await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
     await page.screenshot({ path: path.join(shots, "reborn-1366.png"), fullPage: true });
     await page.close();
 
@@ -230,6 +234,7 @@ const port = new Promise((resolve, reject) => {
     const record = install.getByRole("button", { name: "Record my observation" });
     assert(await record.isDisabled());
     await install.getByLabel("This is what I saw on the phone").check();
+    await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
     await page.screenshot({ path: path.join(shots, "n95-unknown-rm.png"), fullPage: true });
     await page.close();
 

@@ -13,6 +13,7 @@ const { prepare, start, stop: stopFixture } = require("./lib/fixture.cjs");
 prepare(tmp);
 let lastPage;
 const shot = async (page, name, options = {}) => {
+  await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
   await page.mouse.move(640, 430); // no tooltip of the last hovered control in the picture
   await page.waitForTimeout(400);
   await page.screenshot({ path: path.join(out, name), ...options });
