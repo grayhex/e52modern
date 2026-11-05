@@ -61,8 +61,8 @@ system Themes menu, never launched as applications by UID. See [THEME.md](THEME.
 
 ## Original artwork
 
-Separate editable SVG masters, PNG and lossless WebP exports are in
-`symport/web_assets/phones/`. Their front plates, screen sizes, materials and key assemblies differ;
+Editable SVG masters, PNG and lossless WebP exports are in
+`symport/web_assets/phones/`. The silver master now follows the user-provided frontal reference, including the original menu/multimedia glyphs, small convex select key, hooked softkeys and curved edit/C bar. Its replaceable raster body, editable silhouette and blank LCD are separate SVG layers. The front plates, screen sizes, materials and key assemblies differ;
 8GB is not a recolor. Blank screens contain no connection claim. See
 [N95 artwork provenance](../symport/web_assets/phones/N95-ARTWORK.md).
 

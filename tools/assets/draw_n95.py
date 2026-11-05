@@ -1,13 +1,16 @@
-"""Original editable Nokia N95 front artwork; verified photographic references in asset provenance.
+"""Legacy editable N95 8GB vector master generator.
 
 Geometry is expressed in editable SVG layers; no reference-photo pixels are embedded.
-Run from the repository root to regenerate the two SVG masters. Blank screens are intentional.
+Run from the repository root to regenerate the 8GB SVG only. The corrected silver N95 master
+is maintained directly as a reference-based SVG and must not be overwritten by this generator.
 """
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[2]/'symport/web_assets/phones'
 
 def draw(eight=False):
+    if not eight:
+        raise ValueError("Silver N95 uses the reference-based SVG master; edit nokia-n95.svg directly")
     model='Nokia N95 8GB' if eight else 'Nokia N95'
     key='nokia-n95-8gb' if eight else 'nokia-n95'
     x,y,w,h=(119,228,762,1016) if eight else (154,272,692,923)
@@ -71,5 +74,4 @@ def draw(eight=False):
     (ROOT/(key+'.svg')).write_text('\n'.join(line.rstrip() for line in svg.splitlines())+'\n',encoding='utf-8')
 
 if __name__=='__main__':
-    draw(False)
     draw(True)

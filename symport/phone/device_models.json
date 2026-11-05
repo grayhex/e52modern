@@ -95,7 +95,7 @@
       "name": "Nokia N95",
       "name_ru": "Nokia N95",
       "model": "N95",
-      "image": "/phones/nokia-n95.png",
+      "image": "/phones/nokia-n95.webp",
       "screen": {
         "width": 240,
         "height": 320,
@@ -105,10 +105,10 @@
         "width": 1000,
         "height": 1868,
         "screen": {
-          "x": 154,
-          "y": 272,
-          "width": 692,
-          "height": 923
+          "x": 145,
+          "y": 264,
+          "width": 711,
+          "height": 948
         }
       },
       "s60": "3rd FP1",

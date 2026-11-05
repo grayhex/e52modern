@@ -72,9 +72,21 @@ def test_profile_facts_and_assets(key):
     master = REPO / f"symport/web_assets/phones/{key}.svg"
     xml = ET.parse(master)
     assert xml.getroot().get("viewBox") == "0 0 1000 1868"
-    assert not any(
-        "data:" in (n.get("href") or "") or "http" in (n.get("href") or "") for n in xml.iter()
-    )
+    # The silver master has one replaceable embedded PNG layer; masters never fetch external content.
+    import base64
+
+    embedded = [n.get("href") for n in xml.iter() if n.get("href")]
+    if key == "nokia-n95":
+        assert len(embedded) == 1 and embedded[0].startswith("data:image/png;base64,")
+        assert base64.b64decode(embedded[0].split(",", 1)[1], validate=True).startswith(
+            b"\x89PNG\r\n\x1a\n"
+        )
+    else:
+        assert embedded == []
+    screen = registry()[key]["artwork"]["screen"]
+    assert 0 < screen["x"] < screen["x"] + screen["width"] < 1000
+    assert 0 < screen["y"] < screen["y"] + screen["height"] < 1868
+    assert abs(screen["width"] / screen["height"] - 240 / 320) < 0.001
     for ext in ("png", "webp"):
         with Image.open(master.with_suffix("." + ext)) as im:
             assert im.size == (1000, 1868) and im.mode == "RGBA"

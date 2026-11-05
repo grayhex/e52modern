@@ -1,4 +1,4 @@
-// SVG masters -> alpha PNG at 1000px; no photographic pixels, no screen UI, no DOM mutation in the app.
+// Editable SVG masters -> alpha PNG / WebP at 1000px; silver uses an embedded reference-based layer.
 const { chromium } = require("playwright"),
   path = require("path");
 (async () => {
