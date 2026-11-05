@@ -45,6 +45,9 @@ class Transport:
   raise ValueError('Synthetic transport: '+a)
 w=Workbench(root)
 w.devices.transport=Transport()
+from tests.helpers import make_e32
+from symport.sis import writer
+(root/'reborn.sis').write_bytes(sis(0xE0009999,'Synthetic Reborn',platforms=(0x102032BE,),exe=make_e32(imports={'euser.dll':[1]}),extra=[writer.SisFile('!:\\\\resource\\\\apps\\\\reborn.rsc',b'rsc')]))
 blob=sis(0xE0001234,'Synthetic MBedTLS')
 spec=dict(w.revive.tls.components['mbedtls-lib'],size=len(blob),sha256=hashlib.sha256(blob).hexdigest(),package={'uid':'0xe0001234','signed':False,'targets':[]})
 w.revive.tls.components=dict(w.revive.tls.components,**{'mbedtls-lib':spec})
@@ -115,6 +118,7 @@ const port = new Promise((resolve, reject) => {
     // 2b. TLS revival: matrix, pinned components, diagnostics that say where they ran.
     page = await open("en", 1366);
     await page.locator("#revive-tls").waitFor();
+    await page.locator('#revive-tls [data-target="nokia-n97-mini"]').waitFor();
     assert.equal(await page.locator("#revive-tls tbody tr").count(), 5);
     const qt = await page.locator('[data-target="nokia-n95"]').innerText();
     assert(qt.includes("Not applicable") && qt.includes("not tested"), "matrix cells: " + qt);
@@ -163,6 +167,54 @@ const port = new Promise((resolve, reject) => {
     await page.screenshot({ path: path.join(shots, "tls-1366.png"), fullPage: true });
     await page.close();
 
+    // 2c. Reborn wizard for an identified N95: import -> pin -> backup statement -> consents -> copy -> user-reported install.
+    fs.writeFileSync(identity, JSON.stringify({ model: "Nokia N95-1", rm: "RM-159", firmware: "v 12.0.013" }));
+    page = await open("en", 1366);
+    await page.getByRole("button", { name: /Reborn preparation for N95/ }).click();
+    const reborn = page.locator("#revive-reborn");
+    await reborn.waitFor();
+    const rtext = await reborn.innerText();
+    assert(rtext.includes("v1.00 alpha") && rtext.includes("not stated by the author") && rtext.includes("not published"), rtext);
+    assert(rtext.includes("none: the author publishes no hash"));
+    await page.waitForFunction(() => document.querySelector('[data-testid="reborn-variant"]')?.dataset.variant === "candidate");
+    assert(await reborn.getByRole("button", { name: "Plan safe copy of the pinned file" }).isDisabled(), "no plan without a pinned file");
+    await reborn.locator('input[type="file"]').setInputFiles(path.join(tmp, "reborn.sis"));
+    const imp = reborn.getByTestId("reborn-import");
+    await imp.waitFor();
+    assert((await imp.innerText()).includes("high risk"), "system-level components are flagged");
+    await reborn.getByLabel("I obtained this exact file from the author").check();
+    await reborn.getByRole("button", { name: "Pin this SHA-256" }).click();
+    await reborn.getByText("(your pin)").waitFor();
+    await reborn.getByLabel("I have a separate copy of the data I care about").check();
+    await reborn.getByRole("button", { name: "Record my statement" }).click();
+    await reborn.getByText(/Recorded \(your statement/).waitFor();
+    // Device-level rights are only the user's own observation.
+    await page.getByLabel("Installation rights you observed").selectOption("device");
+    await page.getByLabel("This is my own observation").check();
+    await page.getByRole("button", { name: "Record rights" }).click();
+    await page.waitForFunction(() => document.querySelector('[data-check="rights"]')?.dataset.status === "ready");
+    await reborn.getByRole("button", { name: "Plan safe copy of the pinned file" }).click();
+    const rplan = reborn.getByTestId("safety-plan");
+    await rplan.waitFor();
+    await rplan.getByLabel("I confirm this step").check();
+    await rplan.getByRole("button", { name: "1. Take snapshot" }).click();
+    await rplan.getByTestId("snapshot-kinds").waitFor();
+    await rplan.getByLabel("I confirm this step").check();
+    await rplan.getByRole("button", { name: "2. Copy files to the phone" }).click();
+    await page.getByRole("alert").filter({ hasText: /Blocked/ }).waitFor();
+    await rplan.getByLabel("I understand this cannot be undone by SymPort").check();
+    await rplan.getByRole("button", { name: "Acknowledge" }).click();
+    await rplan.getByLabel("I confirm this step").check();
+    await rplan.getByRole("button", { name: "2. Copy files to the phone" }).click();
+    await rplan.getByText("Transferred, awaiting manual install").first().waitFor();
+    assert.equal(await reborn.getByTestId("reborn-outcome").getAttribute("data-outcome"), "not-confirmed", "a copy is never an installation");
+    await reborn.getByLabel("These are my own observations").check();
+    await reborn.locator('[data-stage="installed"]').getByRole("button", { name: "Yes" }).click();
+    await page.waitForFunction(() => document.querySelector('[data-testid="reborn-outcome"]')?.dataset.outcome === "installed-reported-unchecked");
+    assert(await overflow(page), "overflow in the Reborn wizard");
+    await page.screenshot({ path: path.join(shots, "reborn-1366.png"), fullPage: true });
+    await page.close();
+
     // 3. Manual input stays separate and never raises identity to "ready"; mismatches are visible.
     fs.writeFileSync(identity, JSON.stringify({ model: "N95", rm: "RM-999" }));
     page = await open("en", 1366);
@@ -180,6 +232,16 @@ const port = new Promise((resolve, reject) => {
     await install.getByLabel("This is what I saw on the phone").check();
     await page.screenshot({ path: path.join(shots, "n95-unknown-rm.png"), fullPage: true });
     await page.close();
+
+    // 3b. N95 8GB is never assumed to match.
+    fs.writeFileSync(identity, JSON.stringify({ model: "N95 8GB", rm: "RM-320", firmware: "v 1" }));
+    page = await open("ru", 390);
+    await page.getByRole("button", { name: /Подготовка Reborn для N95/ }).click();
+    await page.waitForFunction(() => document.querySelector('[data-testid="reborn-variant"]')?.dataset.variant === "blocked");
+    assert((await page.getByTestId("reborn-variant").innerText()).includes("не доказана"));
+    assert(await overflow(page), "overflow in Russian Reborn");
+    await page.close();
+    fs.writeFileSync(identity, JSON.stringify({ model: "Nokia E52", rm: null, firmware: "v 081.003" }));
 
     // 4. Russian, mobile.
     page = await open("ru", 390);

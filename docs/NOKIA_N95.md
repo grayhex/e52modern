@@ -104,3 +104,15 @@ components, dashboard and registry API are preserved. N95 extends that same `dev
 registry, with shared `ModelProfileSelect` / `DeviceFrame` helpers for model targets and previews.
 There is no second model database. The branch is integrated with that main revision; review and
 merge this N95 PR separately.
+
+## Reborn Hybrid CFW (alpha) wizard
+
+Revive → *Reborn preparation for N95* prepares the author's **hybrid mod kit**, a SIS installed on
+the phone over stock S60v3 FP1 firmware. It is **not** a Phoenix flash of Belle/Reborn N8. Source:
+<https://avalibeyaz.com/s60> (author *symbuzzer*; index <https://avalibeyaz.com/symbian/>), reviewed
+2026-11-05: version `v1.00 alpha`; release date, changelog and file hash are **not published**; the
+author requires an installserver.exe patch, recommends a clean installation, has no uninstall
+procedure (the escape plan is formatting the phone, which erases user data) and names no compatible
+RM codes or firmware versions. The author's pages do not permit redistributing or mirroring the
+file, so **SymPort never downloads it** — you import the file you got from the author.
+Details and the wizard: [REVIVE.md](REVIVE.md#reborn-hybrid-cfw-n95-35).

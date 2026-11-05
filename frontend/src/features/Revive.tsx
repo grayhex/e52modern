@@ -10,6 +10,7 @@ import {
   StatusIndicator,
   type Tone,
 } from '../components/kit';
+import ReviveReborn from './ReviveReborn';
 import ReviveTls from './ReviveTls';
 import {
   inspectSchema,
@@ -623,6 +624,7 @@ export default function Revive() {
         )}
       </SectionPanel>
       {profile === 'network-certs' && <ReviveTls device={device} manual={manual} />}
+      {profile === 'reborn-n95' && <ReviveReborn device={device} manual={manual} />}
     </>
   );
 }

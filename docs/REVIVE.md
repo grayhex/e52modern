@@ -142,3 +142,36 @@ Automated tests use fake transports (`tests/test_safety.py`): interrupted transf
 phone swap, firmware change, file conflicts, SHA mismatch, re-applying a plan, rollback limits,
 report contents. A separate manual checklist on real hardware is not part of CI; physical
 verification is not claimed.
+
+## Reborn Hybrid CFW (N95) (#35)
+
+Data and source review: `symport/revive/reborn.json` (author page, `v1.00 alpha`, release date and
+changelog `not stated`, distribution `unconfirmed`, no pinned artifact). Flow:
+
+1. **Preflight from the device.** Model and RM must be *read from the device*; manual input never
+   unlocks the kit. Unknown or conflicting variant, no reported RM, other models and **N95 8GB**
+   (RM-320 family) are blocked — N95 8GB until support evidence for that exact firmware is added to
+   `support_evidence`. A known N95 is only an *unverified candidate*: the author names no RM codes
+   or firmware. RM-160 (NAM) and RM-245 (China) need an extra consent. Exact firmware must be
+   device-reported; S60v3 FP1 comes from the model profile; free space ≥ 2 × the file + margin.
+2. **Import.** You import the SIS you obtained from the author. SymPort validates structure and
+   CRCs, reports signature state, runs the dependency analysis against the identified N95, lists
+   every file it would install and flags system-level components (executables, resources, system or
+   private paths). It never contacts the network.
+3. **Pin.** You confirm that you obtained *this exact file* from the author; its SHA-256 becomes
+   your local pin (`source: user-confirmed`, the author publishes no hash). A different file is
+   refused for the plan until you pin it.
+4. **Backup.** Your statement that a separate copy of important data exists (SymPort cannot verify
+   it). No statement → transfer blocked. The Safety Net snapshot is *not* a backup of the phone.
+5. **Plan and consents.** Safety Net plan with separate acknowledgements: alpha software,
+   irreversible (no uninstall), variant not stated by the author, high-risk components (when
+   present), regional variant. Device-level rights (installserver patch) must be recorded by you as
+   your own observation; a card-only scope is not enough. Any unmet gate refuses the copy.
+6. **Copy.** Verified file copy to `SymPort-Reborn/`, result `transferred-awaiting-manual-install`.
+7. **On the phone.** You install; you record *installer opened / installed / restarted / network
+   works*. The outcome is `installed-reported` only when you say so; a copy is never success.
+8. **Postflight and rollback.** The Safety Net postflight and checklist apply. Rollback removes only
+   the copied SIS from the card; the installation and system changes are not restored.
+
+Tests (`tests/test_reborn.py`) use synthetic packages and fake transports; hardware verification
+is separate and not claimed. No proprietary binaries are stored in the repository or the image.

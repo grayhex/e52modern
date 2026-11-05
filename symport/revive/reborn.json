@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "reviewed": "2026-11-05",
+  "card": {
+    "id": "reborn-hybrid-cfw-n95",
+    "title": {"en": "Reborn Hybrid CFW (alpha) for Nokia N95", "ru": "Reborn Hybrid CFW (alpha) для Nokia N95"},
+    "kind": "hybrid-mod-kit",
+    "not_a_flash": {"en": "This is a SIS mod kit installed on the phone. It is not a Phoenix flash of a full firmware (Belle / Reborn N8).",
+                    "ru": "Это SIS-набор модификаций, устанавливаемый на телефоне. Это не прошивка через Phoenix (Belle / Reborn N8)."},
+    "author": "symbuzzer",
+    "author_page": "https://avalibeyaz.com/s60",
+    "index_page": "https://avalibeyaz.com/symbian/",
+    "services_repository": "https://github.com/symbuzzer/reborncfw",
+    "download_page": "https://disk.yandex.com.tr/d/UrI44IKjBIt3mw",
+    "version": "v1.00 alpha",
+    "release_date": null,
+    "expected_name": "Reborn_hybrid_CFW.sis",
+    "changelog": null,
+    "distribution": {
+      "status": "unconfirmed",
+      "note": {"en": "The author's pages give no permission to redistribute or mirror the file; they only ask for credit if the project is reused. SymPort therefore never downloads it: import the file you obtained from the author yourself.",
+               "ru": "Страницы автора не разрешают распространять или зеркалировать файл; просят лишь указывать авторство при повторном использовании. Поэтому SymPort его не скачивает: импортируйте файл, полученный вами у автора."}
+    },
+    "pinned_artifacts": [],
+    "compatibility": {
+      "stated_target": "Nokia N95 (S60v3 FP1)",
+      "variants_and_firmware": "not stated by the author",
+      "n95_8gb": "no evidence; blocked until support evidence is recorded",
+      "regional": "RM-160 (NAM) and RM-245 (China) are not stated either way"
+    },
+    "prerequisites": ["The phone must be hacked: at least the installserver.exe patch installed (author)", "A clean installation is recommended (author)"],
+    "warnings": [
+      "Alpha release made by one person as a hobby (author)",
+      "Proceed at your own risk; you are responsible for all possible damage (author)",
+      "No uninstall procedure is published; the author's escape plan is formatting the device, which erases user data (author)"
+    ],
+    "install_steps_author": [
+      "Install Reborn_hybrid_CFW.sis on the phone",
+      "Follow the instructions when the installation begins"
+    ],
+    "reviewed": "2026-11-05"
+  },
+  "support_evidence": []
+}
