@@ -230,3 +230,58 @@ def test_no_network_is_ever_used(tmp_path, monkeypatch):
     svc, _ = setup(tmp_path)
     raw, plan = prepare(svc)
     assert plan["items"][0]["sha256"] and base64.b64decode(b64(raw)) == raw
+
+
+def kit_with(*targets, version=(1, 0, 0)):
+    from symport.sis import writer
+    from tests.test_deps import S60_3_2  # noqa: F401
+
+    files = [writer.SisFile(t, b"x") for t in targets]
+    return writer.build(writer.SisPackage(0xE0009998, "Reborn", "v", version, files, [FP1], []))
+
+
+def test_modifications_come_from_file_names_and_never_confirm_behaviour(tmp_path):
+    svc, _ = setup(tmp_path)
+    raw = kit_with("!:\\resource\\cacerts\\mozilla.cer", "!:\\private\\10202be9\\uaprof.rdf", "!:\\sys\\bin\\ngage_lib.dll")
+    _, result = imported(svc, raw)
+    mods = {m["category"]: m for m in result["modifications"]}
+    assert mods["ssl-ca"]["status"] == "present-by-file-name" and mods["uaprof"]["status"] == "present-by-file-name"
+    assert mods["n-gage"]["status"] == "present-by-file-name"
+    assert mods["connectivity-check"]["status"] == "not-detected" and mods["file-manager"]["status"] == "not-detected"
+    assert all(m["confirmed_behaviour"] is False and m["basis"] == "file-name-pattern" for m in mods.values())
+    assert result["version_check"]["status"] == "matches-author-claim" and result["version_check"]["package"] == "1.0.0"
+    other = imported(svc, kit_with("!:\\resource\\x.txt", version=(2, 3, 0)), name="x.sis")[1]
+    assert other["version_check"]["status"] == "differs-from-author-claim"
+
+
+def test_overlap_with_the_tls_stack_needs_its_own_consent_and_shows_tls_state(tmp_path):
+    svc, _ = setup(tmp_path)
+    raw = kit_with("!:\\sys\\bin\\ssl.dll", "!:\\resource\\apps\\x.txt")
+    _, result = imported(svc, raw)
+    assert result["tls_overlap"] == ["!:\\sys\\bin\\ssl.dll"] and result["tls_state"]["ssl-patch"] == "unknown"
+    svc.execute({"action": "tls-record", "device": "usb", "item": "ssl-patch", "state": "installed", "confirm": True})
+    _, result = imported(svc, raw)
+    assert result["tls_state"]["ssl-patch"] == "installed-reported"
+    pin(svc, result["sha256"])
+    plan = svc.execute({"action": "safety-plan", "scenario": "reborn-n95", "device": "usb", "sha256": result["sha256"]})
+    overlap = [b for b in plan["blocking"] if b["code"] == "tls-stack-overlap"]
+    assert overlap and "ssl-patch=installed-reported" in overlap[0]["text"]["en"]
+    clean = kit_with("!:\\resource\\apps\\x.txt")
+    _, r2 = imported(svc, clean, name="clean.sis")
+    assert r2["tls_overlap"] == []
+
+
+def test_postchecks_are_user_reported_with_an_evidence_level(tmp_path):
+    svc, _ = setup(tmp_path)
+    state = svc.execute({"action": "reborn-state", "device": "usb"})
+    assert state["postcheck_items"] == ["calls-sms", "file-manager", "wifi", "https-on-phone", "alt-links", "launch-uninstall"]
+    out = svc.execute({"action": "reborn-stage", "device": "usb", "stage": "https-on-phone", "result": "fail", "confirm": True})
+    assert out["stages"]["https-on-phone"]["evidence"] == "user-reported"
+    assert out["success"] == "not-confirmed"  # a post-check never turns into an installation claim
+    assert svc.execute({"action": "reborn-state", "device": "usb"})["postchecks"]["https-on-phone"]["result"] == "fail"
+
+
+def test_format_is_never_presented_as_a_reliable_rollback(tmp_path):
+    svc, _ = setup(tmp_path)
+    warnings = svc.execute({"action": "reborn-state", "device": "usb"})["card"]["warnings"]
+    assert any("NOT a reliable rollback" in w for w in warnings)

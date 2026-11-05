@@ -175,3 +175,18 @@ changelog `not stated`, distribution `unconfirmed`, no pinned artifact). Flow:
 
 Tests (`tests/test_reborn.py`) use synthetic packages and fake transports; hardware verification
 is separate and not claimed. No proprietary binaries are stored in the repository or the image.
+
+### Reborn addendum (#35, 06.11.2026)
+
+* The card states that the author's "format the phone if something goes wrong" is **not a reliable
+  rollback**: it erases user data and does not guarantee a working phone.
+* **Described changes in the package** (SSL/CA, UAProf, connectivity check, dropped dead services,
+  file-manager settings, optional N-Gage library) are listed from the file names found in the SIS.
+  A name match is a lead, not proof of the behaviour; no match reads *not detected*, never *absent*.
+* The package version is read from the SIS and compared with the author's `v1.00` claim
+  (`matches-author-claim` / `differs-from-author-claim` / `unreadable`).
+* If the package contains `ssl.dll` / `mbedtls.dll` / `mbedtls.dso`, which the separate TLS stack
+  also owns, the plan requires its own consent and shows the recorded TLS component state.
+* After installation you record, per item, calls/SMS, file manager, Wi-Fi, HTTPS on the phone,
+  alternative links and app launch/uninstall. They are stored as `user-reported` evidence and never
+  turn into an installation claim by themselves.

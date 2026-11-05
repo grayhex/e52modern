@@ -366,6 +366,7 @@ export const rebornStateSchema = z.object({
   backups: z.object({ count: z.number(), latest: z.string().nullish(), note: z.string() }),
   data_backup: z.object({ at: z.string(), source: z.string() }).nullish(),
   stages: z.record(z.string(), z.object({ result: z.string(), source: z.string() }).passthrough()),
+  postcheck_items: z.array(z.string()),
   statement: z.string(),
 });
 export const rebornImportSchema = z.object({
@@ -382,6 +383,21 @@ export const rebornImportSchema = z.object({
     z.object({ target: z.string(), high_risk: z.boolean(), reasons: z.array(z.string()) }),
   ),
   high_risk_count: z.number(),
+  modifications: z.array(
+    z.object({
+      category: z.string(),
+      status: z.string(),
+      evidence: z.array(z.string()),
+      basis: z.string(),
+    }),
+  ),
+  tls_overlap: z.array(z.string()),
+  tls_state: z.record(z.string(), z.string()),
+  version_check: z.object({
+    package: z.string().nullish(),
+    author_claim: z.string(),
+    status: z.string(),
+  }),
   pinned: z.boolean(),
   differs_from_pin: z.boolean(),
   statement: z.string(),

@@ -27,6 +27,22 @@ const STAGES: [string, string, string][] = [
   ['rebooted', 'I restarted the phone', 'Я перезагрузил телефон'],
   ['network-works', 'Network and basic functions work', 'Сеть и основные функции работают'],
 ];
+const POSTCHECK_LABEL: Record<string, [string, string]> = {
+  'calls-sms': ['Calls and SMS work', 'Звонки и SMS работают'],
+  'file-manager': ['File manager opens', 'Файловый менеджер открывается'],
+  wifi: ['Wi-Fi connects', 'Wi-Fi подключается'],
+  'https-on-phone': ['HTTPS opens on the phone', 'HTTPS открывается на телефоне'],
+  'alt-links': ['Alternative links / services work', 'Альтернативные ссылки и сервисы работают'],
+  'launch-uninstall': ['Apps launch and can be uninstalled', 'Приложения запускаются и удаляются'],
+};
+const MOD_LABEL: Record<string, [string, string]> = {
+  'ssl-ca': ['SSL / CA certificates', 'SSL / CA-сертификаты'],
+  uaprof: ['UAProf', 'UAProf'],
+  'connectivity-check': ['Connectivity check', 'Проверка соединения'],
+  'dead-services': ['Dropped dead services', 'Убранные мёртвые сервисы'],
+  'file-manager': ['File manager settings', 'Настройки файлового менеджера'],
+  'n-gage': ['Optional N-Gage library', 'Опциональная библиотека N-Gage'],
+};
 const OUTCOME: Record<string, [string, string]> = {
   'not-confirmed': ['Installation not confirmed', 'Установка не подтверждена'],
   'installed-reported-unchecked': [
@@ -256,6 +272,39 @@ export default function ReviveReborn({
               <span>{imported.high_risk_count}</span>
             </li>
           </ul>
+          <p className="k-note-line" data-testid="reborn-version">
+            {t('Package version', 'Версия пакета')}:{' '}
+            {imported.version_check.package ?? t('unreadable', 'не прочитана')} ·{' '}
+            {t('author claims', 'автор заявляет')} {imported.version_check.author_claim} ·{' '}
+            {imported.version_check.status}
+          </p>
+          <h4>
+            {t('Described changes found in the package', 'Описанные изменения, найденные в пакете')}
+          </h4>
+          <ul className="k-list" data-testid="reborn-mods">
+            {imported.modifications.map((m) => (
+              <li key={m.category} data-mod={m.category} data-status={m.status}>
+                <span>{t(...(MOD_LABEL[m.category] ?? [m.category, m.category]))}</span>
+                <span>
+                  {m.status === 'present-by-file-name'
+                    ? t(
+                        'file name matches (a lead, not proof)',
+                        'совпадает имя файла (намёк, не доказательство)',
+                      )
+                    : t('not detected', 'не обнаружено')}
+                </span>
+              </li>
+            ))}
+          </ul>
+          {imported.tls_overlap.length > 0 && (
+            <p role="alert" className="rv-conflict" data-testid="reborn-overlap">
+              {t('Overlaps the TLS stack', 'Пересекается с TLS-стеком')}:{' '}
+              {imported.tls_overlap.join(', ')} ·{' '}
+              {Object.entries(imported.tls_state)
+                .map(([k, v]) => `${k}=${v}`)
+                .join(', ')}
+            </p>
+          )}
           <details open>
             <summary>{t('Content preview', 'Состав пакета')}</summary>
             <ul className="k-list">
@@ -361,6 +410,32 @@ export default function ReviveReborn({
             <span>
               {t(en, ru)}
               {s.stages[id] ? ` — ${s.stages[id].result}` : ''}
+            </span>
+            <span className="rv-record-inline">
+              {(['pass', 'fail'] as const).map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  className="k-btn"
+                  disabled={!sawIt || !device || stage.isPending}
+                  onClick={() => stage.mutate({ stage: id, result: r })}
+                >
+                  {r === 'pass' ? t('Yes', 'Да') : t('No', 'Нет')}
+                </button>
+              ))}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <h4>{t('After installation (your observations)', 'После установки (ваши наблюдения)')}</h4>
+      <ul className="k-list" data-testid="reborn-postchecks">
+        {s.postcheck_items.map((id) => (
+          <li key={id} data-postcheck={id}>
+            <span>
+              {t(...(POSTCHECK_LABEL[id] ?? [id, id]))}
+              {s.stages[id]
+                ? ` — ${s.stages[id].result} (${t('user-reported', 'со слов пользователя')})`
+                : ''}
             </span>
             <span className="rv-record-inline">
               {(['pass', 'fail'] as const).map((r) => (
