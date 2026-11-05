@@ -21,7 +21,7 @@ ERRORS = {
  'invalid-certificate': ['Check package integrity, issuer trust, certificate constraints and device binding. Re-download from the publisher.'],
  'restricted-capabilities': ['Package requests privileged capabilities; certificate authorisation and phone policy must be checked. Self-signing does not grant these privileges on stock firmware.'],
  'missing-capabilities': ['Compare requested capabilities with the authorising certificate and firmware policy. A self-signed certificate cannot grant restricted capabilities on stock firmware.'],
- 'unsupported-os': ['Use a SIS for Symbian 9.x / S60 3rd FP2 and ARMv5. A signature or system patch cannot make an incompatible binary compatible.'],
+ 'unsupported-os': ['Use a SIS for Symbian 9.x / the selected S60 edition and ARMv5. A signature or system patch cannot make an incompatible binary compatible.'],
  'missing-dependency': ['Install the publisher-documented dependency version. Dependency presence/version cannot be inferred from a file on a memory card.'],
  'unsigned-package': ['Review App Manager → Settings → Software installation on the phone. “All” does not grant restricted capabilities.', 'Prefer a publisher-signed package or your own authorised signing identity. Jailbreak Manager is a separate opt-in manual workflow, never enabled by Catalog.'],
  'unknown': ['Record the exact installer message and inspect the package. Do not infer a certificate error from an emulator crash.']}
@@ -140,8 +140,9 @@ class Inspector:
         if not isinstance(target, dict):
             raise ValueError('Target must be an object')
         target = {k: str(target.get(k, ''))[:120] for k in ('model', 'rm', 'firmware', 'os')}
-        models = set(re.findall(r'\bE(52|72)\b', target['model'], re.I))
-        model_id = 'nokia-e' + next(iter(models)) if len(models) == 1 else None
+        from symport.phone.registry import target_profile
+        resolved_model = target_profile(target)
+        model_id = resolved_model['id'] if resolved_model and resolved_model.get('profile') else None
         report = {'schema': 'symport.inspector/1', 'id': secrets.token_hex(16), 'name': name,
                   'sha256': hashlib.sha256(raw).hexdigest(), 'size': len(raw), 'package': info['package'],
                   'kind': 'theme' if hint == 'theme' or data.get('kind') == 'theme' else 'app',
@@ -165,12 +166,13 @@ class Inspector:
                     report['capabilities'] += binary.get('capabilities') or []
                     if binary.get('restricted_capabilities'):
                         issues.append('restricted-capabilities')
-                    if binary['kernel'] != 'eka2' or (model_id and binary['cpu'] not in ('armv4', 'armv5')):
+                    if binary['kernel'] == 'eka1' or (model_id and binary['cpu'] in ('x86', 'mcore', 'armv6')):
                         issues.append('unsupported-os')
         except ValueError as exc:
             report['limitations'].append(str(exc))
-        if target['os'] and target['os'] != '9.3':
-            report['limitations'].append('Only Nokia E52/E72 Symbian 9.3 static targets are evaluated by this screen.')
+        if resolved_model and target['os'] and target['os'] != resolved_model['symbian']:
+            issues.append('unsupported-os')
+            report['limitations'].append('Selected OS differs from the documented model profile.')
         from symport.analysis.compat import FirmwareProfile, evaluate
         from symport.devices.profiles import load_profile
         from symport.report import Report
@@ -192,7 +194,7 @@ class Inspector:
                                        {k.lower(): set(v['ordinals']) if isinstance(v, dict) and isinstance(v.get('ordinals'), list) else None for k,v in dlls.items()})
             report['firmware_profile'] = {'id': firmware.id, 'source': firmware.source, 'evidence': 'user-supplied; not device-attested'}
         if not model_id:
-            report['limitations'].append('Model profile unknown; E52/E72 compatibility is not inferred for another model.')
+            report['limitations'].append('Model or variant profile unknown; exact device compatibility is not inferred.')
         profile = load_profile(Path(__file__).resolve().parents[2] / ('profiles/' + (model_id or 'nokia-e52') + '.toml'))
         for binary in report['binaries']:
             checks = Report('inspector static compatibility')
@@ -203,10 +205,12 @@ class Inspector:
         if dlls is None and firmware is not None:
             dlls, dll_source = set(firmware.dlls), 'user-supplied firmware profile'
         report['dependency_analysis'] = analyze_package(raw, name=name, target=target, firmware_dlls=dlls, firmware_source=dll_source)
+        if report['dependency_analysis']['platform_verdict']=='unsupported':
+            issues.append('unsupported-os')
         report['capabilities'] = sorted(set(report['capabilities']))
         report['issues'] = list(dict.fromkeys(issues))
         report['compatibility'] = 'incompatible' if 'unsupported-os' in issues or signatures['status'] == 'invalid' else 'unknown'
-        if report['binaries'] and firmware and all(b['compatibility'] == 'compatible' for b in report['binaries']) and not report['issues']:
+        if report['binaries'] and firmware and report['dependency_analysis']['verdict'] == 'satisfied-static' and all(b['compatibility'] == 'compatible' for b in report['binaries']) and not report['issues']:
             report['compatibility'] = 'compatible'
         report['compatibility_scope'] = 'static only; installation, certificate trust and runtime are not established'
         report['recommendations'] = {code: ERRORS.get(code, ['Check the phone clock against the real date/time and obtain a current certificate.']) for code in report['issues']}

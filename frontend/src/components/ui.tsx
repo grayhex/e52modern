@@ -110,8 +110,13 @@ export function DeviceSelect({
           .filter((d) => !capability || supports(d, capability))
           .map((d) => (
             <option key={d.id} value={d.id}>
-              {d.name ?? d.model ?? d.id} ·{' '}
-              {d.connected ? t('Connected', 'Подключено') : t('Disconnected', 'Отключено')}
+              {(d.model_profile
+                ? t(d.model_profile.name, d.model_profile.name_ru ?? d.model_profile.name)
+                : undefined) ??
+                d.name ??
+                d.model ??
+                d.id}{' '}
+              · {d.connected ? t('Connected', 'Подключено') : t('Disconnected', 'Отключено')}
             </option>
           ))}
       </select>

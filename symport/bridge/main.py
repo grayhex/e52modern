@@ -230,9 +230,12 @@ def self_test(report: Path | None):
     from urllib.error import HTTPError
     from urllib.request import ProxyHandler, Request, build_opener
 
+    from symport.phone.registry import identify
     from symport.sis.writer import SisFile, SisPackage, build
 
     from .settings import protect, save_config
+    assert identify("N95", rm="RM-320")["id"] == "nokia-n95-8gb"
+    assert identify("N95")["variant_known"] is False
 
     with tempfile.TemporaryDirectory(prefix="symport-bridge-check-") as tmp:
         root = Path(tmp)
@@ -332,6 +335,7 @@ def self_test(report: Path | None):
                 "credential_protection": "passed",
                 "gammu": worker,
                 "physical_device": "not-tested",
+                "model_registry": "passed",
             }
             if report:
                 report.write_text(json.dumps(result, indent=2), encoding="utf-8")

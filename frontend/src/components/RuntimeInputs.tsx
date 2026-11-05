@@ -1,3 +1,4 @@
+import { ModelProfileSelect } from './ModelProfileSelect';
 import { usePreferences } from '../state/app';
 import { Field } from './workspace';
 import { useFirmwareImages } from '../hooks/useFirmwareImages';
@@ -20,6 +21,7 @@ export function TargetFields({
   const ready = images.data?.images.filter((image) => image.status === 'ready') ?? [];
   return (
     <div className="react-fields">
+      <ModelProfileSelect target={target} onTarget={onTarget} />
       {(
         [
           ['model', 'Model', 'Модель'],

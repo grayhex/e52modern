@@ -1,0 +1,43 @@
+schema = 1
+id = "nokia-n95"
+
+[device]
+manufacturer = { value = "Nokia", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_N95" }
+model = { value = "N95", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_N95" }
+product_code = { value = "", status = "unknown", source = "Read from the connected handset; no unverified product-code map" }
+
+[platform]
+symbian_version = { value = "9.2", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_N95#Specifications" }
+s60_version = { value = "3rd Edition, Feature Pack 1", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_N95#Specifications" }
+kernel = { value = "eka2", status = "documented", source = "Symbian OS 9.2 / EKA2 platform" }
+installer_format = { value = "sis9", status = "documented", source = "Symbian OS 9.x SIS format" }
+
+[display]
+resolution = { value = [240, 320], status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_N95#Specifications" }
+orientation = { value = "portrait", status = "documented", source = "Default portrait orientation; rotation is firmware/application controlled" }
+
+[input]
+method = { value = "hardware-keys", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_N95; original Nokia N95 front reference" }
+touch = { value = false, status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_N95" }
+
+[cpu]
+target_abi = { value = "armv5", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_N95#Specifications (ARM11 / ARMv6 hardware; Symbian ARMv5 application ABI)" }
+
+[storage]
+layout = { value = "removable microSD; card mount/access must be observed by the adapter", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_N95#Variations" }
+mounted_volume = { value = "", status = "unknown", source = "Requires live adapter observation; profile does not enroll or mount storage" }
+free_bytes = { value = "", status = "unknown", source = "Requires live telemetry" }
+
+[memory]
+ram = { value = "", status = "unknown", source = "Regional variants differ; no profile value is used as a measured RAM counter" }
+
+[firmware]
+version = { value = "", status = "unknown", source = "Read exact model/RM/firmware from handset; no latest firmware manifest is supplied" }
+rom_dlls = { value = [], status = "unknown", source = "Requires matching user-owned firmware inventory" }
+
+[packaging]
+platform_dependency = { value = "0x102032be", status = "documented", source = "S60 3rd Edition FP1 product UID; symport/deps/runtimes.py" }
+signing_policy = { value = "", status = "unknown", source = "Depends on handset certificates, firmware and installer settings" }
+
+[testing]
+hardware = { value = "", status = "unknown", source = "No physical N95 test has been performed" }

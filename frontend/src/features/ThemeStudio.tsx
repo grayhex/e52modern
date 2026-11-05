@@ -1,3 +1,4 @@
+import { DeviceFrame } from '../components/DeviceFrame';
 import { useProfiles } from '../api/queries';
 import { PageHeader } from '../components/kit';
 import { useState } from 'react';
@@ -619,125 +620,116 @@ function PhonePreview({
           </button>
         ))}
       </div>
-      <div className={`p1-theme-phone ${landscape ? 'p1-theme-phone--e72' : ''}`}>
-        {model?.image ? (
-          <img src={model.image} alt={model.name} />
-        ) : (
-          <span className="k-meta">
-            {t('No artwork for this model', 'Для этой модели нет изображения')}
-          </span>
-        )}
-        <div className="p1-theme-screen">
-          <svg
-            viewBox={`0 0 ${w} ${h}`}
-            role="img"
-            aria-label={`${t('Schematic theme preview', 'Схематичный предпросмотр темы')} ${w}×${h}`}
-          >
-            <rect width={w} height={h} fill={p.bg} />
-            {project.mode === 'clear' && image.data && (
-              <image width={w} height={h} href={`data:image/png;base64,${image.data.content}`} />
-            )}
-            <rect width={w} height={34} fill={p.status} />
-            <text x="10" y="23" fontSize="17" fill={p.text}>
-              {t('Menu', 'Меню')}
-            </text>
-            <text x={w - 52} y="22" fontSize="12" fill={p.text}>
-              12:00
-            </text>
-            {view === 'menu' ? (
-              Array.from({ length: landscape ? 6 : 9 }, (_, i) => {
-                const x = 20 + (i % 3) * (w / 3),
-                  y = 54 + Math.floor(i / 3) * 68;
-                return (
-                  <g key={i}>
-                    {i === 0 && (
-                      <rect
-                        x={x - 10}
-                        y={y - 7}
-                        width={w / 3 - 2}
-                        height={65}
-                        rx="6"
-                        fill={p.hl_fill_bot}
-                      />
-                    )}
-                    <rect x={x + 10} y={y} width="30" height="30" rx="7" fill={p.accent} />
-                    <text x={x + 25} y={y + 22} fontSize="20" textAnchor="middle" fill={p.panel}>
-                      {['✉', '♫', '▤', '✦', '◷', '☷'][i % 6]}
-                    </text>
-                    <text
-                      x={x + 25}
-                      y={y + 49}
-                      fontSize="10"
-                      textAnchor="middle"
-                      fill={i === 0 ? p.hl_text : p.text}
-                    >
-                      {
-                        [
-                          t('Messages', 'Сообщения'),
-                          t('Music', 'Музыка'),
-                          t('Files', 'Файлы'),
-                          t('Tools', 'Средства'),
-                          t('Clock', 'Часы'),
-                          t('Contacts', 'Контакты'),
-                        ][i % 6]
-                      }
-                    </text>
-                  </g>
-                );
-              })
-            ) : (
-              <>
-                {[
-                  t('Applications', 'Приложения'),
-                  t('Personalisation', 'Персонализация'),
-                  t('Connectivity', 'Подключение'),
-                  t('Settings', 'Настройки'),
-                ].map((label, i) => (
-                  <g key={i}>
+      <DeviceFrame profile={project.profile}>
+        <svg
+          viewBox={`0 0 ${w} ${h}`}
+          role="img"
+          aria-label={`${t('Schematic theme preview', 'Схематичный предпросмотр темы')} ${w}×${h}`}
+        >
+          <rect width={w} height={h} fill={p.bg} />
+          {project.mode === 'clear' && image.data && (
+            <image width={w} height={h} href={`data:image/png;base64,${image.data.content}`} />
+          )}
+          <rect width={w} height={34} fill={p.status} />
+          <text x="10" y="23" fontSize="17" fill={p.text}>
+            {t('Menu', 'Меню')}
+          </text>
+          <text x={w - 52} y="22" fontSize="12" fill={p.text}>
+            12:00
+          </text>
+          {view === 'menu' ? (
+            Array.from({ length: landscape ? 6 : 9 }, (_, i) => {
+              const x = 20 + (i % 3) * (w / 3),
+                y = 54 + Math.floor(i / 3) * 68;
+              return (
+                <g key={i}>
+                  {i === 0 && (
                     <rect
-                      x="6"
-                      y={42 + i * 36}
-                      width={w - 12}
-                      height="34"
-                      fill={i === 0 ? p.hl_fill_bot : p.panel}
+                      x={x - 10}
+                      y={y - 7}
+                      width={w / 3 - 2}
+                      height={65}
+                      rx="6"
+                      fill={p.hl_fill_bot}
                     />
-                    <text x="16" y={65 + i * 36} fontSize="15" fill={i === 0 ? p.hl_text : p.text}>
-                      {label}
-                    </text>
-                  </g>
-                ))}
-                {view === 'dialog' && (
-                  <g>
-                    <rect
-                      x="18"
-                      y="72"
-                      width={w - 36}
-                      height="100"
-                      rx="8"
-                      fill={p.panel}
-                      stroke={p.line}
-                    />
-                    <text x="30" y="103" fill={p.text} fontSize="16">
-                      {t('Apply theme?', 'Применить тему?')}
-                    </text>
-                    <rect x="30" y="125" width={w - 60} height="30" rx="4" fill={p.hl_fill_bot} />
-                    <text x={w / 2} y="146" textAnchor="middle" fontSize="14" fill={p.hl_text}>
-                      {t('Select', 'Выбрать')}
-                    </text>
-                  </g>
-                )}
-              </>
-            )}
-            <rect y={h - 26} width={w} height="26" fill={p.softkey} />
-            <text x="10" y={h - 8} fontSize="13" fill={p.softkey_text}>
-              {t('Options', 'Функции')}
-            </text>
-            <text x={w - 10} y={h - 8} textAnchor="end" fontSize="13" fill={p.softkey_text}>
-              {t('Exit', 'Выйти')}
-            </text>
-          </svg>
-        </div>
-      </div>
+                  )}
+                  <rect x={x + 10} y={y} width="30" height="30" rx="7" fill={p.accent} />
+                  <text x={x + 25} y={y + 22} fontSize="20" textAnchor="middle" fill={p.panel}>
+                    {['✉', '♫', '▤', '✦', '◷', '☷'][i % 6]}
+                  </text>
+                  <text
+                    x={x + 25}
+                    y={y + 49}
+                    fontSize="10"
+                    textAnchor="middle"
+                    fill={i === 0 ? p.hl_text : p.text}
+                  >
+                    {
+                      [
+                        t('Messages', 'Сообщения'),
+                        t('Music', 'Музыка'),
+                        t('Files', 'Файлы'),
+                        t('Tools', 'Средства'),
+                        t('Clock', 'Часы'),
+                        t('Contacts', 'Контакты'),
+                      ][i % 6]
+                    }
+                  </text>
+                </g>
+              );
+            })
+          ) : (
+            <>
+              {[
+                t('Applications', 'Приложения'),
+                t('Personalisation', 'Персонализация'),
+                t('Connectivity', 'Подключение'),
+                t('Settings', 'Настройки'),
+              ].map((label, i) => (
+                <g key={i}>
+                  <rect
+                    x="6"
+                    y={42 + i * 36}
+                    width={w - 12}
+                    height="34"
+                    fill={i === 0 ? p.hl_fill_bot : p.panel}
+                  />
+                  <text x="16" y={65 + i * 36} fontSize="15" fill={i === 0 ? p.hl_text : p.text}>
+                    {label}
+                  </text>
+                </g>
+              ))}
+              {view === 'dialog' && (
+                <g>
+                  <rect
+                    x="18"
+                    y="72"
+                    width={w - 36}
+                    height="100"
+                    rx="8"
+                    fill={p.panel}
+                    stroke={p.line}
+                  />
+                  <text x="30" y="103" fill={p.text} fontSize="16">
+                    {t('Apply theme?', 'Применить тему?')}
+                  </text>
+                  <rect x="30" y="125" width={w - 60} height="30" rx="4" fill={p.hl_fill_bot} />
+                  <text x={w / 2} y="146" textAnchor="middle" fontSize="14" fill={p.hl_text}>
+                    {t('Select', 'Выбрать')}
+                  </text>
+                </g>
+              )}
+            </>
+          )}
+          <rect y={h - 26} width={w} height="26" fill={p.softkey} />
+          <text x="10" y={h - 8} fontSize="13" fill={p.softkey_text}>
+            {t('Options', 'Функции')}
+          </text>
+          <text x={w - 10} y={h - 8} textAnchor="end" fontSize="13" fill={p.softkey_text}>
+            {t('Exit', 'Выйти')}
+          </text>
+        </svg>
+      </DeviceFrame>
       <p className="note">
         {project.mode === 'imported'
           ? t(

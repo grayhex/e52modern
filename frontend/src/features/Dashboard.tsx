@@ -235,7 +235,7 @@ function Overview() {
       <SectionPanel className="k-hero">
         <DeviceIdentity
           name={
-            profile?.name ??
+            (profile ? t(profile.name, profile.name_ru ?? profile.name) : undefined) ??
             selected?.model ??
             selected?.name ??
             t('Symbian phone', 'Телефон Symbian')

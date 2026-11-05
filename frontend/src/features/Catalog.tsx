@@ -55,16 +55,19 @@ export default function Catalog() {
   const confirm = useConfirmedAction<{ action: string; job?: string; app?: string }>();
   const localized = (app: CatalogApp, key: string) =>
     text(app[language === 'en' && typeof app[key + '_en'] === 'string' ? key + '_en' : key]);
+  const forModel = (a: CatalogApp) => a.model_compatibility?.[profile]?.status ?? 'not-tested';
   const visible =
     state.data?.apps.filter(
       (a) =>
         (a.category !== 'high-risk' || filters.category === 'high-risk') &&
-        (allProfiles || !['unsupported', 'unavailable'].includes(a.compatibility)) &&
+        (allProfiles || !['unsupported', 'unavailable'].includes(forModel(a))) &&
         `${a.name} ${a.description} ${text(a.description_en)}`
           .toLocaleLowerCase()
           .includes(search.toLocaleLowerCase()) &&
         Object.entries(filters).every(([k, v]) =>
-          !v || k === 'collection' ? !v || a.collection.includes(v) : text(a[k]) === v,
+          !v || k === 'collection'
+            ? !v || a.collection.includes(v)
+            : (k === 'compatibility' ? forModel(a) : text(a[k])) === v,
         ),
     ) ?? [];
   function change(ids: Set<string>) {
@@ -133,7 +136,9 @@ export default function Catalog() {
                 {[
                   ...new Set(
                     state.data?.apps.flatMap((a) =>
-                      k === 'collection' ? a.collection : [text(a[k])],
+                      k === 'collection'
+                        ? a.collection
+                        : [k === 'compatibility' ? forModel(a) : text(a[k])],
                     ),
                   ),
                 ]
@@ -211,10 +216,10 @@ export default function Catalog() {
                   ? t('Pinned installer (SHA-256)', 'Проверенный установщик (SHA-256)')
                   : t('External link', 'Внешняя ссылка')}
               </StatusIndicator>
-              <StatusIndicator
-                tone={app.compatibility === 'likely-compatible' ? 'info' : 'unknown'}
-              >
-                {app.compatibility}
+              <StatusIndicator tone={forModel(app) === 'verified' ? 'info' : 'unknown'}>
+                {forModel(app) === 'not-tested'
+                  ? t('Not tested', 'Нет результатов испытаний')
+                  : forModel(app)}
               </StatusIndicator>
               <span className="k-meta">{app.network}</span>
             </div>
@@ -436,6 +441,10 @@ export default function Catalog() {
       {detail && (
         <Modal title={detail.name} onClose={() => setDetail(null)}>
           <p>{localized(detail, 'description')}</p>
+          <h3>
+            {t('Selected model evidence', 'Результат для выбранной модели')} · {profile}
+          </h3>
+          <JsonReport value={detail.model_compatibility?.[profile] ?? { status: 'not-tested' }} />
           <dl className="device-details">
             {[
               'version',

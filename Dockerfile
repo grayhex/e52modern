@@ -7,6 +7,7 @@ RUN --mount=type=secret,id=proxy_ca \
     && npm ci
 COPY frontend/ ./
 COPY symport/web_assets/ /src/symport/web_assets/
+COPY symport/phone/device_models.json /src/symport/phone/device_models.json
 RUN npm run build
 
 FROM python:3.12-slim-trixie

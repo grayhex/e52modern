@@ -7,6 +7,10 @@ from datetime import date
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from symport.phone.registry import selectable_profiles
+
+from .compatibility import assessment, evidence, platform_evidence
+
 STATUSES = {'verified-on-e52', 'verified-on-s60', 'likely-compatible', 'untested', 'unsupported', 'unavailable'}
 CATEGORIES = {'maps', 'communication', 'internet', 'system', 'documents', 'multimedia', 'games', 'development', 'high-risk'}
 ID = re.compile(r'^[a-z][a-z0-9-]{1,63}$')
@@ -33,6 +37,15 @@ def validate_entry(entry: dict) -> None:
             raise ValueError('Catalog list required: ' + key)
     if entry['compatibility'] == 'verified-on-e52' and not entry['e52_evidence']:
         raise ValueError('E52 verification requires evidence')
+    if entry.get('minimum_symbian') is not None and not re.fullmatch(r'9\.[1-4]', str(entry['minimum_symbian'])):
+        raise ValueError('Invalid minimum Symbian version')
+    if not isinstance(entry.get('model_evidence', {}), dict):
+        raise ValueError('Model evidence must be a mapping')
+    for key, report in entry.get('model_evidence', {}).items():
+        if key not in selectable_profiles() or not isinstance(report, dict) or report.get('status') not in ('verified', 'not-tested', 'unsupported'):
+            raise ValueError('Invalid per-model compatibility evidence')
+        if report['status'] == 'verified' and (not report.get('sources') or not report.get('package_sha256') or not re.fullmatch(r'[a-f0-9]{64}', report['package_sha256'])):
+            raise ValueError('Model verification requires sources and exact package SHA-256')
     date.fromisoformat(entry['checked_at'])
     if entry['release_date'] is not None:
         date.fromisoformat(entry['release_date'])
@@ -52,12 +65,18 @@ class Catalog:
             validate_entry(entry)
             if entry['id'] in self.entries:
                 raise ValueError('Duplicate catalog ID')
+            entry['model_compatibility'] = evidence(entry)
+            entry['platform_compatibility'] = platform_evidence(entry)
             self.entries[entry['id']] = entry
         self.sources = json.loads((root / 'sources.json').read_text(encoding="utf-8"))
         self.research = json.loads((root / 'research.json').read_text(encoding="utf-8"))
         for entry in self.entries.values():
             if entry['source_id'] and entry['source_id'] not in self.sources:
                 raise ValueError('Unknown curated source: ' + entry['source_id'])
+            pins = {a['sha256'] for a in self.sources.get(entry['source_id'], {}).get('artifacts', [])}
+            for report in entry.get('model_evidence', {}).values():
+                if report['status'] == 'verified' and pins and report['package_sha256'] not in pins:
+                    raise ValueError('Model test SHA-256 differs from the current distribution')
             for other in entry.get('conflicts_with', []):
                 if other not in self.entries:
                     raise ValueError('Unknown conflicting application: ' + str(other))
@@ -76,8 +95,8 @@ class Catalog:
                 and (not filters.get('collection') or filters['collection'] in entry['collection'])]
 
     def plan(self, selected: list[str], device: str = 'nokia-e52') -> dict:
-        if device not in ('nokia-e52', 'nokia-e72'):
-            raise ValueError('Choose Nokia E52 or E72 compatibility profile')
+        if device not in selectable_profiles():
+            raise ValueError('Choose a supported Nokia compatibility profile')
         if not isinstance(selected, list) or not 0 < len(selected) <= 50 or any(not isinstance(i, str) for i in selected):
             raise ValueError('Select 1–50 applications')
         ordered, visiting, done, problems = [], set(), set(), []
@@ -91,7 +110,7 @@ class Catalog:
                 problems.append('Missing dependency/application: ' + str(key))
                 return
             visiting.add(key)
-            if entry.get('target_profiles') and device not in entry['target_profiles']:
+            if assessment(entry, device)['status'] == 'unsupported':
                 problems.append(entry['name'] + ': selected model is outside the declared target profiles')
             if entry['delivery'] == 'manual':
                 problems.append(entry['name'] + ': manual download only; use the author link and normal package transfer')
@@ -125,4 +144,5 @@ class Catalog:
                 'requirements': {key: self.entries[key].get('requirements', []) for key in ordered},
                 'runtime_requirements': {key: self.entries[key]['runtime_requirements'] for key in ordered
                                          if self.entries[key].get('runtime_requirements')},
-                'warning': 'E52 hardware compatibility and installation are not established by package validation.'}
+                'model_compatibility': {key: assessment(self.entries[key], device) for key in ordered},
+                'warning': 'Package validation does not establish hardware compatibility or installation.'}

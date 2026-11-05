@@ -234,3 +234,13 @@ Further work depends on real E52 traces: tested modern Nokia driver combinations
 per-service Bluetooth discovery/auto-selection, shared-directory OBEX batch staging,
 verified SyncML conflict handling and an optional native Symbian agent. These are
 not exposed as working capabilities today.
+
+## N95 / N95 8GB profiles
+
+Both use documented S60 3rd FP1 / Symbian 9.2 profiles. The shared registry resolves regional
+suffix/RM evidence; a bare `N95` remains variant-unknown. It does not change any transport
+protocol or capability decision. Original microSD and 8GB mass memory need actual discovery
+and explicit volume enrollment; model storage capacity never authorizes a host path. Windows
+Bridge ships the same registry and exercises it in the frozen executable self-test.
+**USB/Bluetooth/S60 applet, PIM writes and SIS/theme installation are not tested on N95 hardware.**
+See [model/RM sources and manual test plan](NOKIA_N95.md).

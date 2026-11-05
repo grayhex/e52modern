@@ -53,7 +53,7 @@ def documented_model(value: str) -> dict | None:
 # Symbian OS release implied by the documented S60 edition (S60 3rd Edition ... 5th Edition).
 SYMBIAN_BY_EDITION = {"3rd": "9.1", "3rd FP1": "9.2", "3rd FP2": "9.3", "5th": "9.4"}
 REGISTRY_FILE = Path(__file__).with_name("device_models.json")
-_FIELDS = {"id", "model", "name", "family", "image", "screen", "input", "toolchain_profile", "source"}
+_FIELDS = {"id", "model", "name", "family", "image", "screen", "input", "toolchain_profile", "source", "name_ru", "artwork", "s60", "symbian", "storage", "platform_uids", "profile", "rms", "aliases", "fact_status", "measured", "hardware", "selectable", "target_model"}
 
 
 def load_registry(path: Path | None = None) -> list[dict]:
@@ -70,7 +70,7 @@ def load_registry(path: Path | None = None) -> list[dict]:
         if str(entry.get("model", "")).upper() not in S60_MODELS:
             raise ValueError("Add the model to S60_MODELS (documented edition) first")
         image, screen = entry.get("image"), entry.get("screen")
-        if image is not None and not re.fullmatch(r"/phones/[a-z0-9-]+\.png", str(image)):
+        if image is not None and not re.fullmatch(r"/phones/[a-z0-9-]+\.(?:png|webp|svg)", str(image)):
             raise ValueError("Invalid model image path")
         if screen is not None and (
             set(screen) != {"width", "height", "orientation"}
@@ -96,12 +96,16 @@ def catalog() -> list[dict]:
     ]
 
 
-def presentation(value: str) -> dict | None:
+def presentation(value: str, *, rm=None, product_code=None) -> dict | None:
     """Model identity from the adapter response; geometry/artwork come from the registry.
 
     A documented S60 model without a registry entry still gets a profile (name, edition) but no
     artwork or geometry: the UI then shows a labelled generic illustration instead of guessing.
     """
+    from .registry import identify
+    resolved = identify(value, rm=rm, product_code=product_code)
+    if resolved:
+        return resolved
     model = documented_model(value)
     if not model:
         return None

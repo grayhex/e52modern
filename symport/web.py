@@ -445,7 +445,7 @@ def make_handler(state: Workbench):
                 body = target.read_bytes()
                 if relative == 'index.html':
                     body = body.replace(b'__SESSION_TOKEN__',state.token.encode())
-                return self._send(body,mimetypes.guess_type(str(target))[0] or 'application/octet-stream',session=relative=='index.html')
+                return self._send(body,'image/webp' if target.suffix.lower()=='.webp' else mimetypes.guess_type(str(target))[0] or 'application/octet-stream',session=relative=='index.html')
             static = {
                 "/": ("index.html", "text/html; charset=utf-8"),
                 "/classic": ("index.html", "text/html; charset=utf-8"),
@@ -478,9 +478,9 @@ def make_handler(state: Workbench):
                     return self._send(raw, 'image/svg+xml' if graphic.endswith('.svg') else 'image/png')
                 except OSError:
                     return self._json({'error': 'Not found'}, 404)
-            if re.fullmatch(r'/phones/[a-z0-9-]+\.png', url.path):
+            if re.fullmatch(r'/phones/[a-z0-9-]+\.(?:png|svg|webp)', url.path):
                 try:  # artwork of every registered phone model (symport/phone/device_models.json)
-                    return self._send((ASSETS / url.path.lstrip('/')).read_bytes(), 'image/png')
+                    return self._send((ASSETS / url.path.lstrip('/')).read_bytes(), {'.png':'image/png','.svg':'image/svg+xml','.webp':'image/webp'}[Path(url.path).suffix])
                 except OSError:
                     return self._json({'error': 'Not found'}, 404)
             if url.path.startswith('/vendor/wavesurfer/'):
