@@ -170,6 +170,49 @@ class TlsRevival:
         self.probe = default_probe
         self.opener = urllib.request.build_opener(_Redirects())
 
+    def register_safety(self):
+        """Copying TLS components goes through the Recovery Safety Net (plan → snapshot → apply)."""
+        self.service.scenarios['tls'] = self._plan_scenario
+        self.service.safety.gates['tls'] = self._gate
+
+    @staticmethod
+    def _gate(row, facts, plan):
+        ev = C.evaluate(facts, 'network-certs')
+        return [{'code': 'gate-' + c, 'text': ev[c]['reason']} for c in ('connection', 'identity', 'platform')
+                if ev[c]['status'] != 'ready']
+
+    def _plan_scenario(self, row, facts, data):
+        keys = data.get('components')
+        if not isinstance(keys, list) or not keys or len(keys) > 4:
+            raise ValueError('Choose components')
+        order = []
+        for k in keys:
+            for dep in [*self._spec(k)['depends_on'], k]:
+                if dep not in order:
+                    order.append(dep)
+        items, blocking, level = [], [], 'low'
+        for k in order:
+            spec = self.components[k]
+            raw = self._cached(spec)
+            if raw is None:
+                raise ValueError(f'Obtain the pinned file for {k} first (download or import)')
+            self.service.safety.put_artifact(raw)
+            items.append({'name': spec['name'], 'sha256': spec['sha256'], 'size': spec['size'], 'component': k})
+            if spec['risk'] == 'high':
+                level = 'high'
+                blocking.append({'code': 'manual-system-replacement', 'satisfied_by': 'acknowledgement',
+                                 'text': {'en': 'Extracting ssl.zip into C:\\sys\\bin is a manual system change SymPort cannot undo. Keep your own copy of the original ssl.dll.',
+                                          'ru': 'Распаковка ssl.zip в C:\\sys\\bin — ручное системное изменение, которое SymPort не откатывает. Сохраните свою копию оригинального ssl.dll.'}})
+            elif level == 'low':
+                level = 'medium'
+        guide = [{'component': k, 'steps': self._guide(k), 'restore': self._restore(k)} for k in order]
+        return self.service.safety.build_plan(
+            row, facts, scenario='tls', label='Symbian TLS components', folder=FOLDER, items=items,
+            risk={'level': level, 'blocking': blocking, 'irreversible': level == 'high'},
+            restore={'kind': 'files-created-by-symport', 'system_restore': 'unsupported',
+                     'note': 'Rollback removes the copied archives only; installed software and replaced system files are restored by you.'},
+            phone_actions=guide)
+
     # ---- helpers ---------------------------------------------------------------------------------
     def _path(self, spec):
         return self.cache / spec['sha256'] / spec['name']
@@ -412,48 +455,7 @@ class TlsRevival:
         return {'en': 'Copy your saved original ssl.dll back to C:\\sys\\bin with X-plore. SymPort cannot restore system files.',
                 'ru': 'Верните сохранённый оригинал ssl.dll в C:\\sys\\bin через X-plore. SymPort не восстанавливает системные файлы.'}
 
-    # ---- transfer + records ----------------------------------------------------------------------
-    def transfer(self, data):
-        if data.get('confirm') is not True:
-            raise ValueError('Confirm copying this file to the phone')
-        spec = self._spec(data.get('component'))
-        raw = self._cached(spec)
-        if raw is None:
-            raise ValueError('Obtain the pinned file first (download or import)')
-        if sha(raw) != spec['sha256']:
-            raise ValueError('hash-mismatch: cached file changed')
-        row, facts = self.service._need_device(data)
-        facts['required_free'] = 2 * spec['size'] + PLANNING_MARGIN
-        evaluated = C.evaluate(facts, 'network-certs')
-        for gate in ('connection', 'identity', 'platform', 'files', 'transfer'):
-            if evaluated[gate]['status'] in ('unsupported', 'needs-action', 'unknown'):
-                raise ValueError(f"blocked: {gate}: {evaluated[gate]['reason']['en']}")
-        if evaluated['storage']['status'] == 'needs-action':
-            raise ValueError('blocked: ' + evaluated['storage']['reason']['en'])
-        path = f"{FOLDER}/{spec['name']}"
-        device = row['id']
-        manager = self.service.devices
-        try:
-            manager.execute({'action': 'mkdir', 'device': device, 'path': FOLDER, 'confirm': True})
-        except (ValueError, OSError):
-            pass  # the folder may already exist; the upload below fails closed if it cannot be used
-        content = base64.b64encode(raw).decode()
-        try:
-            manager.execute({'action': 'upload', 'device': device, 'path': path, 'content': content, 'confirm': True})
-        except FileExistsError:
-            existing = manager.execute({'action': 'download', 'device': device, 'path': path})
-            if sha(base64.b64decode(existing['content'], validate=True)) != spec['sha256']:
-                raise ValueError('conflict: a different file with this name already exists on the phone; it was not overwritten') from None
-        echoed = manager.execute({'action': 'download', 'device': device, 'path': path})
-        if sha(base64.b64decode(echoed['content'], validate=True)) != spec['sha256']:
-            raise ValueError('Read-back hash mismatch; the transfer is not trusted')
-        saved = self.service._load('observations', facts['key'])
-        saved.setdefault('tls', {})[data['component']] = {'state': 'transferred-awaiting-install', 'at': now(), 'sha256': spec['sha256'],
-                                                          'path': path, 'source': 'symport'}
-        self.service._save('observations', facts['key'], saved)
-        return {'component': data['component'], 'state': 'transferred-awaiting-install', 'path': path,
-                'statement': 'The file is on the phone and verified by read-back. It is not installed.'}
-
+    # ---- records ---------------------------------------------------------------------------------
     def record(self, data):
         if data.get('confirm') is not True:
             raise ValueError('Confirm that this is what you observed on the phone')

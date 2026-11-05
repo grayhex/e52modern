@@ -93,12 +93,52 @@ certificate is exposed); the Windows Bridge has no such action (`not-available`)
 test and the phone clock are typed by you. A phone date outside the certificate's validity window
 is flagged — the commonest cause of TLS failures on old phones.
 
-**Kit.** Dependencies are ordered (`ssl-patch` needs `mbedtls-lib`). *Copy to phone* uploads to
-`SymPort-TLS/` after identity, platform, transport and space checks, verifies by read-back, never
-overwrites a different file and records `transferred-awaiting-install`. Installation, the retest
+**Kit.** Dependencies are ordered (`ssl-patch` needs `mbedtls-lib`). Copying to the phone is a
+*safe copy plan* of the Recovery Safety Net (below): `SymPort-TLS/`, read-back verification, no
+overwriting of a different file, result `transferred-awaiting-manual-install`. Installation, the retest
 result and the backup of the original `ssl.dll` are recorded by you and shown as "reported by
 you". The system replacement is a separate **high-risk** block: it needs device-level rights, your
 confirmed backup of the original, an identified model and device-reported firmware, and even then
 SymPort has no tested privileged adapter, so the extraction is yours. Restore: uninstall MBedTLS
 in the application manager; copy your saved `ssl.dll` back. SymPort cannot restore system files.
 See also [DEPENDENCIES.md](DEPENDENCIES.md), [CERTIFICATE_INSPECTOR.md](CERTIFICATE_INSPECTOR.md).
+
+## Recovery Safety Net (#36)
+
+Every Revive scenario that copies files to a phone goes through one mechanism
+(`symport/revive/safety.py`, actions `safety-*`; TLS components use it now, the Reborn wizard
+registers its own scenario). The old direct "copy to phone" path was removed so that nothing
+bypasses it.
+
+1. **Plan (dry run).** Files come only from SymPort's own hashed store. The plan lists each target
+   path, new files / conflicts / identical pre-existing files, bytes and free space after, the risk
+   level, which risks block until you acknowledge them, the manual steps on the phone and how to
+   restore. SymPort never overwrites a different file: a conflict is a blocking risk.
+2. **Snapshot.** Only what is readable over this connection: the tree of the target folder, hashes
+   of existing files at the targets, a contacts export only when `contacts.read` was verified (kept
+   locally, never in the shareable report) and a package-file listing on enrolled volumes. Kinds are
+   reported separately: `card-copy: not-performed`, `firmware: not-available`,
+   `complete_phone_backup: false`. A snapshot **cannot restore the phone**: an SD-card copy never
+   restores firmware or phone memory.
+3. **Apply.** Requires the snapshot, an explicit confirmation, no open blocking risk and the
+   scenario gates (identified model, platform, transport). The plan is *bound* to the connection
+   fingerprint, model, RM, exact firmware and file hashes; another phone, different firmware or a
+   changed file refuses it and a new plan is required. Each file is read back and compared; an
+   interrupted transfer (link drop, conflict, hash mismatch) is saved as `interrupted` and can
+   resume after the binding is re-checked, without repeating finished files. A finished plan cannot
+   be applied twice. The result is `transferred-awaiting-manual-install`, never "installed".
+4. **Postflight.** Read-only: re-reads the connection, compares identity with the snapshot,
+   re-verifies the created files by hash. Boot, connectivity, Wi-Fi, files, contacts, applications,
+   HTTPS and errors are a manual checklist (source `manual`). `installation` stays `unknown`.
+5. **Rollback.** Only files this plan created, one at a time, and only if their bytes still equal
+   the written/expected hash; changed files are kept and reported. No recursive deletion, the
+   folder stays, installed software and system files (for example a replaced `ssl.dll`) are not
+   restored. Rolling back from another phone is refused. Absence of a reliable restore procedure
+   for a step is shown as a blocking risk that needs your separate acknowledgement.
+6. **Report.** JSON export of a de-identified allow-list (model, RM, firmware, hashes, events with
+   action/status/time, checklist). No IMEI, contact data, messages, secrets or snapshot payloads.
+
+Automated tests use fake transports (`tests/test_safety.py`): interrupted transfer, reconnect,
+phone swap, firmware change, file conflicts, SHA mismatch, re-applying a plan, rollback limits,
+report contents. A separate manual checklist on real hardware is not part of CI; physical
+verification is not claimed.

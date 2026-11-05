@@ -26,6 +26,8 @@ from .profiles import (
 )
 
 SCHEMA = 'symport.revive/1'
+SAFETY_ACTIONS = ('safety-state', 'safety-plan', 'safety-snapshot', 'safety-apply', 'safety-rollback',
+                  'safety-postflight', 'safety-checklist', 'safety-export', 'safety-ack', 'safety-view')
 CONTROL = re.compile(r'[\x00-\x1f\x7f]')
 SAFE_ID = re.compile(r'^[0-9a-f]{16,64}$')
 
@@ -47,8 +49,13 @@ class ReviveService:
         self.lock = threading.RLock()
         # Later stages plug in here (restore points, kit catalogues); absent means "not available".
         self.extensions: dict[str, object] = {}
+        from .safety import SafetyNet
         from .tls import TlsRevival
         self.tls = TlsRevival(self)
+        self.safety = SafetyNet(self)
+        # Scenario name -> builder(row, facts, request) -> saved plan; registered by each wizard.
+        self.scenarios: dict = {}
+        self.tls.register_safety()
 
     # ---- storage ---------------------------------------------------------------------------
     def _key(self, row: dict) -> str:
@@ -130,9 +137,11 @@ class ReviveService:
                 'verify': self._verify,
                 'tls-state': lambda d: self.tls.state(d), 'tls-fetch': lambda d: self.tls.fetch(d),
                 'tls-import': lambda d: self.tls.import_file(d), 'tls-diagnose': lambda d: self.tls.diagnose(d),
-                'tls-kit': lambda d: self.tls.kit(d), 'tls-transfer': lambda d: self.tls.transfer(d),
+                'tls-kit': lambda d: self.tls.kit(d),
                 'tls-record': lambda d: self.tls.record(d),
             }.get(action)
+            if handler is None and isinstance(action, str) and action.startswith('safety-'):
+                handler = (lambda d, a=action: self.safety.execute(a, d)) if action in SAFETY_ACTIONS else None
             if handler is None:
                 raise ValueError('Unknown Revive operation')
             result = handler(data)
@@ -212,6 +221,12 @@ class ReviveService:
         if row is None:
             raise ValueError('Select a connected phone first')
         return row, facts
+
+    def _check_same_phone(self, plan: dict, row: dict) -> None:
+        """Rollback keeps working after a firmware change but never on another phone."""
+        device = plan['device']
+        if row['id'] != device['id'] or row.get('rm') != device.get('rm') or row.get('model') != device.get('model'):
+            raise ValueError('This plan belongs to another phone; nothing was changed')
 
     def _observe(self, data):
         if data.get('confirm') is not True:

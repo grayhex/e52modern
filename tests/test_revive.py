@@ -401,42 +401,6 @@ def test_zip_with_key_material_or_extra_files_is_rejected(tmp_path):
             validate_component(spec, raw)
 
 
-def obtained(tmp_path, svc, monkeypatch):
-    raw = pinned_zip(tmp_path, svc, monkeypatch)
-    svc.execute({"action": "tls-import", "name": "ssl.zip", "content": b64(raw)})
-    return raw
-
-
-def test_transfer_is_verified_by_readback_and_never_called_installed(tmp_path, monkeypatch):
-    svc, phone_ = tls_service(tmp_path)
-    raw = obtained(tmp_path, svc, monkeypatch)
-    with pytest.raises(ValueError, match="Confirm"):
-        svc.execute({"action": "tls-transfer", "device": "usb", "component": "ssl-patch"})
-    result = svc.execute({"action": "tls-transfer", "device": "usb", "component": "ssl-patch", "confirm": True})
-    assert result["state"] == "transferred-awaiting-install" and "not installed" in result["statement"]
-    assert phone_.files["SymPort-TLS/ssl.zip"] == raw
-    state = svc.execute({"action": "tls-state", "device": "usb"})
-    assert {c["id"]: c["device"]["state"] for c in state["components"]}["ssl-patch"] == "transferred-awaiting-install"
-    # A second transfer of the same bytes is idempotent; a different file is never overwritten.
-    svc.execute({"action": "tls-transfer", "device": "usb", "component": "ssl-patch", "confirm": True})
-    phone_.files["SymPort-TLS/ssl.zip"] = b"someone else's file"
-    with pytest.raises(ValueError, match="conflict"):
-        svc.execute({"action": "tls-transfer", "device": "usb", "component": "ssl-patch", "confirm": True})
-    assert phone_.files["SymPort-TLS/ssl.zip"] == b"someone else's file"
-
-
-def test_transfer_blocked_for_wrong_rm_unknown_model_and_missing_file(tmp_path, monkeypatch):
-    for kw in ({"model": "N95-2", "rm": "RM-159"}, {"model": None, "firmware": None}, {"model": "Nokia E71"}):
-        svc, phone_ = tls_service(tmp_path / (kw.get("model") or "none").replace(" ", "_"), **kw)
-        obtained(tmp_path, svc, monkeypatch)
-        with pytest.raises(ValueError, match="blocked"):
-            svc.execute({"action": "tls-transfer", "device": "usb", "component": "ssl-patch", "confirm": True})
-        assert "upload" not in phone_.calls
-    svc, phone_ = tls_service(tmp_path / "nofile")
-    with pytest.raises(ValueError, match="Obtain"):
-        svc.execute({"action": "tls-transfer", "device": "usb", "component": "ssl-patch", "confirm": True})
-
-
 def test_kit_orders_dependencies_and_gates_the_system_replacement(tmp_path, monkeypatch):
     svc, _ = tls_service(tmp_path)
     kit = svc.execute({"action": "tls-kit", "device": "usb", "components": ["ssl-patch"], "app_kind": "native-system"})
