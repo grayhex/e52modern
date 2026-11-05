@@ -5,6 +5,8 @@ import { useApi, usePreferences } from '../state/app';
 import { ErrorMessage } from '../components/ui';
 import { SectionPanel, StatusIndicator, type Tone } from '../components/kit';
 import { encode } from '../utils/files';
+import ReviveSafety from './ReviveSafety';
+import { safetyPlanSchema } from '../api/revive';
 import {
   simpleSchema,
   tlsDiagnoseSchema,
@@ -69,7 +71,7 @@ export default function ReviveTls({
   const [appKind, setAppKind] = useState('native-system');
   const [host, setHost] = useState('example.com');
   const [phoneDate, setPhoneDate] = useState('');
-  const [confirmCopy, setConfirmCopy] = useState(false);
+  const [planId, setPlanId] = useState('');
   const [sawIt, setSawIt] = useState(false);
   const file = useRef<HTMLInputElement>(null);
   const [importFor, setImportFor] = useState('');
@@ -102,6 +104,14 @@ export default function ReviveTls({
   const diagnose = useMutation({
     mutationFn: () =>
       call({ action: 'tls-diagnose', host, phone_date: phoneDate || undefined }, tlsDiagnoseSchema),
+  });
+  const plan = useMutation({
+    mutationFn: (comps: string[]) =>
+      call(
+        { action: 'safety-plan', scenario: 'tls', device, manual, components: comps },
+        safetyPlanSchema,
+      ),
+    onSuccess: (p) => setPlanId(p.id),
   });
   const upload = useMutation({
     mutationFn: async (picked: File) =>
@@ -272,29 +282,37 @@ export default function ReviveTls({
               >
                 {t('Import file', 'Импортировать файл')}
               </button>
-              <label className="rv-check">
-                <input
-                  type="checkbox"
-                  checked={confirmCopy}
-                  onChange={(e) => setConfirmCopy(e.target.checked)}
-                />
-                {t('Copy this file to the phone', 'Скопировать этот файл на телефон')}
-              </label>
-              <button
-                type="button"
-                className="k-btn k-btn--primary"
-                disabled={!confirmCopy || !device || !c.cached || act.isPending}
-                onClick={() => {
-                  act.mutate({ action: 'tls-transfer', component: c.id, confirm: true });
-                  setConfirmCopy(false);
-                }}
-              >
-                {t('Copy to phone', 'Скопировать на телефон')}
-              </button>
             </div>
           </li>
         ))}
       </ul>
+      <div className="k-toolbar">
+        {(
+          [
+            [
+              ['mbedtls-lib'],
+              'Plan safe copy: MBedTLS',
+              'Запланировать безопасное копирование: MBedTLS',
+            ],
+            [
+              ['ssl-patch'],
+              'Plan safe copy: System SSL patch + MBedTLS',
+              'Запланировать безопасное копирование: патч SSL + MBedTLS',
+            ],
+          ] as const
+        ).map(([comps, en, ru]) => (
+          <button
+            key={comps.join()}
+            type="button"
+            className="k-btn k-btn--primary"
+            disabled={!device || plan.isPending}
+            onClick={() => plan.mutate([...comps])}
+          >
+            {t(en, ru)}
+          </button>
+        ))}
+      </div>
+      {plan.error && <ErrorMessage error={plan.error} />}
       <input
         ref={file}
         type="file"
@@ -394,6 +412,8 @@ export default function ReviveTls({
           </div>
         </>
       )}
+
+      <ReviveSafety device={device} planId={planId} onSelect={setPlanId} />
 
       <h3>{t('Read-only diagnostics', 'Диагностика (только чтение)')}</h3>
       <form

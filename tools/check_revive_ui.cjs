@@ -18,16 +18,37 @@ from http.server import ThreadingHTTPServer
 from symport.web import Workbench,make_handler
 from tests.capfake import row
 root=Path(sys.argv[1])
+import base64,hashlib
+from tests.test_deps import sis
 class Transport:
+ files={}
  def devices(self):
   observed=json.loads((root/'identity.json').read_text())
   if observed is None: return []
   base=dict(id='test-phone',name=observed.get('model'),transport='windows-bridge',connection_kind='usb',connected=True,free=800*1024*1024,total=2*1024**3,**observed)
   return [row(base,available=['identity.read','storage.read','files.list','files.download'],untested_writes=['files.upload','packages.transfer'])]
  def execute(self,data):
-  raise ValueError('Synthetic read-only transport; no hardware')
+  a,p=data['action'],data.get('path','')
+  if a=='mkdir': return {}
+  if a=='list':
+   names=[x.split('/',1)[1] for x in self.files if x.startswith(p+'/')]
+   if not names: raise ValueError('no such folder')
+   return {'entries':[{'name':n,'directory':False,'size':len(self.files[p+'/'+n])} for n in names]}
+  if a=='upload':
+   if p in self.files: raise FileExistsError(p)
+   self.files[p]=base64.b64decode(data['content']); return {'status':'verified'}
+  if a=='download':
+   if p not in self.files: raise ValueError('missing')
+   return {'content':base64.b64encode(self.files[p]).decode()}
+  if a=='delete':
+   del self.files[p]; return {}
+  raise ValueError('Synthetic transport: '+a)
 w=Workbench(root)
 w.devices.transport=Transport()
+blob=sis(0xE0001234,'Synthetic MBedTLS')
+spec=dict(w.revive.tls.components['mbedtls-lib'],size=len(blob),sha256=hashlib.sha256(blob).hexdigest(),package={'uid':'0xe0001234','signed':False,'targets':[]})
+w.revive.tls.components=dict(w.revive.tls.components,**{'mbedtls-lib':spec})
+w.revive.execute({'action':'tls-import','name':'MBedTLS.sis','content':base64.b64encode(blob).decode()})
 w.revive.tls.probe=lambda host:{'ok':True,'tls_version':'TLSv1.3','cipher':'TEST','leaf':{'subject':'CN='+host,'issuer':'CN=Synthetic CA','not_before':'Jan  1 00:00:00 2026 GMT','not_after':'Jan  1 00:00:00 2030 GMT'}}
 s=ThreadingHTTPServer(('127.0.0.1',0),make_handler(w))
 print(s.server_port,flush=True)
@@ -100,7 +121,7 @@ const port = new Promise((resolve, reject) => {
     const comp = page.locator('[data-component="ssl-patch"]');
     await comp.waitFor();
     assert((await comp.innerText()).includes("62365db422253e87b0328058e160ab03c3a3501e7eeae064596727307be9b416"));
-    assert(await comp.getByRole("button", { name: "Copy to phone" }).isDisabled(), "copy must need a verified file and confirmation");
+    assert.equal(await comp.getByRole("button", { name: "Copy to phone" }).count(), 0, "no direct copy outside the safety net");
     await page.getByLabel("Date shown on the phone").fill("2010-01-01");
     await page.getByRole("button", { name: "Run diagnostics" }).click();
     const diag = page.getByTestId("tls-diagnose");
@@ -108,6 +129,34 @@ const port = new Promise((resolve, reject) => {
     const diagText = await diag.innerText();
     assert(diagText.includes("Ran on the SymPort server") && diagText.includes("outside the certificate validity window"), diagText);
     assert(diagText.includes("Ran in the Windows Bridge") && diagText.includes("Not available"));
+    // Safety Net: plan -> snapshot -> copy -> postflight -> rollback, all through the server.
+    await page.getByRole("button", { name: "Plan safe copy: MBedTLS", exact: true }).click();
+    const plan = page.getByTestId("safety-plan");
+    await plan.waitFor();
+    assert((await plan.innerText()).includes("SymPort-TLS/MBedTLS.sis"));
+    const confirm = plan.getByLabel("I confirm this step");
+    await confirm.check();
+    await plan.getByRole("button", { name: "1. Take snapshot" }).click();
+    await page.getByTestId("snapshot-kinds").waitFor();
+    assert((await page.getByTestId("snapshot-kinds").innerText()).includes("not-available"), "firmware backup must be reported as not available");
+    await confirm.check();
+    await plan.getByRole("button", { name: "2. Copy files to the phone" }).click();
+    await plan.getByText("Transferred, awaiting manual install").first().waitFor();
+    await plan.getByRole("button", { name: "3. Postflight (read only)" }).click();
+    const post = page.getByTestId("postflight-result");
+    await post.waitFor();
+    const postText = await post.innerText();
+    assert(postText.includes("present-hash-match") && postText.includes("Installation: unknown"), postText);
+    await plan.getByRole("button", { name: "Rollback preview" }).click();
+    await page.getByTestId("rollback-result").getByText(/Would remove: 1/).waitFor();
+    await confirm.check();
+    await plan.getByRole("button", { name: "Rollback our files" }).click();
+    await page.getByTestId("rollback-result").getByText(/Removed: 1/).waitFor();
+    await plan.getByLabel("These are what I saw on the phone").check();
+    await plan.getByRole("button", { name: "Problem" }).first().click();
+    await plan.getByText(/— fail/).waitFor();
+    await plan.getByRole("button", { name: "Export JSON report" }).click();
+    await plan.getByRole("link", { name: /symport-safety-/ }).waitFor();
     await page.getByLabel("Application type").selectOption("qt");
     await page.locator('[data-support="not-applicable"]').waitFor();
     assert(await overflow(page), "overflow in TLS section");
@@ -143,6 +192,7 @@ const port = new Promise((resolve, reject) => {
     await page.getByRole("heading", { name: /Возрождение TLS/ }).waitFor();
     await page.getByRole("button", { name: "Запустить диагностику" }).click();
     await page.getByText("Выполнено на сервере SymPort").waitFor();
+    await page.getByRole("heading", { name: "Страховка восстановления" }).waitFor();
     assert(await overflow(page), "overflow in Russian mobile TLS");
     assert.deepEqual(page.errors, []);
     await page.close();

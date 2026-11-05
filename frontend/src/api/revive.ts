@@ -232,3 +232,103 @@ export const tlsDiagnoseSchema = z.object({
     .passthrough(),
   chain: z.object({ status: z.string(), reason: z.string() }),
 });
+
+// ---- Recovery Safety Net ----
+export const safetyPlanSchema = z.object({
+  id: z.string(),
+  scenario: z.string(),
+  label: z.string(),
+  status: z.string(),
+  folder: z.string(),
+  device: z
+    .object({
+      model: z.string().nullish(),
+      rm: z.string().nullish(),
+      firmware: z.string().nullish(),
+    })
+    .passthrough(),
+  items: z.array(
+    z.object({
+      name: z.string(),
+      path: z.string(),
+      sha256: z.string(),
+      size: z.number(),
+      state: z.string(),
+      created: z.boolean(),
+      removed: z.boolean().optional(),
+    }),
+  ),
+  dry_run: z.object({
+    new_files: z.number(),
+    bytes: z.number(),
+    folder_exists: z.boolean(),
+    conflicts: z.array(z.string()),
+    identical_preexisting: z.array(z.string()),
+    free_before: z.number().nullish(),
+    free_after: z.number().nullish(),
+    note: z.string(),
+  }),
+  risk: z
+    .object({ level: z.enum(['low', 'medium', 'high']), irreversible: z.boolean().optional() })
+    .passthrough(),
+  restore: z.object({ kind: z.string(), note: z.string().optional() }).passthrough(),
+  phone_actions: z.array(
+    z
+      .object({ component: z.string(), steps: z.array(bilingual), restore: bilingual })
+      .passthrough(),
+  ),
+  snapshot: z
+    .object({ at: z.string(), kinds: z.record(z.string(), z.string()), statement: z.string() })
+    .passthrough()
+    .nullish(),
+  blocking: z.array(
+    z.object({ code: z.string(), text: bilingual, satisfied_by: z.string() }).passthrough(),
+  ),
+  checklist: z.record(
+    z.string(),
+    z.object({ result: z.string(), source: z.string() }).passthrough(),
+  ),
+  acknowledged: z.array(z.string()).optional(),
+  statement: z.string(),
+  rollback_scope: z.string(),
+  events: z.array(
+    z.object({ at: z.string(), action: z.string(), status: z.string() }).passthrough(),
+  ),
+});
+export const safetyStateSchema = z.object({
+  plans: z.array(
+    z.object({
+      id: z.string(),
+      scenario: z.string(),
+      label: z.string(),
+      created: z.string(),
+      status: z.string(),
+      items: z.number(),
+      risk: z.string(),
+    }),
+  ),
+  checklist_items: z.array(z.string()),
+  statement: z.string(),
+});
+export const postflightSchema = z.object({
+  connected: z.boolean(),
+  identity: z.string().optional(),
+  diff: z
+    .array(z.object({ field: z.string(), before: z.unknown(), after: z.unknown() }))
+    .optional(),
+  files: z.array(z.object({ path: z.string(), state: z.string() })).optional(),
+  installation: z.string().optional(),
+  statement: z.string(),
+});
+export const rollbackSchema = z
+  .object({
+    dry_run: z.boolean(),
+    scope: z.string(),
+    files: z.array(z.object({ path: z.string() })).optional(),
+    removed: z.array(z.string()).optional(),
+    conflicts: z.array(z.string()).optional(),
+    status: z.string().optional(),
+  })
+  .passthrough();
+export const exportSchema = z.object({ name: z.string(), mime: z.string(), content: z.string() });
+export type SafetyPlan = z.infer<typeof safetyPlanSchema>;
