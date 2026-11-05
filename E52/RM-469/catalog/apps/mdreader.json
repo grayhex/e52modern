@@ -1,0 +1,47 @@
+{
+  "id": "mdreader",
+  "name": "MDReader",
+  "category": "documents",
+  "developer": "Hinduc0der",
+  "description": "Чтение Markdown и TXT с карты памяти, русская сборка.",
+  "version": "0.2.0",
+  "release_date": null,
+  "release_tag": null,
+  "source_commit": "90d77d8686cd440080dec026455a9922c1e2f552",
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.1"
+  ],
+  "format": "jar+jad",
+  "homepage": "https://github.com/Hinduc0der/mdreader-j2me",
+  "license": "MIT",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/Hinduc0der/mdreader-j2me",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "JSR-75 и разрешение доступа к файлам; шрифты и размеры страницы зависят от устройства.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/Hinduc0der/mdreader-j2me",
+    "https://github.com/Hinduc0der/mdreader-j2me/tree/main"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "mdreader",
+  "limitations": [
+    "JSR-75 и разрешение доступа к файлам; шрифты и размеры страницы зависят от устройства.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline",
+    "recommended"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "JSR-75 и разрешение доступа к файлам; шрифты и размеры страницы зависят от устройства."
+  ]
+}

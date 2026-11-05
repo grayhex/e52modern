@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "_comment": "Registry of phone models SymPort can present with artwork and screen geometry. Data only: add an entry (and optionally an image under symport/web_assets/phones/ and a toolchain profile under profiles/) to support another Nokia S60 phone. Facts are documented references, never measured on a connected phone.",
+  "models": [
+    {
+      "id": "nokia-e52",
+      "model": "E52",
+      "name": "Nokia E52",
+      "family": "Eseries",
+      "image": "/phones/nokia-e52-silver.png",
+      "screen": {"width": 240, "height": 320, "orientation": "portrait"},
+      "input": "numeric-keypad",
+      "toolchain_profile": "nokia-e52",
+      "source": "https://en.wikipedia.org/wiki/Nokia_E52"
+    },
+    {
+      "id": "nokia-e72",
+      "model": "E72",
+      "name": "Nokia E72",
+      "family": "Eseries",
+      "image": "/phones/nokia-e72.png",
+      "screen": {"width": 320, "height": 240, "orientation": "landscape"},
+      "input": "qwerty",
+      "toolchain_profile": "nokia-e72",
+      "source": "https://en.wikipedia.org/wiki/Nokia_E72"
+    }
+  ]
+}

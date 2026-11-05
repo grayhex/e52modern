@@ -1,4 +1,5 @@
 import { encode } from '../utils/files';
+import { PageHeader } from '../components/kit';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -69,7 +70,9 @@ export default function Jailbreak() {
   const entries = state.data?.archives.find((a) => a.id === archive)?.entries ?? [];
   return (
     <>
-      <h1>Experimental Jailbreak Manager</h1>
+      <PageHeader
+        title={t('Jailbreak Manager (experimental)', 'Jailbreak Manager (экспериментальный)')}
+      />
       <p className="disclaimer">
         {t(
           'System automation is blocked. File transfer does not install or apply patches. Rollback removes only unchanged files staged by this workflow; system changes require manual recovery.',

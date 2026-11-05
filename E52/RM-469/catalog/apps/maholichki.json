@@ -1,0 +1,46 @@
+{
+  "id": "maholichki",
+  "name": "MahoLichki",
+  "category": "maps",
+  "developer": "shinovon",
+  "description": "Просмотр расписаний пригородных поездов на Java ME.",
+  "version": "1.1.5",
+  "release_date": "2026-01-07",
+  "release_tag": "v1.1.5",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.1"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/shinovon/MahoLichki",
+  "license": "not-specified",
+  "redistribution": "not-reviewed; original-author download only",
+  "delivery": "manual",
+  "manual_url": "https://github.com/shinovon/MahoLichki/releases/tag/v1.1.5",
+  "dependencies": [],
+  "network": "online",
+  "backend": "Расписания и API могут меняться; актуальность данных не подтверждена.",
+  "tls": "Работа онлайн-сервиса и TLS на E52 не проверялась. Не передавайте учётные данные неизвестным прокси.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/shinovon/MahoLichki",
+    "https://github.com/shinovon/MahoLichki/releases/tag/v1.1.5"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "maholichki",
+  "limitations": [
+    "Расписания и API могут меняться; актуальность данных не подтверждена.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": "Нет однозначной лицензии на автоматическое кэширование; получите пакет непосредственно у автора.",
+  "requirements": [
+    "Расписания и API могут меняться; актуальность данных не подтверждена."
+  ]
+}

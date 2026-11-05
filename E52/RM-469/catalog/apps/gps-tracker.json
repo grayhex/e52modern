@@ -1,0 +1,46 @@
+{
+  "id": "gps-tracker",
+  "name": "S60 GPS Tracker",
+  "category": "maps",
+  "developer": "artem78",
+  "description": "Запись GPS-треков в GPX для прогулок и последующей обработки на компьютере.",
+  "version": "1.4.0",
+  "release_date": "2025-03-16",
+  "release_tag": "v1.4.0",
+  "source_commit": null,
+  "platforms": [
+    "Symbian 9.x",
+    "S60 3rd Edition"
+  ],
+  "format": "sis",
+  "homepage": "https://github.com/artem78/s60-gps-tracker",
+  "license": "GPL-3.0",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/artem78/s60-gps-tracker/releases/tag/v1.4.0",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Нужен приём спутников; A-GPS является отдельным сетевым сервисом.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "В исследованном контроллере SIS подпись не обнаружена. Для установки может потребоваться допустимая подпись; SymPort не обходит проверки и capabilities.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/artem78/s60-gps-tracker",
+    "https://github.com/artem78/s60-gps-tracker/releases/tag/v1.4.0"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "gps-tracker",
+  "limitations": [
+    "Нужен приём спутников; A-GPS является отдельным сетевым сервисом.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Нужен приём спутников; A-GPS является отдельным сетевым сервисом."
+  ]
+}

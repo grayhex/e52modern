@@ -1,4 +1,5 @@
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
+import { PageHeader } from '../components/kit';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
@@ -56,7 +57,7 @@ export default function Connection() {
   });
   return (
     <>
-      <h1>{t('Connection', 'Подключение')}</h1>
+      <PageHeader title={t('Connection', 'Подключение')} />
       <ConnectionWizard />
       <Card>
         <h2>

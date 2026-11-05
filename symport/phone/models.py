@@ -1,6 +1,8 @@
 """Documented Nokia S60 model families; never measured firmware or OS versions."""
 
+import json
 import re
+from pathlib import Path
 
 S60_MODELS = {
     "E51": "3rd FP1",
@@ -48,14 +50,81 @@ def documented_model(value: str) -> dict | None:
     return None
 
 
+# Symbian OS release implied by the documented S60 edition (S60 3rd Edition ... 5th Edition).
+SYMBIAN_BY_EDITION = {"3rd": "9.1", "3rd FP1": "9.2", "3rd FP2": "9.3", "5th": "9.4"}
+REGISTRY_FILE = Path(__file__).with_name("device_models.json")
+_FIELDS = {"id", "model", "name", "family", "image", "screen", "input", "toolchain_profile", "source"}
+
+
+def load_registry(path: Path | None = None) -> list[dict]:
+    """Phone models with artwork/geometry. Strict: a bad entry fails loudly, never half-loads."""
+    document = json.loads((path or REGISTRY_FILE).read_text(encoding="utf-8"))
+    if not isinstance(document, dict) or document.get("schema") != 1:
+        raise ValueError("Unsupported device model registry")
+    seen, result = set(), []
+    for entry in document.get("models", []):
+        if not isinstance(entry, dict) or set(entry) - _FIELDS - {"_comment"}:
+            raise ValueError("Invalid device model entry")
+        if not re.fullmatch(r"nokia-[a-z0-9-]{2,30}", str(entry.get("id", ""))) or entry["id"] in seen:
+            raise ValueError("Invalid or duplicate model id")
+        if str(entry.get("model", "")).upper() not in S60_MODELS:
+            raise ValueError("Add the model to S60_MODELS (documented edition) first")
+        image, screen = entry.get("image"), entry.get("screen")
+        if image is not None and not re.fullmatch(r"/phones/[a-z0-9-]+\.png", str(image)):
+            raise ValueError("Invalid model image path")
+        if screen is not None and (
+            set(screen) != {"width", "height", "orientation"}
+            or not all(type(screen[k]) is int and 64 <= screen[k] <= 2048 for k in ("width", "height"))
+            or screen["orientation"] not in ("portrait", "landscape")
+        ):
+            raise ValueError("Invalid model screen")
+        seen.add(entry["id"])
+        result.append({k: v for k, v in entry.items() if k != "_comment"})
+    return result
+
+
+def _documented_profile(model: dict) -> dict:
+    edition = S60_MODELS[model["model"].upper()]
+    return {"s60": edition, "symbian": SYMBIAN_BY_EDITION.get(edition)}
+
+
+def catalog() -> list[dict]:
+    """Registry entries completed with documented platform facts, for UI selectors."""
+    return [
+        {**entry, **_documented_profile(entry), "source": entry.get("source") or "documented-model-profile"}
+        for entry in load_registry()
+    ]
+
+
 def presentation(value: str) -> dict | None:
-    """Model identity from adapter response; geometry is a documented model profile."""
+    """Model identity from the adapter response; geometry/artwork come from the registry.
+
+    A documented S60 model without a registry entry still gets a profile (name, edition) but no
+    artwork or geometry: the UI then shows a labelled generic illustration instead of guessing.
+    """
     model = documented_model(value)
-    if not model or model['model'] not in ('E52', 'E72'):
+    if not model:
         return None
-    e72 = model['model'] == 'E72'
-    return {'id':'nokia-e72' if e72 else 'nokia-e52', 'name':'Nokia '+model['model'],
-            'image':'/phones/nokia-e72.png' if e72 else '/phones/nokia-e52-silver.png',
-            'screen': {'width':320 if e72 else 240,'height':240 if e72 else 320,'orientation':'landscape' if e72 else 'portrait'},
-            's60':'3rd FP2','symbian':'9.3','input':'qwerty' if e72 else 'numeric-keypad',
-            'source':'documented-model-profile'}
+    entry = next((e for e in catalog() if e["model"].upper() == model["model"]), None)
+    if entry:
+        return {
+            "id": entry["id"],
+            "name": entry["name"],
+            "image": entry["image"],
+            "screen": entry["screen"],
+            "s60": entry["s60"],
+            "symbian": entry["symbian"],
+            "input": entry["input"],
+            "source": "documented-model-profile",
+        }
+    edition = S60_MODELS[model["model"]]
+    return {
+        "id": "nokia-" + re.sub(r"[^a-z0-9]+", "-", model["model"].lower()).strip("-"),
+        "name": "Nokia " + model["model"],
+        "image": None,
+        "screen": None,
+        "s60": edition,
+        "symbian": SYMBIAN_BY_EDITION.get(edition),
+        "input": None,
+        "source": "documented-model-profile",
+    }

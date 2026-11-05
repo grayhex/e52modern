@@ -1,0 +1,47 @@
+{
+  "id": "hotpants",
+  "name": "Hotpants OTP",
+  "category": "system",
+  "developer": "baumschubser",
+  "description": "Офлайн-генератор одноразовых HOTP/TOTP кодов.",
+  "version": "2.0",
+  "release_date": "2024-03-18",
+  "release_tag": "2.0",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.1"
+  ],
+  "format": "jar+jad",
+  "homepage": "https://github.com/baumschubser/hotpants",
+  "license": "GPL-2.0",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/baumschubser/hotpants/releases/tag/2.0",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Секреты вводятся пользователем; для TOTP нужны точные часы.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/baumschubser/hotpants",
+    "https://github.com/baumschubser/hotpants/releases/tag/2.0"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "hotpants",
+  "limitations": [
+    "Секреты вводятся пользователем; для TOTP нужны точные часы.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline",
+    "recommended"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Секреты вводятся пользователем; для TOTP нужны точные часы."
+  ]
+}

@@ -1,4 +1,5 @@
 import { bytes } from '../utils/files';
+import { PageHeader } from '../components/kit';
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
@@ -20,7 +21,7 @@ export default function Media() {
   const { device, setDevice, t } = usePreferences();
   return (
     <>
-      <h1>{t('Media Gallery', 'Медиагалерея')}</h1>
+      <PageHeader title={t('Media Gallery', 'Медиагалерея')} />
       <Card>
         <DeviceSelect value={device} onChange={setDevice} />
       </Card>

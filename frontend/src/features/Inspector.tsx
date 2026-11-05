@@ -1,4 +1,5 @@
 import { encode } from '../utils/files';
+import { PageHeader } from '../components/kit';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { initialTarget } from '../components/targets';
 import { initialChoice } from '../utils/packages';
@@ -80,7 +81,7 @@ export default function Inspector() {
   });
   return (
     <>
-      <h1>Certificate & Compatibility Inspector</h1>
+      <PageHeader title={t('Certificate Inspector', 'Certificate Inspector')} />
       <Card>
         <p className="note">
           {t(

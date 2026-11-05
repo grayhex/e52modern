@@ -478,8 +478,11 @@ def make_handler(state: Workbench):
                     return self._send(raw, 'image/svg+xml' if graphic.endswith('.svg') else 'image/png')
                 except OSError:
                     return self._json({'error': 'Not found'}, 404)
-            if url.path in ('/phones/nokia-e52-silver.png', '/phones/nokia-e72.png'):
-                return self._send((ASSETS / url.path.lstrip('/')).read_bytes(), 'image/png')
+            if re.fullmatch(r'/phones/[a-z0-9-]+\.png', url.path):
+                try:  # artwork of every registered phone model (symport/phone/device_models.json)
+                    return self._send((ASSETS / url.path.lstrip('/')).read_bytes(), 'image/png')
+                except OSError:
+                    return self._json({'error': 'Not found'}, 404)
             if url.path.startswith('/vendor/wavesurfer/'):
                 relative = url.path.removeprefix('/vendor/wavesurfer/')
                 if re.fullmatch(r'(?:[a-z0-9.-]+/)*[a-z0-9.-]+\.js', relative) and '..' not in relative:

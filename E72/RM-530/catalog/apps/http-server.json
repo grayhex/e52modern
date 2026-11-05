@@ -1,0 +1,46 @@
+{
+  "id": "http-server",
+  "name": "J2ME HTTP Server",
+  "category": "development",
+  "developer": "shinovon",
+  "description": "Небольшой HTTP-сервер на телефоне для локальных экспериментов с Java ME.",
+  "version": "1.0.2",
+  "release_date": "2025-09-26",
+  "release_tag": "v1.0.2",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.0"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/shinovon/j2me-http-server",
+  "license": "MIT",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/shinovon/j2me-http-server/releases/tag/v1.0.2",
+  "dependencies": [],
+  "network": "online",
+  "backend": "Входящие соединения зависят от сети/NAT. Используйте доверенную локальную сеть.",
+  "tls": "Работа онлайн-сервиса и TLS на E52 не проверялась. Не передавайте учётные данные неизвестным прокси.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/shinovon/j2me-http-server",
+    "https://github.com/shinovon/j2me-http-server/releases/tag/v1.0.2"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "http-server",
+  "limitations": [
+    "Входящие соединения зависят от сети/NAT. Используйте доверенную локальную сеть.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Входящие соединения зависят от сети/NAT. Используйте доверенную локальную сеть."
+  ]
+}

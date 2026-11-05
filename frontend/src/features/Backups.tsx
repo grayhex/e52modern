@@ -1,4 +1,5 @@
 import { useWorkspace } from '../hooks/useWorkspace';
+import { PageHeader } from '../components/kit';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { bytes } from '../utils/files';
 import { useState } from 'react';
@@ -51,7 +52,7 @@ export default function Backups() {
     plan = restore.success && !restore.data.applied ? restore.data.plan : null;
   return (
     <>
-      <h1>{t('Backups', 'Резервные копии')}</h1>
+      <PageHeader title={t('Backups', 'Резервные копии')} />
       <Card>
         <p>
           {t('Server free space', 'Свободно на сервере')}: {bytes(state.data?.backup_free)}

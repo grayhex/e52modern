@@ -1,0 +1,46 @@
+{
+  "id": "bluewap",
+  "name": "BlueWAP",
+  "category": "internet",
+  "developer": "gtrxAC",
+  "description": "Bluetooth-браузерный клиент: доступ к вебу через другой Java ME аппарат.",
+  "version": "1.5.0",
+  "release_date": "2026-08-15",
+  "release_tag": "v1.5",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.0"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/gtrxAC/BlueWAP",
+  "license": "MIT",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/gtrxAC/BlueWAP/releases/tag/v1.5",
+  "dependencies": [],
+  "network": "online",
+  "backend": "Обязательно второе устройство с BlueWAP Server, MIDP 2.0 и JSR-82. Сервер не устанавливается этой подборкой.",
+  "tls": "Работа онлайн-сервиса и TLS на E52 не проверялась. Не передавайте учётные данные неизвестным прокси.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/gtrxAC/BlueWAP",
+    "https://github.com/gtrxAC/BlueWAP/releases/tag/v1.5"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "bluewap",
+  "limitations": [
+    "Обязательно второе устройство с BlueWAP Server, MIDP 2.0 и JSR-82. Сервер не устанавливается этой подборкой.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Обязательно второе устройство с BlueWAP Server, MIDP 2.0 и JSR-82. Сервер не устанавливается этой подборкой."
+  ]
+}

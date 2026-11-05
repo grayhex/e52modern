@@ -1,4 +1,5 @@
 import { bytes } from '../utils/files';
+import { PageHeader } from '../components/kit';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
@@ -246,7 +247,7 @@ export default function Ringtone() {
   const gallery = !!new URLSearchParams(location.hash.split('?')[1]).get('revision');
   return (
     <>
-      <h1>Ringtone Studio</h1>
+      <PageHeader title={t('Ringtone Studio', 'Мастер рингтонов')} />
       <Card>
         <div className="form-row">
           <Field label={t('Audio or video', 'Аудио или видео')}>

@@ -1,0 +1,47 @@
+{
+  "id": "ip-calculator",
+  "name": "IP Calculator",
+  "category": "system",
+  "developer": "developer-kaczmarek",
+  "description": "Расчёт IPv4 подсетей, масок и диапазонов на клавиатурном устройстве.",
+  "version": "1.0",
+  "release_date": "2026-09-29",
+  "release_tag": "v1.0.0-t9",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.1",
+    "CLDC-1.1"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/developer-kaczmarek/J2ME-IpCalculator",
+  "license": "GPL-3.0",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/developer-kaczmarek/J2ME-IpCalculator/releases/tag/v1.0.0-t9",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Выбран T9 JAR. JAD автора имеет другое имя JAR, поэтому в автоматическом режиме передаётся только JAR.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/developer-kaczmarek/J2ME-IpCalculator",
+    "https://github.com/developer-kaczmarek/J2ME-IpCalculator/releases/tag/v1.0.0-t9"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "ip-calculator",
+  "limitations": [
+    "Выбран T9 JAR. JAD автора имеет другое имя JAR, поэтому в автоматическом режиме передаётся только JAR.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline",
+    "recommended"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Выбран T9 JAR. JAD автора имеет другое имя JAR, поэтому в автоматическом режиме передаётся только JAR."
+  ]
+}

@@ -77,6 +77,28 @@ describe('P1 review and recovery', () => {
             devices: [
               { id: 'phone', transport: 'mounted', connected: true, capabilities: ['transfer'] },
             ],
+            models: [
+              {
+                id: 'nokia-e52',
+                model: 'E52',
+                name: 'Nokia E52',
+                image: '/phones/nokia-e52-silver.png',
+                screen: { width: 240, height: 320, orientation: 'portrait' },
+                s60: '3rd FP2',
+                symbian: '9.3',
+                toolchain_profile: 'nokia-e52',
+              },
+              {
+                id: 'nokia-e72',
+                model: 'E72',
+                name: 'Nokia E72',
+                image: '/phones/nokia-e72.png',
+                screen: { width: 320, height: 240, orientation: 'landscape' },
+                s60: '3rd FP2',
+                symbian: '9.3',
+                toolchain_profile: 'nokia-e72',
+              },
+            ],
             limitations: {},
           };
         case 'recovery-plan':
@@ -153,6 +175,33 @@ describe('P1 review and recovery', () => {
     mount(<ThemeStudio />, (body) => {
       requests.push(body);
       switch (body.action) {
+        case 'discover':
+          return {
+            devices: [],
+            models: [
+              {
+                id: 'nokia-e52',
+                model: 'E52',
+                name: 'Nokia E52',
+                image: '/phones/nokia-e52-silver.png',
+                screen: { width: 240, height: 320, orientation: 'portrait' },
+                s60: '3rd FP2',
+                symbian: '9.3',
+                toolchain_profile: 'nokia-e52',
+              },
+              {
+                id: 'nokia-e72',
+                model: 'E72',
+                name: 'Nokia E72',
+                image: '/phones/nokia-e72.png',
+                screen: { width: 320, height: 240, orientation: 'landscape' },
+                s60: '3rd FP2',
+                symbian: '9.3',
+                toolchain_profile: 'nokia-e72',
+              },
+            ],
+            limitations: {},
+          };
         case 'list':
           return {
             projects: created ? [project] : [],
@@ -199,6 +248,7 @@ describe('P1 review and recovery', () => {
           throw Error(String(body.action));
       }
     });
+    await screen.findByRole('option', { name: /Nokia E72/ });
     await userEvent.selectOptions(screen.getByLabelText('Screen profile'), 'nokia-e72');
     await userEvent.click(screen.getByRole('button', { name: 'Create editable CLEAR theme' }));
     const build = await screen.findByRole('button', { name: 'Build & statically validate SIS' });

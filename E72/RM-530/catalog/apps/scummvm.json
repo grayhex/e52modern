@@ -1,0 +1,53 @@
+{
+  "id": "scummvm",
+  "name": "ScummVM S60v3",
+  "category": "games",
+  "developer": "ScummVM team",
+  "description": "Запуск классических приключенческих игр из собственных легальных файлов.",
+  "version": "1.7.0",
+  "release_date": "2014-07-15",
+  "platforms": [
+    "Symbian 9.x",
+    "S60 3rd Edition"
+  ],
+  "format": "sis",
+  "homepage": "https://www.scummvm.org/",
+  "license": "GPL-2.0-or-later",
+  "redistribution": "manual-original-source-only",
+  "delivery": "manual",
+  "manual_url": "https://downloads.scummvm.org/frs/scummvm/1.7.0/scummvm-1.7.0-s60v3.zip",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Старый порт S60v3 в ZIP. Извлеките SIS и передайте через «Игры и ПО». Игровые данные не входят; используйте разрешённые правообладателями файлы.",
+  "tls": "Для основной функции сеть не требуется.",
+  "signature": "В SIS обнаружена подпись, но её срок, цепочка доверия и принятие прошивкой не проверялись. Старый сертификат может не приниматься.",
+  "compatibility": "likely-compatible",
+  "compatibility_basis": "Дистрибутив/профиль проверен по источнику; физический E52 не тестировался.",
+  "e52_evidence": null,
+  "sources": [
+    "https://www.scummvm.org/",
+    "https://downloads.scummvm.org/frs/scummvm/1.7.0/scummvm-1.7.0-s60v3.zip"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "scummvm",
+  "limitations": [
+    "Старый порт S60v3 в ZIP. Извлеките SIS и передайте через «Игры и ПО». Игровые данные не входят; используйте разрешённые правообладателями файлы.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline"
+  ],
+  "delivery_reason": "Старый порт S60v3 в ZIP. Извлеките SIS и передайте через «Игры и ПО». Игровые данные не входят; используйте разрешённые правообладателями файлы.",
+  "requirements": [
+    "Старый порт S60v3 в ZIP. Извлеките SIS и передайте через «Игры и ПО». Игровые данные не входят; используйте разрешённые правообладателями файлы."
+  ],
+  "release_date_basis": "official archive artifact timestamp",
+  "contained_packages": [
+    {
+      "name": "scummvm-1.7.0-s60v3.sis",
+      "size": 13669548,
+      "sha256": "edac68558ab6e030728a4ab39e4e520d18380d724f04c57c579f83c07c13c8a6",
+      "structure_checked": true
+    }
+  ]
+}
