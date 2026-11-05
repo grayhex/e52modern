@@ -58,6 +58,7 @@ function start(model, rm, port) {
   for (const name of ["theme", "tools", "profiles", "catalog"]) fs.cpSync(path.join(repo, name), path.join(root, name), { recursive: true });
   children.push(spawn(python, ["-c", server, root, model, rm, String(port)], { cwd: repo, env: { ...process.env, PYTHONPATH: repo }, stdio: ["ignore", "ignore", "inherit"] }));
 }
+let lastPage;
 const shot = async (page, name, options = {}) => {
   await page.waitForTimeout(400);
   await page.screenshot({ path: path.join(out, name), ...options });
@@ -67,6 +68,9 @@ async function open(browser, port, size) {
   const context = await browser.newContext({ viewport: size, deviceScaleFactor: 2, locale: "ru-RU", timezoneId: "Europe/Moscow", colorScheme: "light" });
   await context.addInitScript(() => { try { localStorage.setItem("symport-language", "ru"); localStorage.removeItem("symport-theme"); } catch {} });
   const page = await context.newPage();
+  lastPage = page;
+  page.on("pageerror", (e) => console.error("PAGEERROR", e.message.slice(0, 300)));
+  page.on("console", (m) => { if (m.type() === "error") console.error("CONSOLE", m.text().slice(0, 400)); });
   page.setDefaultTimeout(20000);
   for (let i = 0; i < 60; i++) { try { await page.goto(`http://127.0.0.1:${port}/next/`); break; } catch { await new Promise((r) => setTimeout(r, 250)); } }
   return page;
@@ -151,6 +155,9 @@ async function journal(page) {
     await mobile.getByRole("heading", { name: /Nokia E52/ }).first().waitFor();
     await shot(mobile, "overview-mobile.png", { fullPage: true });
     await mobile.context().close();
+  } catch (error) {
+    try { console.error((await lastPage.locator("main").innerText()).slice(0, 800)); } catch {}
+    throw error;
   } finally {
     await browser?.close();
     for (const child of children) child.kill();

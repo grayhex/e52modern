@@ -12,6 +12,7 @@
 @import './style.css' layer(legacy);
 @import '../../symport/web_assets/nokia-classic.css' layer(legacy);
 @import './file-browser.css';
+@import './kit.css' layer(theme);
 
 /* P1 private collections, real telemetry and native-resolution skin previews. */
 .p1-app-selection {

@@ -48,3 +48,20 @@ export function useCapabilityGuard() {
     seen.current = isError ? new Map() : current;
   }, [data, isError, queryClient, setContactIndex]);
 }
+/** Registered phone models; empty until the first discovery answers. Adding a phone is a backend data change. */
+export function useModels() {
+  const { data } = useDevices();
+  return data?.models ?? [];
+}
+/** Models that have a toolchain profile (catalog compatibility, Theme Studio): the selectable targets. */
+export function useProfiles() {
+  return useModels()
+    .filter((m) => m.toolchain_profile)
+    .map((m) => ({
+      value: m.toolchain_profile ?? '',
+      label: [m.name, m.screen && `${m.screen.width}×${m.screen.height}`, `S60 ${m.s60}`]
+        .filter(Boolean)
+        .join(' · '),
+      model: m,
+    }));
+}

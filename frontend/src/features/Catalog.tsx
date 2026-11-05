@@ -1,3 +1,4 @@
+import { useProfiles } from '../api/queries';
 import { bytes } from '../utils/files';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { packageLink } from '../utils/packages';
@@ -31,7 +32,9 @@ export default function Catalog() {
     [path, setPath] = useState(''),
     [setName, setSetName] = useState(''),
     [allProfiles, setAllProfiles] = useState(false),
-    [profile, setProfile] = useState('nokia-e52');
+    [picked, setProfile] = useState(''),
+    profiles = useProfiles(),
+    profile = picked || profiles[0]?.value || '';
   const plan = useMutation({
     mutationFn: () =>
       api.request(
@@ -86,8 +89,11 @@ export default function Catalog() {
                 plan.reset();
               }}
             >
-              <option value="nokia-e52">Nokia E52 · 240×320 / S60 3rd FP2</option>
-              <option value="nokia-e72">Nokia E72 · 320×240 / S60 3rd FP2</option>
+              {profiles.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
               <option value="all">
                 {t('All compatibility states', 'Все статусы совместимости')}
               </option>

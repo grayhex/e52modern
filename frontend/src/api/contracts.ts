@@ -39,12 +39,15 @@ export const deviceSchema = z.object({
     .optional(),
   model_profile: z
     .object({
+      id: z.string().optional(),
       name: z.string(),
-      image: z.string(),
-      screen: z.object({ width: z.number(), height: z.number(), orientation: z.string() }),
+      image: z.string().nullish(),
+      screen: z
+        .object({ width: z.number(), height: z.number(), orientation: z.string() })
+        .nullish(),
       s60: z.string(),
-      symbian: z.string(),
-      input: z.string(),
+      symbian: maybeText,
+      input: maybeText,
     })
     .nullish(),
   firmware_update: z
@@ -58,8 +61,23 @@ export const connectionRowSchema = z.object({
   model: maybeText,
   connection_kind: maybeText,
 });
+/** A phone model of the registry (symport/phone/device_models.json): the single source for artwork and geometry. */
+export const modelSchema = z.object({
+  id: z.string(),
+  model: z.string(),
+  name: z.string(),
+  family: maybeText,
+  image: maybeText,
+  screen: z.object({ width: z.number(), height: z.number(), orientation: z.string() }).nullish(),
+  input: maybeText,
+  s60: z.string(),
+  symbian: maybeText,
+  toolchain_profile: maybeText,
+});
+export type PhoneModel = z.infer<typeof modelSchema>;
 export const discoverySchema = z.object({
   devices: z.array(deviceSchema),
+  models: z.array(modelSchema).optional(),
   connections: z.array(connectionRowSchema).optional(),
   limitations: z.record(z.string(), z.string()),
 });
