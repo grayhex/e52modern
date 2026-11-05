@@ -14,6 +14,7 @@ export const DEVICE_SCOPED_ROOTS = [
   'media',
   'media-thumbnails',
   'diagnostics',
+  'revive',
 ] as const;
 export function useDevices() {
   const api = useApi();

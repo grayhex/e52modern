@@ -27,6 +27,7 @@ from symport.catalog import AppCatalog
 from symport.config import find_repo_root
 from symport.inspector import Inspector
 from symport.jailbreak import JailbreakManager
+from symport.revive import ReviveService
 from symport.lab import EmulatorLab
 from symport.library import ThemeLibrary
 from symport.phone import DeviceManager
@@ -188,6 +189,7 @@ class Workbench:
         self.firmware = FirmwareExplorer(repo / 'build/symport/firmware')
         self.inspector = Inspector(repo, self.resolve_lab_package, self.devices, self.lab, self.firmware)
         self.jailbreak = JailbreakManager(repo, self.devices)
+        self.revive = ReviveService(repo, self.devices)
         self.token = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
         self.jobs: list[dict] = []
@@ -804,6 +806,8 @@ def make_handler(state: Workbench):
                     return self._json(state.firmware.execute(body))
                 if self.path == '/api/jailbreak':
                     return self._json(state.jailbreak.execute(body))
+                if self.path == '/api/revive':
+                    return self._json(state.revive.execute(body))
                 if self.path == '/api/lab':
                     return self._json(state.lab.execute(body))
                 if self.path == "/api/catalog":
