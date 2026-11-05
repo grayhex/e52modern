@@ -105,6 +105,7 @@ let currentPage;
     const levels = await wizard.locator(".wizard-levels li").evaluateAll((items) => items.map((li) => li.dataset.on));
     if (levels.join() !== "true,true,true,true,false")
       throw Error("Five levels must stay apart: " + levels.join());
+    await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
     await page.screenshot({ path: path.join(shots, "connection-wizard-light-en.png"), fullPage: true });
     // De-identified report: nothing private, whatever the phone said.
     const href = await wizard.locator('a[download="symport-first-connection-report.json"]').getAttribute("href");
@@ -129,6 +130,7 @@ let currentPage;
     await page.setViewportSize({ width: 390, height: 844 });
     if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
       throw Error("Mobile overflow");
+    await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
     await page.screenshot({ path: path.join(shots, "connection-wizard-light-ru-mobile.png"), fullPage: true });
     if (errors.length) throw Error(errors.join("\n"));
     console.log("PASS connection wizard: real BridgeServer probe/pairing/declined/relay, steps and five levels, lost Bridge, de-identified report, RU/EN, light theme, mobile. Synthetic phone; not a physical E52.");

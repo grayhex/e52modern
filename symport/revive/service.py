@@ -56,6 +56,8 @@ class ReviveService:
         # Scenario name -> builder(row, facts, request) -> saved plan; registered by each wizard.
         self.scenarios: dict = {}
         self.tls.register_safety()
+        from .reborn import RebornWizard
+        self.reborn = RebornWizard(self)
 
     # ---- storage ---------------------------------------------------------------------------
     def _key(self, row: dict) -> str:
@@ -139,6 +141,9 @@ class ReviveService:
                 'tls-import': lambda d: self.tls.import_file(d), 'tls-diagnose': lambda d: self.tls.diagnose(d),
                 'tls-kit': lambda d: self.tls.kit(d),
                 'tls-record': lambda d: self.tls.record(d),
+                'reborn-state': lambda d: self.reborn.state(d), 'reborn-import': lambda d: self.reborn.import_file(d),
+                'reborn-pin': lambda d: self.reborn.pin(d), 'reborn-backup': lambda d: self.reborn.attest(d),
+                'reborn-stage': lambda d: self.reborn.stage(d),
             }.get(action)
             if handler is None and isinstance(action, str) and action.startswith('safety-'):
                 handler = (lambda d, a=action: self.safety.execute(a, d)) if action in SAFETY_ACTIONS else None

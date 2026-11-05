@@ -332,3 +332,61 @@ export const rollbackSchema = z
   .passthrough();
 export const exportSchema = z.object({ name: z.string(), mime: z.string(), content: z.string() });
 export type SafetyPlan = z.infer<typeof safetyPlanSchema>;
+
+// ---- Reborn Hybrid CFW (N95) ----
+export const rebornStateSchema = z.object({
+  card: z
+    .object({
+      title: bilingual,
+      not_a_flash: bilingual,
+      author: z.string(),
+      author_page: z.string(),
+      index_page: z.string(),
+      version: z.string(),
+      release_date: z.string().nullish(),
+      changelog: z.string().nullish(),
+      expected_name: z.string(),
+      distribution: z.object({ status: z.string(), note: bilingual }),
+      compatibility: z.record(z.string(), z.string()),
+      prerequisites: z.array(z.string()),
+      warnings: z.array(z.string()),
+      pinned_artifacts: z.array(z.unknown()),
+    })
+    .passthrough(),
+  device: z.string().nullish(),
+  reason: z.string().nullish(),
+  variant: z
+    .object({ status: z.enum(['blocked', 'candidate']), code: z.string(), reason: bilingual })
+    .passthrough(),
+  checks: z.array(checkSchema),
+  pin: z
+    .object({ sha256: z.string(), name: z.string(), pinned_at: z.string(), source: z.string() })
+    .nullish(),
+  artifact_present: z.boolean(),
+  backups: z.object({ count: z.number(), latest: z.string().nullish(), note: z.string() }),
+  data_backup: z.object({ at: z.string(), source: z.string() }).nullish(),
+  stages: z.record(z.string(), z.object({ result: z.string(), source: z.string() }).passthrough()),
+  statement: z.string(),
+});
+export const rebornImportSchema = z.object({
+  sha256: z.string(),
+  size: z.number(),
+  name: z.string(),
+  name_matches: z.boolean(),
+  expected_name: z.string(),
+  signature: z.string(),
+  platform_verdict: z.string(),
+  issues: z.array(z.string()),
+  restricted_capabilities: z.array(z.unknown()),
+  files: z.array(
+    z.object({ target: z.string(), high_risk: z.boolean(), reasons: z.array(z.string()) }),
+  ),
+  high_risk_count: z.number(),
+  pinned: z.boolean(),
+  differs_from_pin: z.boolean(),
+  statement: z.string(),
+});
+export const rebornStageSchema = z.object({
+  stages: z.record(z.string(), z.object({ result: z.string() }).passthrough()),
+  success: z.string(),
+});
