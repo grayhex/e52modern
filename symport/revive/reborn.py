@@ -26,6 +26,20 @@ DATA = Path(__file__).with_name('reborn.json')
 FOLDER = 'SymPort-Reborn'
 SCENARIO = 'reborn-n95'
 STAGES = ('installer-opened', 'installed', 'rebooted', 'network-works')
+# Post-installation checks the user performs on the phone; evidence is always "user-reported".
+POSTCHECKS = ('calls-sms', 'file-manager', 'wifi', 'https-on-phone', 'alt-links', 'launch-uninstall')
+# Changes the author *describes*. SymPort looks only at file names inside the package: a match is a
+# lead, never proof that the behaviour exists; no match means "not detected", not "absent".
+CLAIMS = {
+    'ssl-ca': re.compile(r'cacert|ca-?cert|certstore|mozilla|ssl|cert', re.I),
+    'uaprof': re.compile(r'uaprof|\brdf\b|\.rdf', re.I),
+    'connectivity-check': re.compile(r'conntest|connectivity', re.I),
+    'dead-services': re.compile(r'podcast|\bstore\b|ovi|dummy', re.I),
+    'file-manager': re.compile(r'fileman|filemanager', re.I),
+    'n-gage': re.compile(r'n-?gage', re.I),
+}
+# Files that the separate TLS stack (symbian-tls / mbedtls) also owns.
+TLS_OVERLAP = ('ssl.dll', 'mbedtls.dll', 'mbedtls.dso')
 STAGE_RESULTS = ('pass', 'fail', 'not-tested')
 REGIONAL = ('RM-160', 'RM-245')
 HIGH_RISK_PATH = re.compile(r'^(?:[a-z!]:)?\\(?:sys|resource|private|system)\\', re.I)
@@ -57,6 +71,29 @@ def components(raw: bytes) -> list[dict]:
         rows.append({'target': target, 'size': f.get('uncompressed_length'), 'hash_ok': f.get('hash_ok'),
                      'high_risk': bool(reasons), 'reasons': reasons})
     return rows
+
+
+def modifications(files: list[dict]) -> list[dict]:
+    rows = []
+    for category, pattern in CLAIMS.items():
+        hits = [f['target'] for f in files if pattern.search(f['target'])]
+        rows.append({'category': category, 'status': 'present-by-file-name' if hits else 'not-detected',
+                     'evidence': hits[:10], 'basis': 'file-name-pattern', 'confirmed_behaviour': False})
+    return rows
+
+
+def tls_overlap(files: list[dict]) -> list[str]:
+    return [f['target'] for f in files if f['target'].replace('/', '\\').rsplit('\\', 1)[-1].lower() in TLS_OVERLAP]
+
+
+def version_check(package_version, claim: str) -> dict:
+    found = '.'.join(str(x) for x in (package_version or []))
+    match = re.search(r'(\d+)\.(\d+)', claim)
+    if not found:
+        return {'package': None, 'author_claim': claim, 'status': 'unreadable'}
+    if match and found.split('.')[:2] == [str(int(match.group(1))), str(int(match.group(2)))]:
+        return {'package': found, 'author_claim': claim, 'status': 'matches-author-claim'}
+    return {'package': found, 'author_claim': claim, 'status': 'differs-from-author-claim'}
 
 
 class RebornWizard:
@@ -158,6 +195,8 @@ class RebornWizard:
                 'variant': v, 'checks': [ev[c] for c in ('connection', 'identity', 'platform', 'firmware', 'storage', 'files', 'transfer', 'rights')],
                 'pin': pin, 'artifact_present': artifact is not None, 'steps': steps, 'backups': backups,
                 'data_backup': saved.get('data_backup'), 'stages': saved.get('reborn_stages', {}),
+                'postchecks': {k: v for k, v in saved.get('reborn_stages', {}).items() if k in POSTCHECKS},
+                'postcheck_items': list(POSTCHECKS), 'tls_state': self._tls_state(facts),
                 'statement': 'SymPort never installs this kit. Success is only an installation you confirm on the phone.'}
 
     def _backups(self):
@@ -197,10 +236,17 @@ class RebornWizard:
             'capabilities': analysis['capabilities'], 'restricted_capabilities': analysis['restricted_capabilities'],
             'dependencies': analysis['declared'], 'files': files,
             'high_risk_count': sum(f['high_risk'] for f in files),
+            'modifications': modifications(files),
+            'tls_overlap': tls_overlap(files), 'tls_state': self._tls_state(facts),
+            'version_check': version_check(info['package'].get('version'), self.card['version']),
             'pinned': bool(pin and pin['sha256'] == digest), 'differs_from_pin': bool(pin and pin['sha256'] != digest),
             'known_author_hash': None,
             'statement': 'Static analysis only. The author publishes no hash; confirm the file source yourself, then pin it.',
         }
+
+    def _tls_state(self, facts) -> dict:
+        tls = self._saved(facts).get('tls', {})
+        return {k: tls.get(k, {}).get('state', 'unknown') for k in ('mbedtls-lib', 'ssl-patch')}
 
     def pin(self, data):
         if data.get('confirm') is not True:
@@ -229,11 +275,11 @@ class RebornWizard:
         if data.get('confirm') is not True:
             raise ValueError('Confirm that this is what you observed on the phone')
         stage, result = data.get('stage'), data.get('result')
-        if stage not in STAGES or result not in STAGE_RESULTS:
+        if stage not in STAGES + POSTCHECKS or result not in STAGE_RESULTS:
             raise ValueError('Invalid stage observation')
         row, facts = self.service._need_device(data)
         saved = self._saved(facts)
-        saved.setdefault('reborn_stages', {})[stage] = {'result': result, 'at': now(), 'source': 'manual',
+        saved.setdefault('reborn_stages', {})[stage] = {'result': result, 'at': now(), 'source': 'manual', 'evidence': 'user-reported',
                                                         'note': str(data.get('note') or '')[:200]}
         self.service._save('observations', facts['key'], saved)
         return {'stages': saved['reborn_stages'], 'success': self.outcome(saved['reborn_stages'])}
@@ -274,6 +320,14 @@ class RebornWizard:
         if facts['observed'].get('rm') in REGIONAL:
             blocking.append({'code': 'regional-variant', 'satisfied_by': 'acknowledgement', 'text': message(
                 'RM-160 (NAM) / RM-245 (China) are not automatically compatible.', 'RM-160 (NAM) / RM-245 (Китай) автоматически не считаются совместимыми.')})
+        overlap = tls_overlap(files)
+        if overlap:
+            tls = self._tls_state(facts)
+            blocking.append({'code': 'tls-stack-overlap', 'satisfied_by': 'acknowledgement', 'text': message(
+                'The package contains ' + ', '.join(overlap) + ', which the separate TLS stack (#34) also owns. TLS component state on this phone: '
+                + ', '.join(f'{k}={v}' for k, v in tls.items()) + '. Installing both can replace one with the other.',
+                'Пакет содержит ' + ', '.join(overlap) + ', которыми владеет и отдельный TLS-стек (#34). Состояние TLS-компонентов на этом телефоне: '
+                + ', '.join(f'{k}={v}' for k, v in tls.items()) + '. Установка обоих может заменить один другим.')})
         if high:
             blocking.append({'code': 'high-risk-components', 'satisfied_by': 'acknowledgement', 'text': message(
                 f'The package contains {len(high)} system-level components (executables, resources, system or private paths).',
@@ -298,4 +352,5 @@ class RebornWizard:
             restore={'kind': 'files-created-by-symport', 'system_restore': 'unsupported', 'author_recovery': 'format-device',
                      'note': 'Rollback removes the copied SIS only; installed software and system changes are not restored.'},
             phone_actions=phone_actions,
-            extra={'high_risk_components': [f['target'] for f in high]})
+            extra={'high_risk_components': [f['target'] for f in high], 'modifications': modifications(files),
+                   'version_check': version_check(inspect(raw)['package'].get('version'), self.card['version'])})

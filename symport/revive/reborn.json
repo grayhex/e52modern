@@ -32,7 +32,8 @@
     "warnings": [
       "Alpha release made by one person as a hobby (author)",
       "Proceed at your own risk; you are responsible for all possible damage (author)",
-      "No uninstall procedure is published; the author's escape plan is formatting the device, which erases user data (author)"
+      "No uninstall procedure is published; the author's escape plan is formatting the device, which erases user data (author)",
+      "Formatting is NOT a reliable rollback: it destroys user data and is not guaranteed to restore a working phone (SymPort)"
     ],
     "install_steps_author": [
       "Install Reborn_hybrid_CFW.sis on the phone",

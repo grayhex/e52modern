@@ -185,6 +185,9 @@ const port = new Promise((resolve, reject) => {
     const imp = reborn.getByTestId("reborn-import");
     await imp.waitFor();
     assert((await imp.innerText()).includes("high risk"), "system-level components are flagged");
+    assert.equal(await imp.getByTestId("reborn-mods").locator("li").count(), 6);
+    assert((await imp.getByTestId("reborn-mods").innerText()).includes("not detected"), "absent claims read 'not detected'");
+    assert((await imp.getByTestId("reborn-version").innerText()).includes("v1.00 alpha"));
     await reborn.getByLabel("I obtained this exact file from the author").check();
     await reborn.getByRole("button", { name: "Pin this SHA-256" }).click();
     await reborn.getByText("(your pin)").waitFor();
@@ -214,6 +217,9 @@ const port = new Promise((resolve, reject) => {
     await reborn.getByLabel("These are my own observations").check();
     await reborn.locator('[data-stage="installed"]').getByRole("button", { name: "Yes" }).click();
     await page.waitForFunction(() => document.querySelector('[data-testid="reborn-outcome"]')?.dataset.outcome === "installed-reported-unchecked");
+    assert.equal(await reborn.getByTestId("reborn-postchecks").locator("li").count(), 6);
+    await reborn.locator('[data-postcheck="https-on-phone"]').getByRole("button", { name: "No" }).click();
+    await reborn.getByText(/https-on-phone|HTTPS opens on the phone — fail \(user-reported\)/).first().waitFor();
     assert(await overflow(page), "overflow in the Reborn wizard");
     await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
     await page.screenshot({ path: path.join(shots, "reborn-1366.png"), fullPage: true });
