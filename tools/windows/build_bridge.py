@@ -19,6 +19,7 @@ subprocess.run([sys.executable, '-m', 'PyInstaller', '--noconfirm', '--clean', '
     '--icon', str(ROOT / 'symport/web_assets/brand/appmark-192.png'),
     '--add-data', str(ROOT / 'symport/web_assets/brand/appmark-192.png') + ';symport/web_assets/brand',
     '--add-data', str(ROOT / 'symport/phone/firmware_reference.json') + ';symport/phone',
+    '--add-data', str(ROOT / 'symport/phone/device_models.json') + ';symport/phone',
     '--collect-all', 'gammu', '--hidden-import', 'pystray._win32', '--hidden-import', 'serial.tools.list_ports_windows',
     '--exclude-module', 'cryptography', '--exclude-module', 'symport.web',
     str(ROOT / 'tools/windows/bridge_entry.py')], check=True, cwd=ROOT)
