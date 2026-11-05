@@ -1,51 +1,53 @@
 # N95 handset artwork
 
-Updated for SymPort on 2026-11-05 following the user's three photographic references. The third,
-large straight-on silver N95 photo is the primary shape/control reference; the other two confirm
-the original key legends and slider construction. Nokia marks identify the illustrated product.
+Both models were corrected for SymPort on 2026-11-05 using separate original-product references.
+The third user-supplied silver N95 photo defines the original model; the black N95 8GB uses the
+independent [original frontal product photo](https://fdn2.gsmarena.com/vv/pics/nokia/nokia-n95-8gb-01.jpg).
+Nokia marks identify the illustrated products. These are reference-based image edits, not claims
+that the reference photographs are original vector artwork or manufacturer-provided live data.
 
-## Silver N95
+## Separate hardware designs
 
-`nokia-n95.svg` is the editable production master. The old approximate vector drawing has been
-replaced by a reference-based image edit: curved silver front plate, original camera/grille,
-chrome navigation surround, small convex centre key, four short direction ticks, blue interlocking
-menu glyph, four-corner multimedia diamond, hooked softkeys, call/end controls and pencil/C bar.
-The slider is closed and the numeric keypad is hidden, as in the third supplied reference.
+- **Silver N95:** curved silver front plate, original camera/grille, chrome control surround,
+  small convex select key, four engraved direction ticks, original blue menu glyph, multimedia
+  diamond, hooked softkeys, call/end keys and curved pencil/C bar.
+- **Black N95 8GB:** its own black shell and larger display, `N95 8GB` above the screen, `NOKIA`
+  below it, a low horizontal chrome control assembly with black menu/multimedia keys, warm metallic
+  direction ring and small glossy black select key. It is not a recolored silver model.
 
-The SVG keeps the replaceable photographic handset layer embedded as PNG, an editable clean
-silhouette, an opaque case base and a separate blank LCD. There are no external image links.
-The surrounding photo background and displayed screen contents are removed. The original
-image-edit output is preserved by the image tool; the master contains the production source.
-This is a reference-based illustration, not a claim that the underlying photograph is original
-vector work or manufacturer-provided live device data.
+Both sliders are closed; hidden numeric/media keypads are not exposed. Screen contents and photo
+backgrounds are removed. The family SVG stays deliberately schematic for an unresolved variant.
 
-`nokia-n95.png` and `nokia-n95.webp` are transparent 1000×1868 exports. The UI uses the smaller
-lossless WebP. The transform is uniform, preserving body proportions. `device_models.json` records
-the corrected 240×320 screen placement: x=145, y=264, width=711, height=948 in the export.
+## Maintained masters and exports
 
-## N95 8GB and unresolved variant
+`nokia-n95.svg` and `nokia-n95-8gb.svg` are editable production masters. Each contains its own
+replaceable embedded PNG body layer, a clean editable silhouette, opaque case base and separate
+blank LCD. There are no external image links. Image-tool outputs remain preserved separately;
+the production SVG contains the source needed for deterministic export. The obsolete approximate
+vector generator was removed so it cannot overwrite the corrected graphics.
 
-The black `nokia-n95-8gb.svg` remains the separate original vector master with its larger screen
-and distinct key assembly, not a recolored silver N95. Its source drawing is distributed under the
-repository MIT license. The family SVG is deliberately schematic and only shown for an unresolved
-variant. Neither uses a screen image as evidence of a phone connection.
+Both export to transparent 1000×1868 PNG and lossless WebP; the app uses WebP. Transforms are uniform,
+so the artwork is neither stretched nor squeezed to fill a rectangle. Rounded silhouettes and side
+buttons determine the visible bounds. Display geometry lives in `device_models.json`:
 
-Earlier public photographic layout references inspected (not redistributed):
+| Model | LCD x/y | LCD width/height | Native preview |
+|---|---|---|---|
+| N95 | 145 / 264 | 711 / 948 | 240×320 |
+| N95 8GB | 102 / 240 | 795 / 1060 | 240×320 |
+
+Export both maintained masters:
+
+```sh
+SYMPORT_BROWSER_EXECUTABLE=/path/to/chromium node tools/assets/render_phones.cjs
+```
+
+Requires Playwright and Pillow. Tests check embedded content, alpha/padding, proportions, distinct
+models and LCD alignment. `tools/check_n95_ui.cjs` captures 180/240 px review sheets and responsive
+UI screenshots. Capture state is synthetic and never a physical-device claim.
+
+Other photographic layout references inspected (not redistributed):
 
 - [Closed original N95 front](https://commons.wikimedia.org/wiki/File:Nokia_N95_Front_1.jpg)
 - [N95 and N95 8GB side by side](https://commons.wikimedia.org/wiki/File:Nokia_N95_and_Nokia_N95_8GB.jpg)
+- [N95 8GB media-slider photo](https://fdn2.gsmarena.com/vv/pics/nokia/nokia-n95-8gb-00.jpg)
 - [Nokia N95 specifications / physical differences](https://en.wikipedia.org/wiki/Nokia_N95)
-
-## Reproduction and review
-
-```sh
-# Export both maintained masters, including the corrected silver reference-based SVG:
-SYMPORT_BROWSER_EXECUTABLE=/path/to/chromium node tools/assets/render_phones.cjs
-# Optional: regenerate only the separate legacy black vector master:
-python tools/assets/draw_n95.py
-```
-
-Requires Playwright and Pillow. The silver master must be edited directly; the legacy vector
-generator refuses to replace it. Tests check embedded content, alpha/padding, proportions and native
-LCD alignment. `tools/check_n95_ui.cjs` captures 180/240 px review sheets and responsive UI
-screenshots. These captures use explicit synthetic observations, never a physical phone claim.

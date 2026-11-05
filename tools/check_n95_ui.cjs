@@ -164,7 +164,9 @@ const port = new Promise((resolve, reject) => {
       await inspector.getByLabel("Model profile", { exact: true }).inputValue(),
       "nokia-n95-8gb",
     );
-    await inspector.locator('img[src="/phones/nokia-n95-8gb.png"]').waitFor();
+    await inspector
+      .locator('img[src="' + models["nokia-n95-8gb"].image + '"]')
+      .waitFor();
     await inspector
       .getByLabel("Package (up to 32 MiB)", { exact: true })
       .setInputFiles(path.join(tmp, "fp2.sis"));

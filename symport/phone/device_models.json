@@ -146,7 +146,7 @@
       "name": "Nokia N95 8GB",
       "name_ru": "Nokia N95 8GB",
       "model": "N95",
-      "image": "/phones/nokia-n95-8gb.png",
+      "image": "/phones/nokia-n95-8gb.webp",
       "screen": {
         "width": 240,
         "height": 320,
@@ -156,10 +156,10 @@
         "width": 1000,
         "height": 1868,
         "screen": {
-          "x": 119,
-          "y": 228,
-          "width": 762,
-          "height": 1016
+          "x": 102,
+          "y": 240,
+          "width": 795,
+          "height": 1060
         }
       },
       "s60": "3rd FP1",

@@ -1,4 +1,4 @@
-// Editable SVG masters -> alpha PNG / WebP at 1000px; silver uses an embedded reference-based layer.
+// Editable SVG masters -> alpha PNG / WebP at 1000px; both use independent embedded reference-based layers.
 const { chromium } = require("playwright"),
   path = require("path");
 (async () => {

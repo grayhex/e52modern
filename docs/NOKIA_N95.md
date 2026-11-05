@@ -62,7 +62,7 @@ system Themes menu, never launched as applications by UID. See [THEME.md](THEME.
 ## Original artwork
 
 Editable SVG masters, PNG and lossless WebP exports are in
-`symport/web_assets/phones/`. The silver master now follows the user-provided frontal reference, including the original menu/multimedia glyphs, small convex select key, hooked softkeys and curved edit/C bar. Its replaceable raster body, editable silhouette and blank LCD are separate SVG layers. The front plates, screen sizes, materials and key assemblies differ;
+`symport/web_assets/phones/`. Both masters follow independent frontal references: the user-provided silver original and an original Nokia N95 8GB product photo. Their replaceable photographic bodies, editable silhouettes and blank LCDs are separate SVG layers. The black 8GB has its larger display, NOKIA branding below it and distinct low chrome/black controls. The front plates, screen sizes, materials and key assemblies differ;
 8GB is not a recolor. Blank screens contain no connection claim. See
 [N95 artwork provenance](../symport/web_assets/phones/N95-ARTWORK.md).
 
