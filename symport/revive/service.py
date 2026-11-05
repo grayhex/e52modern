@@ -60,6 +60,8 @@ class ReviveService:
         self.reborn = RebornWizard(self)
         from .services import LegacyServices
         self.services = LegacyServices(self)
+        from .addons import AddonManager
+        self.addons = AddonManager(self)
 
     # ---- storage ---------------------------------------------------------------------------
     def _key(self, row: dict) -> str:
@@ -149,6 +151,10 @@ class ReviveService:
                 'reborn-stage': lambda d: self.reborn.stage(d),
                 'services-state': lambda d: self.services.state(d), 'services-diagnose': lambda d: self.services.diagnose(d),
                 'services-record': lambda d: self.services.record(d),
+                'addons-state': lambda d: self.addons.state(d), 'addons-plan': lambda d: self.addons.plan(d),
+                'addons-prepare': lambda d: self.addons.prepare(d), 'addons-open-category': lambda d: self.addons.open_category(d),
+                'addons-mark': lambda d: self.addons.mark(d), 'addons-verify-file': lambda d: self.addons.verify_file(d),
+                'patch-save': lambda d: self.addons.patch_save(d), 'patch-delete': lambda d: self.addons.patch_delete(d),
             }.get(action)
             if handler is None and isinstance(action, str) and action.startswith('safety-'):
                 handler = (lambda d, a=action: self.safety.execute(a, d)) if action in SAFETY_ACTIONS else None

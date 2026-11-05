@@ -819,3 +819,19 @@ a.k-btn {
   gap: var(--k-2);
   flex-wrap: wrap;
 }
+.rv-levels {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--k-1);
+  padding: 0;
+  margin: var(--k-2) 0;
+}
+.rv-chip--ok {
+  border-color: var(--nokia-brand);
+}
+.rv-blocks {
+  margin: var(--k-2) 0;
+  padding-left: var(--k-4);
+  color: var(--nokia-text);
+}
