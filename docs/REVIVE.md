@@ -227,3 +227,37 @@ bound to the connection and shows how to put the old value back.
 
 **Self-hosted bridge:** not implemented (`status: not-implemented`). Any future bridge needs an
 allow-list, no open proxy, authentication, SSRF protection and no credential forwarding.
+
+## Add-ons and Patch Manager (#39)
+
+Revive → *Add-ons and patches* (`symport/revive/addons.json`, reviewed 2026-11-05). The registry
+holds, per add-on: category, risk, author link, licence status, version (and whether it is
+confirmed), target models, verified firmware versions, dependencies, conflicts, install and
+uninstall instructions. TLS components reference their pinned artifacts instead of duplicating
+them; the Reborn kit and the browser-homepage setting reference their own wizards. **A new version
+is a new entry with its own pinned artifact; nothing follows a mutable link.**
+
+**Dry-run plan** (`addons-plan`) → `blocked` / `manual-only` / `ready-to-prepare`. Blocking codes:
+`model-unidentified`, `model-not-targeted`, `rm-unknown`, `category-closed`, `firmware-unverified`
+(high risk with no verified firmware) / `firmware-unconfirmed`, `licence-missing`,
+`version-unconfirmed`, `dependency-missing:<id>`, `conflict:<id>`, `autostart-conflict`,
+`privileges-missing` and `incomplete-backup` (high risk: your own rights observation and backup
+statement). Only a pinned artifact can reach `ready-to-prepare`, and then only as a copy through the
+[Safety Net](#recovery-safety-net-36). Removal plans are manual and say that SymPort cannot restore
+a system DLL after its SIS is gone.
+
+**System patches are a closed category.** You must open it explicitly (confirm + acknowledgement
+that SymPort only gives instructions). Opening it removes only that one block; the others stay, so
+for example `rompatcher-debloated` (source and redistribution rights not established, FP1/FP2
+unknown, author-claimed `domainsrv` autostart) can never be prepared. A binary existing is not proof
+that it is safe.
+
+**Levels:** `downloaded` and `transferred` are derived from the pinned cache and Safety Net plans;
+`user-confirmed-installed` is what you report; `verified-on-device` is always `not-available`
+(there is no agent). A newer pinned version raises an *update available* notice only.
+
+**Patch Manager** is an inventory *you* type in (name, source, optional original SHA-256, state
+`applied/disabled/autostart/unknown`, start chain, dependencies), stamped with the device-read
+model/RM/firmware. It warns about missing dependencies, two patches starting through the same
+mechanism, unknown state and entries recorded for other firmware. Applying, autostart and removal
+are disabled: there is no proven API or recovery. No agent reads patches from the phone.

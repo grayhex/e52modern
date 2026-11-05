@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "reviewed": "2026-11-05",
+  "note": "SymPort never installs add-ons or patches. Entries without a pinned artifact are manual-only: author link, licence status and an instruction. A new version is a new entry with its own pinned artifact, never a mutable link.",
+  "categories": {
+    "settings": {"title": {"en": "Settings", "ru": "Настройки"}, "closed_by_default": false},
+    "utility": {"title": {"en": "Utilities and libraries", "ru": "Утилиты и библиотеки"}, "closed_by_default": false},
+    "system-patch": {"title": {"en": "System patches (high risk)", "ru": "Системные патчи (высокий риск)"}, "closed_by_default": true}
+  },
+  "addons": [
+    {
+      "id": "tls-mbedtls",
+      "title": {"en": "MBedTLS library for Symbian", "ru": "Библиотека MBedTLS для Symbian"},
+      "category": "utility", "risk": "medium", "component_ref": {"kind": "tls", "id": "mbedtls-lib"},
+      "source": {"author": "Shinovon (nnproject)", "url": "https://nnproject.cc/tls/"},
+      "licence": {"spdx": "Apache-2.0", "url": "https://github.com/shinovon/mbedtls-symbian/blob/main/LICENSE"},
+      "targets": ["nokia-e52", "nokia-e72", "nokia-n95", "nokia-n95-8gb", "nokia-n97-mini"],
+      "firmware": {"verified": [], "note": "The author states no firmware versions."},
+      "version": "1.4.4", "version_confirmed": true,
+      "depends_on": [], "conflicts_with": [],
+      "install": {"en": "Install MBedTLS.sis on the phone after copying it with a Safety Net plan. An unsigned SIS needs the InstallServer patch.", "ru": "Установите MBedTLS.sis на телефоне после копирования через план Safety Net. Неподписанному SIS нужен патч InstallServer."},
+      "uninstall": {"en": "Uninstall it in the phone application manager; apps that need it stop working.", "ru": "Удалите в диспетчере приложений телефона; приложения, которым она нужна, перестанут работать."},
+      "autostart": null
+    },
+    {
+      "id": "tls-ssl-patch",
+      "title": {"en": "System SSL patch (symbian-tls)", "ru": "Патч системного SSL (symbian-tls)"},
+      "category": "system-patch", "risk": "high", "component_ref": {"kind": "tls", "id": "ssl-patch"},
+      "source": {"author": "Shinovon (nnproject)", "url": "https://nnproject.cc/tls/"},
+      "licence": {"spdx": "EPL-2.0", "url": "https://github.com/shinovon/symbian-tls/blob/main/LICENSE"},
+      "targets": ["nokia-e52", "nokia-e72", "nokia-n95", "nokia-n95-8gb", "nokia-n97-mini"],
+      "firmware": {"verified": [], "note": "The author states no firmware versions."},
+      "version": "21", "version_confirmed": true,
+      "depends_on": ["tls-mbedtls"], "conflicts_with": ["reborn-hybrid-n95"],
+      "install": {"en": "Extract ssl.zip to the root of C: with X-plore (Open4All active). This replaces C:\\sys\\bin\\ssl.dll; keep your own copy of the original.", "ru": "Распакуйте ssl.zip в корень C: через X-plore (при активном Open4All). Это заменит C:\\sys\\bin\\ssl.dll; сохраните свою копию оригинала."},
+      "uninstall": {"en": "Copy your saved original ssl.dll back to C:\\sys\\bin. SymPort cannot restore a system DLL.", "ru": "Верните сохранённый оригинал ssl.dll в C:\\sys\\bin. SymPort не восстанавливает системные DLL."},
+      "autostart": null
+    },
+    {
+      "id": "reborn-hybrid-n95",
+      "title": {"en": "Reborn Hybrid CFW alpha (N95)", "ru": "Reborn Hybrid CFW alpha (N95)"},
+      "category": "system-patch", "risk": "high", "component_ref": {"kind": "reborn", "id": "reborn-hybrid-cfw-n95"},
+      "source": {"author": "symbuzzer", "url": "https://avalibeyaz.com/s60"},
+      "licence": {"spdx": null, "url": null, "status": "unconfirmed: the author's pages do not permit redistribution"},
+      "targets": ["nokia-n95"],
+      "firmware": {"verified": [], "note": "The author names no RM codes or firmware versions."},
+      "version": "v1.00 alpha", "version_confirmed": false,
+      "depends_on": [], "conflicts_with": ["tls-ssl-patch"],
+      "install": {"en": "Use the Reborn wizard: import the file you obtained from the author, then install it on the phone yourself.", "ru": "Используйте мастер Reborn: импортируйте файл, полученный у автора, и установите его на телефоне сами."},
+      "uninstall": {"en": "No uninstall procedure exists (the author's escape plan is formatting the phone, which erases data).", "ru": "Процедуры удаления нет (у автора — форматирование телефона, которое стирает данные)."},
+      "autostart": null
+    },
+    {
+      "id": "rompatcher-debloated",
+      "title": {"en": "RomPatcher+ Debloated (RomPatcher+ 3.1 modification)", "ru": "RomPatcher+ Debloated (модификация RomPatcher+ 3.1)"},
+      "category": "system-patch", "risk": "high", "component_ref": null,
+      "source": {"author": "listed on avalibeyaz.com/symbian", "url": "https://avalibeyaz.com/symbian/"},
+      "licence": {"spdx": null, "url": null, "status": "unconfirmed: source and redistribution rights not established"},
+      "targets": [],
+      "firmware": {"verified": [], "note": "FP1/FP2 compatibility not established."},
+      "version": null, "version_confirmed": false,
+      "depends_on": [], "conflicts_with": [],
+      "install": {"en": "Research item only. The author claims suspicious-operation filtering and a domainsrv autostart; a binary existing is not proof that it is safe.", "ru": "Только предмет исследования. Автор заявляет фильтрацию подозрительных операций и автозапуск domainsrv; наличие бинарника не доказывает безопасность."},
+      "uninstall": {"en": "Not established.", "ru": "Не установлено."},
+      "autostart": {"claimed_by_author": "domainsrv", "verified": false}
+    },
+    {
+      "id": "homepage-setting",
+      "title": {"en": "Browser homepage setting", "ru": "Настройка домашней страницы браузера"},
+      "category": "settings", "risk": "low", "component_ref": {"kind": "service", "id": "reborn-homepage"},
+      "source": {"author": "user setting", "url": "https://github.com/symbuzzer/reborncfw"},
+      "licence": {"spdx": "not-applicable", "url": null, "status": "a setting, not a distributed file"},
+      "targets": ["nokia-e52", "nokia-e72", "nokia-n95", "nokia-n95-8gb", "nokia-n97-mini"],
+      "firmware": {"verified": [], "note": "Not tested on any model."},
+      "version": null, "version_confirmed": true,
+      "depends_on": [], "conflicts_with": [],
+      "install": {"en": "Set the homepage in the phone browser settings, then record before/after in Restore services.", "ru": "Задайте домашнюю страницу в настройках браузера телефона и запишите до/после в «Восстановить сервисы»."},
+      "uninstall": {"en": "Set the previous value back (it is recorded).", "ru": "Верните прежнее значение (оно записано)."},
+      "autostart": null
+    }
+  ]
+}
