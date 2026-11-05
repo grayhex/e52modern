@@ -101,3 +101,134 @@ export type Operation = z.infer<typeof operationSchema>;
 export type Check = z.infer<typeof checkSchema>;
 export type Fact = z.infer<typeof factSchema>;
 export const simpleSchema = z.object({}).passthrough();
+
+// ---- Symbian TLS / CA revival ----
+const stackCell = z.object({
+  status: z.enum(['documented', 'not-applicable', 'unknown']),
+  tested: z.string(),
+  basis: z.string(),
+  source: z.string(),
+  abi: z.string().nullish(),
+  firmware: z.string(),
+  capabilities: z.string().nullish(),
+  patch_version: z.string(),
+  covered_by: z.string().nullish(),
+});
+export const tlsStateSchema = z.object({
+  device: z.string().nullish(),
+  reason: z.string().nullish(),
+  components: z.array(
+    z.object({
+      id: z.string(),
+      title: bilingual,
+      role: z.string(),
+      name: z.string(),
+      size: z.number(),
+      sha256: z.string(),
+      version: z.string(),
+      released: z.string(),
+      author: z.string(),
+      homepage: z.string(),
+      source_repository: z.string(),
+      licence: z.object({ spdx: z.string(), url: z.string(), note: z.string() }),
+      release_notes: z.string(),
+      release_notes_text: z.string(),
+      depends_on: z.array(z.string()),
+      risk: z.enum(['low', 'medium', 'high']),
+      observed_at: z.string(),
+      cached: z.boolean(),
+      device: z.object({
+        state: z.string(),
+        at: z.string().nullish(),
+        source: z.string().nullish(),
+      }),
+    }),
+  ),
+  stacks: z.record(z.string(), z.object({ title: bilingual, note: bilingual })),
+  app_kinds: z.record(z.string(), z.object({ title: bilingual, stack: z.string() })),
+  applicability: z.array(
+    z.object({
+      target: z.string(),
+      name: z.string(),
+      s60: z.string(),
+      symbian: z.string().nullish(),
+      stacks: z.record(z.string(), stackCell),
+    }),
+  ),
+  https: z.object({ state: z.string(), at: z.string().nullish(), host: z.string().nullish() }),
+  test_hosts: z.array(z.string()),
+  statement: z.string(),
+});
+export const tlsKitSchema = z.object({
+  device: z.string().nullish(),
+  reason: z.string().nullish(),
+  checks: z.array(checkSchema),
+  steps: z.array(
+    z.object({
+      id: z.string(),
+      title: bilingual,
+      risk: z.enum(['low', 'medium', 'high']),
+      version: z.string(),
+      sha256: z.string(),
+      size: z.number(),
+      licence: z.string(),
+      obtained: z.boolean(),
+      device: z.object({ state: z.string() }),
+      transfer: z.object({ execution: z.string(), status: STATUS }),
+      install: z.object({ execution: z.string(), steps: z.array(bilingual) }),
+      restore: bilingual,
+      high_risk: z
+        .object({
+          status: z.enum(['ready', 'needs-action']),
+          requirements: z.array(bilingual),
+          privileged_adapter: z.string(),
+          statement: bilingual,
+        })
+        .optional(),
+    }),
+  ),
+  app_kind: z.string().nullish(),
+  stack: z.string().nullish(),
+  stack_support: z
+    .object({
+      status: z.string(),
+      tested: z.string().optional(),
+      covered_by: z.string().nullish(),
+      reason: bilingual.optional(),
+    })
+    .passthrough()
+    .nullish(),
+  statement: z.string(),
+});
+export const tlsDiagnoseSchema = z.object({
+  host: z.string(),
+  server_probe: z
+    .object({
+      ran_on: z.string(),
+      ok: z.boolean(),
+      error: z.string().nullish(),
+      tls_version: z.string().nullish(),
+      meaning: z.string(),
+      leaf: z
+        .object({
+          subject: z.string(),
+          issuer: z.string(),
+          not_before: z.string().nullish(),
+          not_after: z.string().nullish(),
+        })
+        .nullish(),
+    })
+    .passthrough(),
+  bridge_probe: z.object({ status: z.string(), reason: z.string() }),
+  phone_test: z.object({ instructions: bilingual }),
+  clock: z
+    .object({
+      server_utc: z.string(),
+      phone_date: z.string().nullish(),
+      skew_days: z.number().nullish(),
+      verdict: z.string(),
+      certificate_window: z.string().optional(),
+    })
+    .passthrough(),
+  chain: z.object({ status: z.string(), reason: z.string() }),
+});

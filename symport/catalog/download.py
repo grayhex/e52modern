@@ -19,9 +19,9 @@ from .packages import MAX_PACKAGE, validate_package
 HOSTS = frozenset({'github.com', 'release-assets.githubusercontent.com', 'raw.githubusercontent.com', 'www.lonelycatgames.com'})
 
 
-def public_https(url: str, resolver=socket.getaddrinfo) -> None:
+def public_https(url: str, resolver=socket.getaddrinfo, hosts=HOSTS) -> None:
     parsed = urlsplit(url)
-    if parsed.scheme != 'https' or parsed.hostname not in HOSTS or parsed.port not in (None, 443):
+    if parsed.scheme != 'https' or parsed.hostname not in hosts or parsed.port not in (None, 443):
         raise ValueError('Download host is not approved HTTPS')
     if parsed.username or parsed.password or parsed.fragment:
         raise ValueError('Credentials/fragments forbidden in download URLs')

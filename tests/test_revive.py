@@ -235,3 +235,268 @@ def test_mounted_volume_never_identifies_a_phone(tmp_path):
     result = ReviveService(tmp_path, devices).execute({"action": "inspect", "device": "card"})
     assert checks(result)["identity"]["status"] == "unknown"
     assert result["facts"]["model"]["source"] == "unknown"
+
+
+# ---- Symbian TLS / CA revival (#34) ---------------------------------------------------------------------
+import base64  # noqa: E402
+import hashlib  # noqa: E402
+import io  # noqa: E402
+import zipfile  # noqa: E402
+
+from symport.revive.tls import STACKS, load_components  # noqa: E402
+
+COMPONENTS = load_components()
+
+
+def b64(raw):
+    return base64.b64encode(raw).decode()
+
+
+class MemoryPhone:
+    """Identified phone with an in-memory filesystem; the only transport the TLS tests need."""
+
+    def __init__(self, **kw):
+        self.row = phone(**kw)
+        self.files = {}
+        self.calls = []
+
+    def devices(self):
+        return [dict(self.row)]
+
+    def execute(self, data):
+        self.calls.append(data["action"])
+        path = data.get("path", "")
+        if data["action"] == "mkdir":
+            return {}
+        if data["action"] == "upload":
+            if path in self.files:
+                raise FileExistsError(path)
+            self.files[path] = base64.b64decode(data["content"])
+            return {"status": "verified"}
+        if data["action"] == "download":
+            return {"content": b64(self.files[path])}
+        raise AssertionError(data)
+
+
+def tls_service(tmp_path, **kw):
+    transport = MemoryPhone(**kw)
+    svc = ReviveService(tmp_path, DeviceManager(tmp_path, transport))
+    return svc, transport
+
+
+def fake_artifact(key, raw):
+    """Pretend the author's host serves ``raw`` (never touches the network)."""
+    class Response:
+        headers = {}
+
+        def __init__(self):
+            self.data = raw
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def geturl(self):
+            return COMPONENTS[key]["url"]
+
+        def read(self, n=-1):
+            return self.data[:n] if n >= 0 else self.data
+
+    return type("Opener", (), {"open": lambda self, req, timeout=0: Response()})()
+
+
+def test_pins_are_complete_licensed_and_never_bundled():
+    assert set(COMPONENTS) == {"mbedtls-lib", "ssl-patch"}
+    for c in COMPONENTS.values():
+        assert len(c["sha256"]) == 64 and c["size"] > 0 and c["licence"]["spdx"] in ("Apache-2.0", "EPL-2.0")
+        assert c["url"].startswith("https://nnproject.cc/") and c["observed_at"]
+    assert COMPONENTS["ssl-patch"]["depends_on"] == ["mbedtls-lib"]
+    from pathlib import Path
+
+    assert not [p for p in (Path(__file__).resolve().parent.parent / "symport").rglob("*") if p.suffix in (".sis", ".zip", ".dll")]
+
+
+def test_matrix_is_per_model_and_stack_with_honest_statuses(tmp_path):
+    svc, _ = tls_service(tmp_path)
+    state = svc.execute({"action": "tls-state", "device": "usb"})
+    rows = {r["target"]: r for r in state["applicability"]}
+    assert set(rows) == {"nokia-e52", "nokia-e72", "nokia-n95", "nokia-n95-8gb", "nokia-n97-mini"}
+    assert rows["nokia-e52"]["symbian"] == "9.3" and rows["nokia-n95"]["symbian"] == "9.2" and rows["nokia-n97-mini"]["symbian"] == "9.4"
+    for entry in rows.values():
+        assert entry["stacks"]["system-ssl"]["status"] == "documented"
+        assert entry["stacks"]["system-ssl"]["tested"] == "not-tested"
+        assert entry["stacks"]["qt-ssl"]["status"] == "not-applicable"
+        assert "not stated" in entry["stacks"]["system-ssl"]["patch_version"]
+    assert set(STACKS) == {"system-ssl", "mbedtls-lib", "java-ssl", "qt-ssl"}
+    assert all(c["device"]["state"] == "unknown" and not c["cached"] for c in state["components"])
+
+
+def test_fetch_requires_exact_pin_and_refuses_changed_or_broken_files(tmp_path):
+    svc, _ = tls_service(tmp_path)
+    good = io.BytesIO()
+    with zipfile.ZipFile(good, "w") as z:
+        z.writestr("sys/bin/ssl.dll", b"x" * 10)
+    svc.tls.opener = fake_artifact("ssl-patch", good.getvalue())
+    with pytest.raises(ValueError, match="hash-mismatch"):
+        svc.execute({"action": "tls-fetch", "component": "ssl-patch"})
+    assert not list((tmp_path / "build/symport/revive/tls").rglob("*.zip"))
+    svc.tls.opener = fake_artifact("ssl-patch", b"not a zip at all")
+    with pytest.raises(ValueError, match="hash-mismatch"):
+        svc.execute({"action": "tls-fetch", "component": "ssl-patch"})
+
+
+def test_offline_download_is_a_clear_failure_and_manual_import_remains(tmp_path):
+    import urllib.error
+
+    svc, _ = tls_service(tmp_path)
+
+    class Offline:
+        def open(self, *a, **k):
+            raise urllib.error.URLError("no network")
+
+    svc.tls.opener = Offline()
+    with pytest.raises(ValueError, match="offline"):
+        svc.execute({"action": "tls-fetch", "component": "mbedtls-lib"})
+    with pytest.raises(ValueError, match="Unknown TLS component"):
+        svc.execute({"action": "tls-fetch", "component": "../x"})
+
+
+def pinned_zip(tmp_path, svc, monkeypatch):
+    """Build a ZIP that *is* the pinned build by repinning the catalog to it (test-local)."""
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as z:
+        z.writestr("sys/bin/ssl.dll", b"synthetic ssl replacement")
+    raw = buffer.getvalue()
+    spec = dict(COMPONENTS["ssl-patch"], size=len(raw), sha256=hashlib.sha256(raw).hexdigest())
+    svc.tls.components = dict(svc.tls.components, **{"ssl-patch": spec})
+    return raw
+
+
+def test_import_validates_structure_and_pin(tmp_path, monkeypatch):
+    svc, _ = tls_service(tmp_path)
+    raw = pinned_zip(tmp_path, svc, monkeypatch)
+    result = svc.execute({"action": "tls-import", "name": "ssl.zip", "content": b64(raw)})
+    assert result["component"] == "ssl-patch" and result["validation"]["contents"] == ["sys/bin/ssl.dll"]
+    with pytest.raises(ValueError, match="hash-mismatch.*ssl-patch"):
+        svc.execute({"action": "tls-import", "name": "ssl.zip", "content": b64(raw + b"x")})
+    with pytest.raises(ValueError, match="broken-package"):
+        svc.execute({"action": "tls-import", "name": "x.sis", "content": "!!!"})
+    with pytest.raises(ValueError, match="hash-mismatch"):
+        svc.execute({"action": "tls-import", "name": "unrelated.sis", "content": b64(b"\x00" * 64)})
+
+
+def test_zip_with_key_material_or_extra_files_is_rejected(tmp_path):
+    from symport.revive.tls import validate_component
+
+    for extra in ("sys/bin/other.dll", "private.key"):
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w") as z:
+            z.writestr("sys/bin/ssl.dll", b"a")
+            z.writestr(extra, b"b")
+        raw = buffer.getvalue()
+        spec = dict(COMPONENTS["ssl-patch"], size=len(raw), sha256=hashlib.sha256(raw).hexdigest())
+        with pytest.raises(ValueError, match="broken-package"):
+            validate_component(spec, raw)
+
+
+def obtained(tmp_path, svc, monkeypatch):
+    raw = pinned_zip(tmp_path, svc, monkeypatch)
+    svc.execute({"action": "tls-import", "name": "ssl.zip", "content": b64(raw)})
+    return raw
+
+
+def test_transfer_is_verified_by_readback_and_never_called_installed(tmp_path, monkeypatch):
+    svc, phone_ = tls_service(tmp_path)
+    raw = obtained(tmp_path, svc, monkeypatch)
+    with pytest.raises(ValueError, match="Confirm"):
+        svc.execute({"action": "tls-transfer", "device": "usb", "component": "ssl-patch"})
+    result = svc.execute({"action": "tls-transfer", "device": "usb", "component": "ssl-patch", "confirm": True})
+    assert result["state"] == "transferred-awaiting-install" and "not installed" in result["statement"]
+    assert phone_.files["SymPort-TLS/ssl.zip"] == raw
+    state = svc.execute({"action": "tls-state", "device": "usb"})
+    assert {c["id"]: c["device"]["state"] for c in state["components"]}["ssl-patch"] == "transferred-awaiting-install"
+    # A second transfer of the same bytes is idempotent; a different file is never overwritten.
+    svc.execute({"action": "tls-transfer", "device": "usb", "component": "ssl-patch", "confirm": True})
+    phone_.files["SymPort-TLS/ssl.zip"] = b"someone else's file"
+    with pytest.raises(ValueError, match="conflict"):
+        svc.execute({"action": "tls-transfer", "device": "usb", "component": "ssl-patch", "confirm": True})
+    assert phone_.files["SymPort-TLS/ssl.zip"] == b"someone else's file"
+
+
+def test_transfer_blocked_for_wrong_rm_unknown_model_and_missing_file(tmp_path, monkeypatch):
+    for kw in ({"model": "N95-2", "rm": "RM-159"}, {"model": None, "firmware": None}, {"model": "Nokia E71"}):
+        svc, phone_ = tls_service(tmp_path / (kw.get("model") or "none").replace(" ", "_"), **kw)
+        obtained(tmp_path, svc, monkeypatch)
+        with pytest.raises(ValueError, match="blocked"):
+            svc.execute({"action": "tls-transfer", "device": "usb", "component": "ssl-patch", "confirm": True})
+        assert "upload" not in phone_.calls
+    svc, phone_ = tls_service(tmp_path / "nofile")
+    with pytest.raises(ValueError, match="Obtain"):
+        svc.execute({"action": "tls-transfer", "device": "usb", "component": "ssl-patch", "confirm": True})
+
+
+def test_kit_orders_dependencies_and_gates_the_system_replacement(tmp_path, monkeypatch):
+    svc, _ = tls_service(tmp_path)
+    kit = svc.execute({"action": "tls-kit", "device": "usb", "components": ["ssl-patch"], "app_kind": "native-system"})
+    assert [s["id"] for s in kit["steps"]] == ["mbedtls-lib", "ssl-patch"]
+    patch = kit["steps"][1]
+    assert patch["install"]["execution"] == "manual-on-phone" and patch["high_risk"]["privileged_adapter"] == "not-available"
+    assert patch["high_risk"]["status"] == "needs-action" and len(patch["high_risk"]["requirements"]) == 2
+    assert kit["stack_support"]["status"] == "documented" and kit["stack_support"]["tested"] == "not-tested"
+    assert "high_risk" not in kit["steps"][0]
+    svc.execute({"action": "observe", "device": "usb", "kind": "rights", "scope": "device", "confirm": True})
+    svc.execute({"action": "tls-record", "device": "usb", "item": "ssl-original-backup", "state": "installed", "confirm": True})
+    ready = svc.execute({"action": "tls-kit", "device": "usb", "components": ["ssl-patch"]})
+    assert ready["steps"][1]["high_risk"]["status"] == "ready"
+    # Even when every gate is green SymPort offers no automated system write.
+    assert ready["steps"][1]["high_risk"]["privileged_adapter"] == "not-available"
+    qt = svc.execute({"action": "tls-kit", "device": "usb", "components": ["mbedtls-lib"], "app_kind": "qt"})
+    assert qt["stack_support"]["status"] == "not-applicable"
+    java = svc.execute({"action": "tls-kit", "device": "usb", "components": ["mbedtls-lib"], "app_kind": "java"})
+    assert java["stack_support"]["covered_by"] == "system-ssl"
+
+
+def test_installed_is_only_what_the_user_reports(tmp_path):
+    svc, _ = tls_service(tmp_path)
+    with pytest.raises(ValueError):
+        svc.execute({"action": "tls-record", "device": "usb", "item": "mbedtls-lib", "state": "installed"})
+    with pytest.raises(ValueError):
+        svc.execute({"action": "tls-record", "device": "usb", "item": "mbedtls-lib", "state": "fixed", "confirm": True})
+    svc.execute({"action": "tls-record", "device": "usb", "item": "mbedtls-lib", "state": "installed", "confirm": True})
+    svc.execute({"action": "tls-record", "device": "usb", "item": "https-test", "state": "fail", "host": "example.com", "confirm": True})
+    state = svc.execute({"action": "tls-state", "device": "usb"})
+    assert {c["id"]: c["device"] for c in state["components"]}["mbedtls-lib"]["state"] == "installed-reported"
+    assert state["https"]["state"] == "fail" and state["https"]["source"] == "manual"
+
+
+def test_diagnostics_say_where_they_ran_and_use_the_manual_clock(tmp_path):
+    svc, _ = tls_service(tmp_path)
+    svc.tls.probe = lambda host: {"ok": True, "tls_version": "TLSv1.3", "cipher": "X",
+                                  "leaf": {"subject": "CN=" + host, "issuer": "CN=CA", "not_before": "Jan  1 00:00:00 2026 GMT",
+                                           "not_after": "Jan  1 00:00:00 2027 GMT"}}
+    ok = svc.execute({"action": "tls-diagnose", "host": "example.com", "phone_date": "2026-11-05"})
+    assert ok["server_probe"]["ran_on"] == "server" and ok["bridge_probe"]["status"] == "not-available"
+    assert ok["phone_test"]["ran_on"] == "phone" and ok["chain"]["status"] == "leaf-only"
+    assert ok["clock"]["source"] == "manual"
+    old = svc.execute({"action": "tls-diagnose", "host": "example.com", "phone_date": "2010-01-01"})
+    assert old["clock"]["verdict"] == "needs-action" and old["clock"]["certificate_window"] == "phone-date-outside"
+    with pytest.raises(ValueError):
+        svc.execute({"action": "tls-diagnose", "host": "localhost"})
+    with pytest.raises(ValueError):
+        svc.execute({"action": "tls-diagnose", "host": "example.com", "phone_date": "yesterday"})
+
+
+def test_probe_without_network_reports_offline_not_a_fake_success(tmp_path, monkeypatch):
+    import socket as _socket
+
+    from symport.revive import tls as T
+
+    def boom(*a, **k):
+        raise _socket.gaierror("no dns")
+
+    monkeypatch.setattr(T.socket, "getaddrinfo", boom)
+    assert T.default_probe("example.com") == {"ok": False, "error": "dns"}
+    monkeypatch.setattr(T.socket, "getaddrinfo", lambda *a, **k: [(0, 0, 0, "", ("127.0.0.1", 443))])
+    assert T.default_probe("example.com")["error"] == "non-public-address"

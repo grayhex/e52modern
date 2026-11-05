@@ -765,3 +765,57 @@ a.k-btn {
     grid-template-columns: 1fr;
   }
 }
+.rv-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+.rv-table-wrap {
+  overflow-x: auto;
+}
+.rv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.rv-table th,
+.rv-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--k-2);
+  border-bottom: 1px solid var(--nokia-border-subtle);
+}
+.rv-table th small {
+  display: block;
+  color: var(--nokia-muted);
+  font-weight: 400;
+}
+.rv-hash {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.rv-inline {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--k-1);
+  font-size: 13px;
+  margin-bottom: var(--k-2);
+}
+.rv-high-risk {
+  border: 1px solid var(--nokia-border);
+  border-left: 4px solid var(--nokia-warning, #c77700);
+  padding: var(--k-2) var(--k-3);
+  margin-top: var(--k-2);
+  border-radius: 4px;
+}
+.rv-kit > li {
+  margin-bottom: var(--k-3);
+}
+.rv-record-inline {
+  display: inline-flex;
+  gap: var(--k-2);
+  flex-wrap: wrap;
+}

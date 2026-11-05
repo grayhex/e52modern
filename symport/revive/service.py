@@ -47,6 +47,8 @@ class ReviveService:
         self.lock = threading.RLock()
         # Later stages plug in here (restore points, kit catalogues); absent means "not available".
         self.extensions: dict[str, object] = {}
+        from .tls import TlsRevival
+        self.tls = TlsRevival(self)
 
     # ---- storage ---------------------------------------------------------------------------
     def _key(self, row: dict) -> str:
@@ -126,6 +128,10 @@ class ReviveService:
                 'state': self._state, 'inspect': self._inspect, 'plan': self._plan,
                 'observe': self._observe, 'record': self._record, 'baseline': self._baseline,
                 'verify': self._verify,
+                'tls-state': lambda d: self.tls.state(d), 'tls-fetch': lambda d: self.tls.fetch(d),
+                'tls-import': lambda d: self.tls.import_file(d), 'tls-diagnose': lambda d: self.tls.diagnose(d),
+                'tls-kit': lambda d: self.tls.kit(d), 'tls-transfer': lambda d: self.tls.transfer(d),
+                'tls-record': lambda d: self.tls.record(d),
             }.get(action)
             if handler is None:
                 raise ValueError('Unknown Revive operation')

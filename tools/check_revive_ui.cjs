@@ -28,6 +28,7 @@ class Transport:
   raise ValueError('Synthetic read-only transport; no hardware')
 w=Workbench(root)
 w.devices.transport=Transport()
+w.revive.tls.probe=lambda host:{'ok':True,'tls_version':'TLSv1.3','cipher':'TEST','leaf':{'subject':'CN='+host,'issuer':'CN=Synthetic CA','not_before':'Jan  1 00:00:00 2026 GMT','not_after':'Jan  1 00:00:00 2030 GMT'}}
 s=ThreadingHTTPServer(('127.0.0.1',0),make_handler(w))
 print(s.server_port,flush=True)
 s.serve_forever()`;
@@ -90,6 +91,29 @@ const port = new Promise((resolve, reject) => {
       await page.close();
     }
 
+    // 2b. TLS revival: matrix, pinned components, diagnostics that say where they ran.
+    page = await open("en", 1366);
+    await page.locator("#revive-tls").waitFor();
+    assert.equal(await page.locator("#revive-tls tbody tr").count(), 5);
+    const qt = await page.locator('[data-target="nokia-n95"]').innerText();
+    assert(qt.includes("Not applicable") && qt.includes("not tested"), "matrix cells: " + qt);
+    const comp = page.locator('[data-component="ssl-patch"]');
+    await comp.waitFor();
+    assert((await comp.innerText()).includes("62365db422253e87b0328058e160ab03c3a3501e7eeae064596727307be9b416"));
+    assert(await comp.getByRole("button", { name: "Copy to phone" }).isDisabled(), "copy must need a verified file and confirmation");
+    await page.getByLabel("Date shown on the phone").fill("2010-01-01");
+    await page.getByRole("button", { name: "Run diagnostics" }).click();
+    const diag = page.getByTestId("tls-diagnose");
+    await diag.waitFor();
+    const diagText = await diag.innerText();
+    assert(diagText.includes("Ran on the SymPort server") && diagText.includes("outside the certificate validity window"), diagText);
+    assert(diagText.includes("Ran in the Windows Bridge") && diagText.includes("Not available"));
+    await page.getByLabel("Application type").selectOption("qt");
+    await page.locator('[data-support="not-applicable"]').waitFor();
+    assert(await overflow(page), "overflow in TLS section");
+    await page.screenshot({ path: path.join(shots, "tls-1366.png"), fullPage: true });
+    await page.close();
+
     // 3. Manual input stays separate and never raises identity to "ready"; mismatches are visible.
     fs.writeFileSync(identity, JSON.stringify({ model: "N95", rm: "RM-999" }));
     page = await open("en", 1366);
@@ -115,6 +139,11 @@ const port = new Promise((resolve, reject) => {
     await page.getByRole("button", { name: /Набор приложений/ }).click();
     await page.locator('[data-op="kit-transfer"]').waitFor();
     assert(await overflow(page), "overflow in Russian mobile");
+    await page.getByRole("button", { name: /Сеть и сертификаты/ }).click();
+    await page.getByRole("heading", { name: /Возрождение TLS/ }).waitFor();
+    await page.getByRole("button", { name: "Запустить диагностику" }).click();
+    await page.getByText("Выполнено на сервере SymPort").waitFor();
+    assert(await overflow(page), "overflow in Russian mobile TLS");
     assert.deepEqual(page.errors, []);
     await page.close();
     console.log("Revive UI check passed");

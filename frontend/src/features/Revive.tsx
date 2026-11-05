@@ -10,6 +10,7 @@ import {
   StatusIndicator,
   type Tone,
 } from '../components/kit';
+import ReviveTls from './ReviveTls';
 import {
   inspectSchema,
   planSchema,
@@ -621,6 +622,7 @@ export default function Revive() {
           </div>
         )}
       </SectionPanel>
+      {profile === 'network-certs' && <ReviveTls device={device} manual={manual} />}
     </>
   );
 }
