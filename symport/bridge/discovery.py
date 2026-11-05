@@ -44,7 +44,7 @@ def windows_nokia_volumes():
         return [], None
     # CIM associations tie each logical drive to its physical Nokia USB device.
     # Drive letters and Bluetooth names alone are never treated as phone identity.
-    script = """$ErrorActionPreference='Stop'; $items=@(); Get-CimInstance Win32_DiskDrive | Where-Object { $_.InterfaceType -eq 'USB' -and ($_.PNPDeviceID -match 'NOKIA|VID_0421' -or $_.Model -match 'Nokia') } | ForEach-Object { $disk=$_; Get-CimAssociatedInstance -InputObject $disk -Association Win32_DiskDriveToDiskPartition | ForEach-Object { Get-CimAssociatedInstance -InputObject $_ -Association Win32_LogicalDiskToPartition | Where-Object { $_.DriveType -eq 2 -and $_.DeviceID -ne $env:SystemDrive } | ForEach-Object { $items+=@{root=($_.DeviceID+'/');description=$disk.Model;identity=$disk.PNPDeviceID} } } }; ConvertTo-Json -InputObject @($items) -Compress"""
+    script = """$ErrorActionPreference='Stop'; $items=@(); Get-CimInstance Win32_DiskDrive | Where-Object { $_.InterfaceType -eq 'USB' -and ($_.PNPDeviceID -match 'NOKIA|VID_0421' -or $_.Model -match 'Nokia') } | ForEach-Object { $disk=$_; Get-CimAssociatedInstance -InputObject $disk -Association Win32_DiskDriveToDiskPartition | ForEach-Object { Get-CimAssociatedInstance -InputObject $_ -Association Win32_LogicalDiskToPartition | Where-Object { ($_.DriveType -eq 2 -or $_.DriveType -eq 3) -and $_.DeviceID -ne $env:SystemDrive } | ForEach-Object { $items+=@{root=($_.DeviceID+'/');description=$disk.Model;identity=$disk.PNPDeviceID} } } }; ConvertTo-Json -InputObject @($items) -Compress"""
     try:
         result = subprocess.run(
             ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -69,6 +69,7 @@ def windows_nokia_volumes():
             }
             for r in rows
             if isinstance(r, dict) and re.fullmatch("[D-Zd-z]:/", str(r.get("root", "")))
+            and str(r["root"])[:2].upper() != os.environ.get("SystemDrive", "C:").upper()
         ], None
     except (OSError, ValueError, subprocess.SubprocessError):
         return (

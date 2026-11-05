@@ -54,3 +54,12 @@
 Они описывают модель, не capabilities подключения. Обычное `N95` остаётся семейным
 профилем без toolchain_profile; варианты выбираются по суффиксу/RM. Геометрия иллюстраций
 и экранов общая для Python и React. Подробнее: [NOKIA_N95.md](NOKIA_N95.md).
+
+## N97 mini: отдельная модель и инструменты
+
+`nokia-n97-mini` имеет собственные aliases, `exact_aliases`, `screen_modes` и native platform UID.
+Наиболее специфичные имена распознаются раньше `N97`; неподтверждённые suffix/RM не угадываются.
+`image`/`artwork` равны null: показывается подписанная generic-иллюстрация.
+`theme_studio.status=unsupported` — свойство инструмента, не транспортная capability. Mini
+остаётся целью Inspector/каталога/наборов, но не входит в `theme_profiles()`; backend и worker
+не могут запустить для неё пайплайн S60 3rd. [Описание](NOKIA_N97_MINI.md).

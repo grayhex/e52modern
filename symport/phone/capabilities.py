@@ -80,7 +80,7 @@ INSTALL_REASON = (
     "SymPort never installs software. Copying a package proves nothing about installation; "
     "confirm it on the phone screen."
 )
-IDENTITY_FIELDS = ("id", "transport", "connection_kind", "manufacturer", "model", "rm", "firmware")
+IDENTITY_FIELDS = ("id", "transport", "connection_kind", "manufacturer", "model", "rm", "firmware", "usb_mode", "connection_identity")
 
 
 def now() -> str:

@@ -91,5 +91,6 @@ def platform_evidence(entry):
         for key, ids in {
             "s60-3rd-fp1": ("nokia-n95", "nokia-n95-8gb"),
             "s60-3rd-fp2": ("nokia-e52", "nokia-e72"),
+            "s60-5th": ("nokia-n97-mini",),
         }.items()
     }

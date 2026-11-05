@@ -8,13 +8,36 @@ import re
 
 def registry():
     from .models import catalog
-    return {p['id']:dict(p, selectable=p.get('selectable',bool(p.get('toolchain_profile'))),
-                         aliases=p.get('aliases',[p['model']]), rms=p.get('rms',[]),
-                         platform_uids=p.get('platform_uids',[])) for p in catalog()}
+
+    return {
+        p["id"]: dict(
+            p,
+            selectable=p.get("selectable", bool(p.get("toolchain_profile"))),
+            aliases=p.get("aliases", [p["model"]]),
+            rms=p.get("rms", []),
+            platform_uids=p.get("platform_uids", []),
+        )
+        for p in catalog()
+    }
 
 
 def selectable_profiles():
     return {key: copy.deepcopy(p) for key, p in registry().items() if p["selectable"]}
+
+
+def name_matches(value, alias, *, exact=False):
+    value = re.sub(r"\s*-\s*", "-", str(value or "").upper())
+    alias = re.escape(alias.upper()).replace(r"\ ", r"\s*")
+    suffix = r"(?![A-Z0-9-])" if exact else r"(?![A-Z0-9])"
+    return bool(re.search(r"(?<![A-Z0-9])" + alias + suffix, value))
+
+
+def theme_profiles():
+    return {
+        key: p
+        for key, p in selectable_profiles().items()
+        if p.get("theme_studio", {}).get("status") == "supported"
+    }
 
 
 def identify(value: str, *, rm=None, product_code=None):
@@ -27,13 +50,15 @@ def identify(value: str, *, rm=None, product_code=None):
     upper = value.upper()
     is_n95 = bool(re.search(r"(?<![A-Z0-9])N95(?![A-Z0-9])", upper))
     observed_rm = set(re.findall(r"\bRM-\d+\b", upper + " " + str(rm or "").upper()))
-    candidates = set()
-    for key, p in selectable_profiles().items():
+    candidates, names, codes = set(), set(), set()
+    for key, p in registry().items():
         for alias in p["aliases"]:
-            if re.search(r"(?<![A-Z0-9])" + re.escape(alias) + r"(?![A-Z0-9])", upper):
+            if name_matches(upper, alias, exact=p.get("exact_aliases", False)):
                 candidates.add(key)
+                names.add(key)
         if observed_rm.intersection(p["rms"]):
             candidates.add(key)
+            codes.add(key)
     n95_candidates = {c for c in candidates if c.startswith("nokia-n95")}
     # "N95" alone intentionally is not an alias for a physical variant.
     family = is_n95 or bool(n95_candidates)
@@ -42,7 +67,7 @@ def identify(value: str, *, rm=None, product_code=None):
         # An unknown RM on an identified N95 is conflicting evidence, not confirmation.
         if family and observed_rm and not observed_rm.issubset(set(registry()[key]["rms"])):
             key = "nokia-n95-family"
-    elif family:
+    elif family and all(c.startswith("nokia-n95") for c in candidates):
         key = "nokia-n95-family"
     else:
         return None
@@ -50,7 +75,13 @@ def identify(value: str, *, rm=None, product_code=None):
     result["profile_source"] = result["source"]
     result["source"] = "documented-model-profile"
     result["identity_basis"] = (
-        "ambiguous" if key == "nokia-n95-family" else "reported-model-and/or-rm"
+        "ambiguous"
+        if key == "nokia-n95-family"
+        else "reported-model-and-rm"
+        if key in names and key in codes
+        else "reported-rm"
+        if key in codes
+        else "reported-model"
     )
     result["variant_known"] = key != "nokia-n95-family"
     result["identity_note"] = (

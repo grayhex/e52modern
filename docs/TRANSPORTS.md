@@ -244,3 +244,15 @@ and explicit volume enrollment; model storage capacity never authorizes a host p
 Bridge ships the same registry and exercises it in the frozen executable self-test.
 **USB/Bluetooth/S60 applet, PIM writes and SIS/theme installation are not tested on N95 hardware.**
 See [model/RM sources and manual test plan](NOKIA_N95.md).
+
+## Nokia N97 mini / S60 5th
+
+Mini uses the existing Gammu USB/Bluetooth/S60 and OBEX adapters; it has no new protocol.
+Specific model-name normalization precedes `N97`. Host names remain candidates, and no RM-only
+mapping is shipped without a verified source. Windows USB/CIM discovery includes fixed as well as
+removable Nokia USB volumes, with system drives excluded. Native PIM stores still require separate
+read-only status probes. Config/USB-mode/BT-destination/mounted-root changes invalidate connection
+fingerprints; native PIM previews and observed write proofs cannot follow a changed connection.
+Both the internal mass memory and microSD must be observed/enrolled separately; neither exposes
+phone identity, `C:` or PIM automatically. **Mini hardware: not-tested.**
+[Connection matrix, limitations and physical test checklist](NOKIA_N97_MINI.md).

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import json
 import os
 import re
 import secrets
@@ -186,7 +187,7 @@ class ObexAdapter:
         return m
 
     def device(self) -> dict:
-        row = {
+        row = {"connection_identity": hashlib.sha256(json.dumps(self.profile,sort_keys=True).encode()).hexdigest(),
             "id": self.id,
             "name": self.profile["name"],
             "transport": self.profile["kind"],

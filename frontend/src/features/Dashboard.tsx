@@ -245,6 +245,8 @@ function Overview() {
               ? [
                   profile.symbian && `Symbian ${profile.symbian}`,
                   `S60 ${profile.s60}`,
+                  profile.input === 'touch-qwerty-slider' &&
+                    t('Touch · slide-out QWERTY', 'Сенсорный экран · выдвижная QWERTY'),
                   profile.screen &&
                     `${profile.screen.width}×${profile.screen.height} (${profile.screen.orientation === 'landscape' ? t('landscape', 'альбомная') : t('portrait', 'книжная')})`,
                 ]
@@ -287,6 +289,13 @@ function Overview() {
         />
       </SectionPanel>
 
+      {profile?.screen_modes && profile.screen_modes.length > 1 && (
+        <p className="k-note-line">
+          {t('Screen modes', 'Режимы экрана')}:{' '}
+          {profile.screen_modes.map((m) => `${m.width}×${m.height}`).join(' ↔ ')} ·{' '}
+          {t('landscape with keyboard open', 'альбомный при открытой клавиатуре')}
+        </p>
+      )}
       {metrics.length > 0 && (
         <div className="k-metrics">
           {metrics.map(({ key, ...m }) => (

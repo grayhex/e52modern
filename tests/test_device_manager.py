@@ -112,6 +112,8 @@ def test_gammu_identification_is_observed_not_invented(monkeypatch):
 
     from symport.phone.local import LocalTransports
     monkeypatch.setenv('SYMPORT_GAMMU_CONFIG', '/operator/gammurc')
+    # This exercises the CLI fallback, independently of an installed native binding.
+    monkeypatch.setattr('symport.phone.gammu_adapter.gammu_native.available', lambda: False)
     monkeypatch.setattr('symport.phone.gammu_adapter.subprocess.run', lambda *a, **kw:
                         SimpleNamespace(stdout='Model : Nokia E52 (RM-469)\nFirmware : 091.004\nIMEI : private'))
     device = LocalTransports().devices()[-1]

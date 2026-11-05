@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import os
 import re
+import secrets
 import subprocess
 from pathlib import Path
 
@@ -19,6 +22,21 @@ class GammuAdapter:
         self.personal = PersonalWorkspace(repo)
         self.scope_error = None
         self.probed = False
+        self._identity_key = secrets.token_bytes(32)
+        self._config_identity = None
+        self._phone_identity = None
+
+    def bind_config(self, config):
+        try:
+            contents = Path(config).read_bytes()
+        except OSError:
+            contents = b'config-unreadable'
+        identity = hmac.new(self._identity_key, str(config).encode() + b'\0' + contents, hashlib.sha256).hexdigest()
+        if self._config_identity != identity:
+            self.personal.snapshots.clear()
+            self.personal.plans.clear()
+            self._config_identity = identity
+        return identity
 
     def _matrix(self, device: dict, details: dict | None, identified: bool, native_error: bool):
         """Capabilities of this Gammu connection, from what actually answered.
@@ -103,7 +121,8 @@ class GammuAdapter:
     def device(self):
         config = self.config()
         if config:
-            device = {
+            connection_identity = self.bind_config(config)
+            device = {"connection_identity": connection_identity,
                 "id": self.id,
                 "transport": "gammu",
                 "connected": False,
@@ -166,6 +185,11 @@ class GammuAdapter:
                     device["evidence"] = (
                         "Gammu unavailable, configuration invalid or phone unreachable"
                     )
+            phone_identity = tuple(device.get(key) for key in ('connected','model','rm','firmware'))
+            if self._phone_identity != phone_identity:
+                self.personal.snapshots.clear()
+                self.personal.plans.clear()
+                self._phone_identity = phone_identity
             self.probed = True
             platform = documented_model(str(device.get("model") or ""))
             if platform:
@@ -208,6 +232,7 @@ class GammuAdapter:
         config = self.config()
         if not config:
             raise ValueError("Настройте Gammu на ПК с телефоном")
+        self.bind_config(config)
         if data["action"].startswith("personal-") or data["action"] in (
             "device-details",
             "device-imei",

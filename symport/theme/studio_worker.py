@@ -15,6 +15,10 @@ def main():
     resource.setrlimit(resource.RLIMIT_FSIZE, (32 * 1024**2, 32 * 1024**2))
     repo, project = Path(sys.argv[1]), Path(sys.argv[2])
     spec = json.loads((project / "project.json").read_text(encoding="utf-8"))
+    from symport.phone.registry import theme_profiles
+    allowed = theme_profiles()
+    if spec.get('profile') not in allowed:
+        raise ValueError('S60 5th theme processing is not supported')
     sys.path[:0] = [str(repo / "tools"), str(repo / "tools/s60")]
     import build_assets as ba
     import gen_skin
@@ -65,8 +69,7 @@ def main():
             else:
                 Image.open(targets[task["index"]]).save(project / "bitmap-preview.png", "PNG")
         return
-    from symport.phone.registry import registry
-    geometry = registry()[spec["profile"]]["screen"]
+    geometry = allowed[spec["profile"]]["screen"]
     width, height = geometry["width"], geometry["height"]
     work = project / "generated"
     assets = work / "theme/assets/light"
