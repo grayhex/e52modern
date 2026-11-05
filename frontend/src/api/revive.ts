@@ -615,3 +615,49 @@ export const settingsDownloadSchema = z.object({
   content: z.string(),
   warning: z.string(),
 });
+
+// ---- Verified Essentials ----
+export const essentialsListSchema = z.object({
+  profiles: z.array(
+    z.object({
+      id: z.string(),
+      title: bilingual,
+      models: z.array(z.string()),
+      apps: z.array(z.string()),
+    }),
+  ),
+  guide: z.object({ en: z.array(z.string()), ru: z.array(z.string()) }),
+  note: z.string(),
+});
+export const essentialsSchema = z.object({
+  profile: z.string(),
+  title: bilingual,
+  model: z.string(),
+  applicable: z.boolean(),
+  reason: z.string().optional(),
+  items: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      version: z.string().optional(),
+      licence: z.string().nullish(),
+      eligible: z.boolean(),
+      reasons: z.array(z.string()),
+      size: z.number().optional(),
+      network: z.string().optional(),
+      evidence: z
+        .object({
+          declared: z.string(),
+          model: z.string(),
+          hardware: z.string(),
+          installation: z.string(),
+        })
+        .passthrough()
+        .optional(),
+    }),
+  ),
+  eligible_ids: z.array(z.string()),
+  order: z.array(z.string()),
+  bytes: z.number(),
+  statement: z.string(),
+});

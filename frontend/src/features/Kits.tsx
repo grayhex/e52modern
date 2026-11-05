@@ -6,6 +6,7 @@ import { initialChoice } from '../utils/packages';
 import { useApi, usePreferences } from '../state/app';
 import { bundleSchema } from '../api/deps';
 import Collections from './Collections';
+import Essentials from './Essentials';
 import { payload } from '../api/workspace';
 import { Card, ErrorMessage } from '../components/ui';
 import { PackagePicker } from '../components/PackagePicker';
@@ -150,6 +151,7 @@ export default function Kits() {
           </p>
         </Card>
       )}
+      <Essentials />
       <Collections />
     </>
   );
