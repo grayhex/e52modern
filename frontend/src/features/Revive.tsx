@@ -10,7 +10,9 @@ import {
   StatusIndicator,
   type Tone,
 } from '../components/kit';
+import ReviveHome from './ReviveHome';
 import ReviveReborn from './ReviveReborn';
+import ReviveServices from './ReviveServices';
 import ReviveTls from './ReviveTls';
 import {
   inspectSchema,
@@ -516,6 +518,8 @@ export default function Revive() {
         )
       )}
 
+      <ReviveHome device={device} manual={manual} onOpen={setProfile} />
+
       <SectionPanel title={t('Preparation wizards', 'Мастера подготовки')}>
         <div
           className="rv-profiles"
@@ -625,6 +629,7 @@ export default function Revive() {
       </SectionPanel>
       {profile === 'network-certs' && <ReviveTls device={device} manual={manual} />}
       {profile === 'reborn-n95' && <ReviveReborn device={device} manual={manual} />}
+      {profile === 'legacy-services' && <ReviveServices device={device} manual={manual} />}
     </>
   );
 }

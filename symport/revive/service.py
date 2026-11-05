@@ -58,6 +58,8 @@ class ReviveService:
         self.tls.register_safety()
         from .reborn import RebornWizard
         self.reborn = RebornWizard(self)
+        from .services import LegacyServices
+        self.services = LegacyServices(self)
 
     # ---- storage ---------------------------------------------------------------------------
     def _key(self, row: dict) -> str:
@@ -137,6 +139,7 @@ class ReviveService:
                 'state': self._state, 'inspect': self._inspect, 'plan': self._plan,
                 'observe': self._observe, 'record': self._record, 'baseline': self._baseline,
                 'verify': self._verify,
+                'home': self._home,
                 'tls-state': lambda d: self.tls.state(d), 'tls-fetch': lambda d: self.tls.fetch(d),
                 'tls-import': lambda d: self.tls.import_file(d), 'tls-diagnose': lambda d: self.tls.diagnose(d),
                 'tls-kit': lambda d: self.tls.kit(d),
@@ -144,6 +147,8 @@ class ReviveService:
                 'reborn-state': lambda d: self.reborn.state(d), 'reborn-import': lambda d: self.reborn.import_file(d),
                 'reborn-pin': lambda d: self.reborn.pin(d), 'reborn-backup': lambda d: self.reborn.attest(d),
                 'reborn-stage': lambda d: self.reborn.stage(d),
+                'services-state': lambda d: self.services.state(d), 'services-diagnose': lambda d: self.services.diagnose(d),
+                'services-record': lambda d: self.services.record(d),
             }.get(action)
             if handler is None and isinstance(action, str) and action.startswith('safety-'):
                 handler = (lambda d, a=action: self.safety.execute(a, d)) if action in SAFETY_ACTIONS else None
@@ -226,6 +231,47 @@ class ReviveService:
         if row is None:
             raise ValueError('Select a connected phone first')
         return row, facts
+
+    def _home(self, data):
+        """Revive home: what is reachable for *this* phone, suggestions, one de-identified history."""
+        row, rows, facts = self._context(data)
+        saved = self._load('observations', facts['key']) if facts['key'] else {}
+        ev = C.evaluate(facts, 'network-certs')
+        prof = facts['identity']['profile']
+        recs = list(self.services.recommendations(facts))
+        tls = saved.get('tls', {})
+        if ev['identity']['status'] == 'ready' and not any(str(v.get('state', '')).startswith('installed') for k, v in tls.items() if k in ('mbedtls-lib', 'ssl-patch')):
+            recs.append({'id': 'current-tls-stack', 'area': 'network', 'title': {
+                'en': 'Current network components (TLS 1.2/1.3) — prepare, then install on the phone',
+                'ru': 'Актуальные сетевые компоненты (TLS 1.2/1.3) — подготовить и установить на телефоне'},
+                'basis': 'author documentation; not tested on your phone', 'action': 'network-certs'})
+        if ev['identity']['status'] == 'ready':
+            recs.append({'id': 'app-kits', 'area': 'apps', 'title': {
+                'en': 'Standard applications from verified kits', 'ru': 'Штатные приложения из проверенных наборов'},
+                'basis': 'catalog evidence levels; nothing is installed automatically', 'action': 'app-kit'})
+        evidence = [e for e in self.reborn.data['support_evidence'] if prof and e.get('profile') == prof['id']
+                    and e.get('firmware') == facts['observed'].get('firmware')]
+        if evidence:
+            recs.append({'id': 'reborn-hybrid', 'area': 'cfw', 'title': {'en': 'Reborn Hybrid kit (support evidence recorded)', 'ru': 'Набор Reborn Hybrid (есть запись о поддержке)'},
+                         'basis': 'support_evidence', 'action': 'reborn-n95'})
+        history = []
+        for key, entry in tls.items():
+            history.append({'at': entry.get('at'), 'kind': 'tls', 'item': key, 'result': entry.get('state'), 'source': entry.get('source', 'symport')})
+        for key, entry in saved.get('services', {}).items():
+            history.append({'at': entry.get('at'), 'kind': 'service-setting', 'item': key, 'result': entry.get('result'), 'source': 'manual'})
+        for key, entry in saved.get('reborn_stages', {}).items():
+            history.append({'at': entry.get('at'), 'kind': 'reborn', 'item': key, 'result': entry.get('result'), 'source': 'manual'})
+        for key, entry in saved.get('results', {}).items():
+            history.append({'at': entry.get('at'), 'kind': 'operation', 'item': key, 'result': entry.get('result'), 'source': 'manual'})
+        plans = self.safety.state({'device': (row or {}).get('id')})['plans'] if row else []
+        for plan in plans:
+            history.append({'at': plan['created'], 'kind': 'safety-plan', 'item': plan['scenario'], 'result': plan['status'], 'source': 'symport'})
+        history.sort(key=lambda h: h['at'] or '', reverse=True)
+        return {'device': (row or {}).get('id'), 'reason': None if row else ('no-connection' if not rows else 'device-not-selected'),
+                'profile': prof['id'] if prof else None,
+                'sections': [{'id': pid, 'available': pid in PROFILES} for pid in ('legacy-services', 'addons')],
+                'recommendations': recs, 'history': history[:60],
+                'statement': 'Suggestions only: nothing is installed, patched or marked fixed. History keeps what, when and the result; never setting values, messages or secrets.'}
 
     def _check_same_phone(self, plan: dict, row: dict) -> None:
         """Rollback keeps working after a firmware change but never on another phone."""

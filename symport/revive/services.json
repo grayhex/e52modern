@@ -1,0 +1,459 @@
+{
+  "schema": 1,
+  "reviewed": "2026-11-05",
+  "note": "Registry of old system endpoints. Nothing here is applied by SymPort: settings are changed by you on the phone. Belle (N8/E7) endpoints are never carried over to S60v3/S60v5 phones. A reachable URL from the server proves nothing about a Nokia phone.",
+  "allowed_probe_hosts": [
+    "avalibeyaz.com",
+    "symbuzzer.github.io",
+    "lite.duckduckgo.com",
+    "raw.githubusercontent.com"
+  ],
+  "services": [
+    {
+      "id": "reborn-conntest",
+      "title": {
+        "en": "Connection test URL",
+        "ru": "URL проверки соединения"
+      },
+      "category": "connectivity-check",
+      "description": "Connection test server URL used by the CFW.",
+      "origin": {
+        "kind": "reborncfw",
+        "repository": "https://github.com/symbuzzer/reborncfw",
+        "folder": "conntest",
+        "licence": "GPL-3.0 (repository LICENSE; third-party Nokia UAProf content carries its own notice)",
+        "reviewed": "2026-11-05"
+      },
+      "original_url": null,
+      "original_url_note": "The source does not state the original Nokia-era URL or host.",
+      "substitute": {
+        "entry": "https://symbuzzer.github.io/reborncfw/conntest/",
+        "mechanism": "html-meta-refresh",
+        "final_url": "https://avalibeyaz.com/s3/connecttest.php",
+        "final_host": "avalibeyaz.com",
+        "trust": "third-party-unverified",
+        "operated_by": "not stated by the source; repository collaborators can edit the live redirects"
+      },
+      "applies": {
+        "explicit_devices": [],
+        "note": "Target releases and devices are not stated by the source."
+      },
+      "apply_method": "not-available",
+      "requires": [
+        "tls-trust-on-phone",
+        "correct-clock"
+      ]
+    },
+    {
+      "id": "reborn-dummy",
+      "title": {
+        "en": "Dummy URL for end-of-life services",
+        "ru": "Заглушка для умерших сервисов"
+      },
+      "category": "dead-services",
+      "description": "Target for services that no longer exist. The live redirect names a host spelled avallibeyaz.com (double l), differing from avalibeyaz.com.",
+      "origin": {
+        "kind": "reborncfw",
+        "repository": "https://github.com/symbuzzer/reborncfw",
+        "folder": "dummy",
+        "licence": "GPL-3.0 (repository LICENSE; third-party Nokia UAProf content carries its own notice)",
+        "reviewed": "2026-11-05"
+      },
+      "original_url": null,
+      "original_url_note": "The source does not state the original Nokia-era URL or host.",
+      "substitute": {
+        "entry": "https://symbuzzer.github.io/reborncfw/dummy/",
+        "mechanism": "html-meta-refresh",
+        "final_url": "https://avallibeyaz.com/s3/dummy.php",
+        "final_host": "avallibeyaz.com",
+        "trust": "third-party-unverified",
+        "operated_by": "not stated by the source; repository collaborators can edit the live redirects"
+      },
+      "applies": {
+        "explicit_devices": [],
+        "note": "Target releases and devices are not stated by the source."
+      },
+      "apply_method": "not-available",
+      "requires": [
+        "tls-trust-on-phone",
+        "correct-clock"
+      ]
+    },
+    {
+      "id": "reborn-homepage",
+      "title": {
+        "en": "Browser homepage",
+        "ru": "Домашняя страница браузера"
+      },
+      "category": "homepage",
+      "description": "Homepage of the default browser; redirects to a third-party search site.",
+      "origin": {
+        "kind": "reborncfw",
+        "repository": "https://github.com/symbuzzer/reborncfw",
+        "folder": "homepage",
+        "licence": "GPL-3.0 (repository LICENSE; third-party Nokia UAProf content carries its own notice)",
+        "reviewed": "2026-11-05"
+      },
+      "original_url": null,
+      "original_url_note": "The source does not state the original Nokia-era URL or host.",
+      "substitute": {
+        "entry": "https://symbuzzer.github.io/reborncfw/homepage/",
+        "mechanism": "html-meta-refresh",
+        "final_url": "https://lite.duckduckgo.com",
+        "final_host": "lite.duckduckgo.com",
+        "trust": "third-party-unverified",
+        "operated_by": "not stated by the source; repository collaborators can edit the live redirects"
+      },
+      "applies": {
+        "explicit_devices": [],
+        "note": "Target releases and devices are not stated by the source."
+      },
+      "apply_method": "manual-setting",
+      "requires": [
+        "tls-trust-on-phone",
+        "correct-clock"
+      ]
+    },
+    {
+      "id": "reborn-store",
+      "title": {
+        "en": "Store widget URL",
+        "ru": "URL виджета магазина"
+      },
+      "category": "store",
+      "description": "Store widget of the Reborn CFW. Downloads from a third-party store are not a trusted distribution source.",
+      "origin": {
+        "kind": "reborncfw",
+        "repository": "https://github.com/symbuzzer/reborncfw",
+        "folder": "store",
+        "licence": "GPL-3.0 (repository LICENSE; third-party Nokia UAProf content carries its own notice)",
+        "reviewed": "2026-11-05"
+      },
+      "original_url": null,
+      "original_url_note": "The source does not state the original Nokia-era URL or host.",
+      "substitute": {
+        "entry": "https://symbuzzer.github.io/reborncfw/store/",
+        "mechanism": "html-meta-refresh",
+        "final_url": "https://avalibeyaz.com/s3/apps/index.php?for=reborn",
+        "final_host": "avalibeyaz.com",
+        "trust": "third-party-unverified",
+        "operated_by": "not stated by the source; repository collaborators can edit the live redirects"
+      },
+      "applies": {
+        "explicit_devices": [],
+        "note": "Target releases and devices are not stated by the source."
+      },
+      "apply_method": "not-available",
+      "requires": [
+        "tls-trust-on-phone",
+        "correct-clock"
+      ]
+    },
+    {
+      "id": "reborn-tts",
+      "title": {
+        "en": "Speech: download languages",
+        "ru": "Речь: загрузка языков"
+      },
+      "category": "tts",
+      "description": "URL of Settings > Phone > Speech > Download languages.",
+      "origin": {
+        "kind": "reborncfw",
+        "repository": "https://github.com/symbuzzer/reborncfw",
+        "folder": "tts",
+        "licence": "GPL-3.0 (repository LICENSE; third-party Nokia UAProf content carries its own notice)",
+        "reviewed": "2026-11-05"
+      },
+      "original_url": null,
+      "original_url_note": "The source does not state the original Nokia-era URL or host.",
+      "substitute": {
+        "entry": "https://symbuzzer.github.io/reborncfw/tts/",
+        "mechanism": "html-meta-refresh",
+        "final_url": "https://avalibeyaz.com/s3/TTS",
+        "final_host": "avalibeyaz.com",
+        "trust": "third-party-unverified",
+        "operated_by": "not stated by the source; repository collaborators can edit the live redirects"
+      },
+      "applies": {
+        "explicit_devices": [],
+        "note": "Target releases and devices are not stated by the source."
+      },
+      "apply_method": "not-available",
+      "requires": [
+        "tls-trust-on-phone",
+        "correct-clock"
+      ]
+    },
+    {
+      "id": "reborn-youtube",
+      "title": {
+        "en": "Third-party YouTube service (s60tube)",
+        "ru": "Сторонний сервис YouTube (s60tube)"
+      },
+      "category": "video",
+      "description": "Third-party video service in default bookmarks and the Videos app.",
+      "origin": {
+        "kind": "reborncfw",
+        "repository": "https://github.com/symbuzzer/reborncfw",
+        "folder": "y",
+        "licence": "GPL-3.0 (repository LICENSE; third-party Nokia UAProf content carries its own notice)",
+        "reviewed": "2026-11-05"
+      },
+      "original_url": null,
+      "original_url_note": "The source does not state the original Nokia-era URL or host.",
+      "substitute": {
+        "entry": "https://symbuzzer.github.io/reborncfw/y/",
+        "mechanism": "html-meta-refresh",
+        "final_url": "https://avalibeyaz.com/s3/reborntube/",
+        "final_host": "avalibeyaz.com",
+        "trust": "third-party-unverified",
+        "operated_by": "not stated by the source; repository collaborators can edit the live redirects"
+      },
+      "applies": {
+        "explicit_devices": [],
+        "note": "Target releases and devices are not stated by the source."
+      },
+      "apply_method": "not-available",
+      "requires": [
+        "tls-trust-on-phone",
+        "correct-clock"
+      ]
+    },
+    {
+      "id": "reborn-update-n8",
+      "title": {
+        "en": "Update checker widget (N8)",
+        "ru": "Виджет проверки обновлений (N8)"
+      },
+      "category": "update-check",
+      "description": "Update checker for the Nokia N8 CFW. The source file could not be read (HTTP 404 on master).",
+      "origin": {
+        "kind": "reborncfw",
+        "repository": "https://github.com/symbuzzer/reborncfw",
+        "folder": "update/N8",
+        "licence": "GPL-3.0 (repository LICENSE; third-party Nokia UAProf content carries its own notice)",
+        "reviewed": "2026-11-05"
+      },
+      "original_url": null,
+      "original_url_note": "The source does not state the original Nokia-era URL or host.",
+      "substitute": {
+        "entry": "https://symbuzzer.github.io/reborncfw/update/N8/",
+        "mechanism": "html-meta-refresh",
+        "final_url": null,
+        "final_host": null,
+        "trust": "third-party-unverified",
+        "operated_by": "not stated by the source; repository collaborators can edit the live redirects"
+      },
+      "applies": {
+        "explicit_devices": [
+          "Nokia N8-00"
+        ],
+        "note": "Device-specific widget of the N8 firmware."
+      },
+      "apply_method": "not-available",
+      "requires": [
+        "tls-trust-on-phone",
+        "correct-clock"
+      ]
+    },
+    {
+      "id": "reborn-update-e7",
+      "title": {
+        "en": "Update checker widget (E7)",
+        "ru": "Виджет проверки обновлений (E7)"
+      },
+      "category": "update-check",
+      "description": "Update checker for the Nokia E7 CFW. The source file could not be read (HTTP 404 on master).",
+      "origin": {
+        "kind": "reborncfw",
+        "repository": "https://github.com/symbuzzer/reborncfw",
+        "folder": "update/E7",
+        "licence": "GPL-3.0 (repository LICENSE; third-party Nokia UAProf content carries its own notice)",
+        "reviewed": "2026-11-05"
+      },
+      "original_url": null,
+      "original_url_note": "The source does not state the original Nokia-era URL or host.",
+      "substitute": {
+        "entry": "https://symbuzzer.github.io/reborncfw/update/E7/",
+        "mechanism": "html-meta-refresh",
+        "final_url": null,
+        "final_host": null,
+        "trust": "third-party-unverified",
+        "operated_by": "not stated by the source; repository collaborators can edit the live redirects"
+      },
+      "applies": {
+        "explicit_devices": [
+          "Nokia E7-00"
+        ],
+        "note": "Device-specific widget of the E7 firmware."
+      },
+      "apply_method": "not-available",
+      "requires": [
+        "tls-trust-on-phone",
+        "correct-clock"
+      ]
+    },
+    {
+      "id": "reborn-uaprof-n8",
+      "title": {
+        "en": "UAProf file (N8)",
+        "ru": "Файл UAProf (N8)"
+      },
+      "category": "uaprof",
+      "description": "UAProf XML for the Nokia N8-00 (Series60/5.2, OS 5.3).",
+      "origin": {
+        "kind": "reborncfw",
+        "repository": "https://github.com/symbuzzer/reborncfw",
+        "folder": "uaprof",
+        "licence": "GPL-3.0 (repository LICENSE; third-party Nokia UAProf content carries its own notice)",
+        "reviewed": "2026-11-05"
+      },
+      "original_url": null,
+      "original_url_note": "The source does not state the original Nokia-era URL or host.",
+      "substitute": {
+        "entry": "https://raw.githubusercontent.com/symbuzzer/reborncfw/refs/heads/main/uaprof/NN8-00r310-3G.xml",
+        "mechanism": "static-file",
+        "final_url": "https://raw.githubusercontent.com/symbuzzer/reborncfw/refs/heads/main/uaprof/NN8-00r310-3G.xml",
+        "final_host": "raw.githubusercontent.com",
+        "trust": "third-party-unverified",
+        "operated_by": "GitHub-hosted file in the Reborn services repository"
+      },
+      "applies": {
+        "explicit_devices": [
+          "Nokia N8-00"
+        ],
+        "note": "Describes a specific other device."
+      },
+      "apply_method": "not-available",
+      "requires": [
+        "tls-trust-on-phone",
+        "correct-clock"
+      ]
+    },
+    {
+      "id": "reborn-uaprof-e7",
+      "title": {
+        "en": "UAProf file (E7)",
+        "ru": "Файл UAProf (E7)"
+      },
+      "category": "uaprof",
+      "description": "UAProf XML for the Nokia E7-00 (Series60/5.2).",
+      "origin": {
+        "kind": "reborncfw",
+        "repository": "https://github.com/symbuzzer/reborncfw",
+        "folder": "uaprof",
+        "licence": "GPL-3.0 (repository LICENSE; third-party Nokia UAProf content carries its own notice)",
+        "reviewed": "2026-11-05"
+      },
+      "original_url": null,
+      "original_url_note": "The source does not state the original Nokia-era URL or host.",
+      "substitute": {
+        "entry": "https://raw.githubusercontent.com/symbuzzer/reborncfw/refs/heads/main/uaprof/NE7-00r310.xml",
+        "mechanism": "static-file",
+        "final_url": "https://raw.githubusercontent.com/symbuzzer/reborncfw/refs/heads/main/uaprof/NE7-00r310.xml",
+        "final_host": "raw.githubusercontent.com",
+        "trust": "third-party-unverified",
+        "operated_by": "GitHub-hosted file in the Reborn services repository"
+      },
+      "applies": {
+        "explicit_devices": [
+          "Nokia E7-00"
+        ],
+        "note": "Describes a specific other device."
+      },
+      "apply_method": "not-available",
+      "requires": [
+        "tls-trust-on-phone",
+        "correct-clock"
+      ]
+    },
+    {
+      "id": "maps",
+      "title": {
+        "en": "Maps / offline maps",
+        "ru": "Карты / офлайн-карты"
+      },
+      "category": "maps",
+      "description": "Catalog applications S60Maps and MahoMaps exist; their evidence levels come from the catalog, not from this matrix.",
+      "origin": {
+        "kind": "none",
+        "reviewed": null
+      },
+      "original_url": null,
+      "original_url_note": null,
+      "substitute": null,
+      "applies": {
+        "explicit_devices": [],
+        "note": "Catalog applications S60Maps and MahoMaps exist; their evidence levels come from the catalog, not from this matrix."
+      },
+      "apply_method": "not-available",
+      "requires": []
+    },
+    {
+      "id": "agps-supl",
+      "title": {
+        "en": "A-GPS / SUPL",
+        "ru": "A-GPS / SUPL"
+      },
+      "category": "positioning",
+      "description": "No source reviewed yet; a SUPL server setting and its availability are not confirmed.",
+      "origin": {
+        "kind": "none",
+        "reviewed": null
+      },
+      "original_url": null,
+      "original_url_note": null,
+      "substitute": null,
+      "applies": {
+        "explicit_devices": [],
+        "note": "No source reviewed yet; a SUPL server setting and its availability are not confirmed."
+      },
+      "apply_method": "not-available",
+      "requires": []
+    },
+    {
+      "id": "wlan-connectivity",
+      "title": {
+        "en": "WLAN connectivity check",
+        "ru": "Проверка WLAN-соединения"
+      },
+      "category": "connectivity-check",
+      "description": "No source reviewed for S60v3 behaviour.",
+      "origin": {
+        "kind": "none",
+        "reviewed": null
+      },
+      "original_url": null,
+      "original_url_note": null,
+      "substitute": null,
+      "applies": {
+        "explicit_devices": [],
+        "note": "No source reviewed for S60v3 behaviour."
+      },
+      "apply_method": "not-available",
+      "requires": []
+    },
+    {
+      "id": "browser-mail-radio",
+      "title": {
+        "en": "Browser, mail, internet radio",
+        "ru": "Браузер, почта, интернет-радио"
+      },
+      "category": "apps",
+      "description": "Depends on TLS support and on the individual service; see the Verified Essentials profiles.",
+      "origin": {
+        "kind": "none",
+        "reviewed": null
+      },
+      "original_url": null,
+      "original_url_note": null,
+      "substitute": null,
+      "applies": {
+        "explicit_devices": [],
+        "note": "Depends on TLS support and on the individual service; see the Verified Essentials profiles."
+      },
+      "apply_method": "not-available",
+      "requires": []
+    }
+  ]
+}
