@@ -78,3 +78,29 @@ symport phone calendar read --gammu-config ~/.gammurc                           
 Автотесты (`tests/test_phone_*.py`) выполняют все операции на реальных временных каталогах и с поддельным `gammu`: повреждённые и
 подменённые манифесты, небезопасные пути, symlink, нехватка места, конфликты, обрыв. **Ни одна операция не выполнялась с
 физическим E52.** Поведение настоящей карты (FAT32, имена, длинные пути, отключение посреди копирования) нужно проверить вручную.
+
+## Settings and databases (#36 addendum)
+
+*Backups → Settings and databases* is a capability-aware layer next to the file backups
+(implementation `symport/revive/settings_backup.py`, API `settings-*` in `/api/revive`).
+
+* **What can be exported** is decided by the connection matrix: contacts, calendar, tasks and
+  messages only when their read capability is *verified on this connection*. Notes and application
+  settings are `unavailable` (no permitted read API; needs the Device Agent, #38), profile settings
+  are `manual-only`, system databases are never copied into or out of protected paths.
+* **Consent.** Export needs your explicit confirmation that you own the phone.
+* **Manifest** `symport.settings-backup/1`: model/RM/firmware/transport/fingerprint, per category
+  status, count, SHA-256, size, completeness (`as-read-by-driver, not verified complete`) and import
+  schema. It contains no contact data, messages or secrets and is the shareable part. The payloads
+  live in a separate `0600` area; messages are marked sensitive; the ordinary journal and reports
+  never contain them. Accounts and tokens are not collected (`secrets: none-collected`).
+* **Archive.** Download/import as a ZIP; import validates the schema, every path, limits and the
+  hash of each payload and refuses damaged, tampered, unsupported-schema or unknown-category
+  archives. A modified stored payload is never restored.
+* **Restore** is a preview (diff and conflicts, nothing written) followed by writing **one store at
+  a time** through the existing read-back-verified personal-data writer, with a checkpoint. A backup
+  from another phone needs an extra acknowledgement; conflicts block. Levels: `exported`,
+  `restored-with-readback`, `manual-only`, `unavailable`; a write that cannot be read back is
+  `unverified`. Messages cannot be written back.
+* **Not promised:** a full phone backup, restoring firmware, applications or system databases, or a
+  rollback after a CFW installation. See [REVIVE.md](REVIVE.md).

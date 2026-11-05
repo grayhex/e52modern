@@ -564,3 +564,54 @@ export const addonPlanSchema = decisionSchema.extend({
   action: z.string(),
   dry_run: z.boolean(),
 });
+
+// ---- Settings and databases ----
+export const settingsStateSchema = z.object({
+  device: z.string().nullish(),
+  reason: z.string().nullish(),
+  categories: z.array(
+    z.object({
+      id: z.string(),
+      level: z.enum(['exportable', 'unverified', 'unavailable', 'manual-only']),
+      reason: bilingual,
+      sensitive: z.boolean(),
+      restore: z.boolean(),
+    }),
+  ),
+  backups: z.array(
+    z.object({
+      id: z.string(),
+      created: z.string(),
+      categories: z.record(
+        z.string(),
+        z.object({ status: z.string(), count: z.number(), sensitive: z.boolean() }),
+      ),
+      device: z.object({ model: z.string().nullish(), rm: z.string().nullish() }).passthrough(),
+    }),
+  ),
+  levels: z.array(z.string()),
+  statement: z.string(),
+});
+export const restorePreviewSchema = z.object({
+  backup: z.string(),
+  category: z.string(),
+  other_phone: z.boolean(),
+  snapshot: z.string(),
+  plan: z.string().nullish(),
+  changes: z.array(z.object({ operation: z.string() }).passthrough()),
+  conflicts: z.array(z.unknown()),
+  blocked: z.boolean(),
+  blocking: z.array(z.string()),
+  statement: z.string(),
+});
+export const restoreResultSchema = z.object({
+  level: z.string(),
+  statement: z.string(),
+  checkpoint: z.string().nullish(),
+});
+export const settingsDownloadSchema = z.object({
+  name: z.string(),
+  mime: z.string(),
+  content: z.string(),
+  warning: z.string(),
+});
