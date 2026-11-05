@@ -11,6 +11,7 @@ import {
   type Tone,
 } from '../components/kit';
 import ReviveAgent from './ReviveAgent';
+import ReviveAddons from './ReviveAddons';
 import ReviveHome from './ReviveHome';
 import ReviveReborn from './ReviveReborn';
 import ReviveServices from './ReviveServices';
@@ -632,6 +633,7 @@ export default function Revive() {
       {profile === 'reborn-n95' && <ReviveReborn device={device} manual={manual} />}
       {profile === 'legacy-services' && <ReviveServices device={device} manual={manual} />}
       {profile === 'post-check' && <ReviveAgent />}
+      {profile === 'addons' && <ReviveAddons device={device} manual={manual} />}
     </>
   );
 }

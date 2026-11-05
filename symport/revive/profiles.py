@@ -51,6 +51,15 @@ PROFILES: dict[str, dict] = {
         'targets': S60V3_TARGETS + CONFIRM_TARGETS,
         'operations': ['identify-device', 'services-matrix', 'endpoint-diagnose', 'service-setting'],
     },
+    'addons': {
+        'title': {'en': 'Add-ons and patches', 'ru': 'Дополнения и патчи'},
+        'summary': {
+            'en': 'Compatibility-gated add-ons and a read-only Patch Manager. System patches are closed by default.',
+            'ru': 'Дополнения с проверкой совместимости и Patch Manager только для чтения. Системные патчи закрыты по умолчанию.',
+        },
+        'targets': S60V3_TARGETS + CONFIRM_TARGETS,
+        'operations': ['identify-device', 'addon-plan', 'patch-inventory'],
+    },
     'post-check': {
         'title': {'en': 'Diagnostics after installation', 'ru': 'Диагностика после установки'},
         'summary': {
@@ -134,6 +143,18 @@ OPERATIONS: dict[str, dict] = {
         'restore_point': 'recommended',
         'note': {'en': 'SymPort never changes phone settings. Record the old value so it can be restored.',
                  'ru': 'SymPort не меняет настройки телефона. Запишите старое значение, чтобы вернуть его.'},
+    },
+    'addon-plan': {
+        'title': {'en': 'Plan an add-on (dry run)', 'ru': 'Спланировать дополнение (пробный прогон)'},
+        'risk': 'medium', 'execution': 'read-only', 'requires': ['identity'],
+        'source': {'kind': 'builtin', 'ref': 'addons.json (reviewed 2026-11-05)'},
+        'restore_point': 'recommended',
+    },
+    'patch-inventory': {
+        'title': {'en': 'Patch inventory (typed by you)', 'ru': 'Инвентарь патчей (вводится вами)'},
+        'risk': 'low', 'execution': 'manual-on-phone', 'requires': [],
+        'source': {'kind': 'manual', 'ref': 'ROMPatcher+ / patch list'},
+        'restore_point': 'not-needed',
     },
     'reread-device': {
         'title': {'en': 'Re-read the connection', 'ru': 'Перечитать подключение'},

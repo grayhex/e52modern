@@ -521,3 +521,73 @@ export const agentStateSchema = z.object({
   forbidden: z.array(z.string()),
   statement: z.string(),
 });
+// ---- Add-ons and Patch Manager ----
+const decisionSchema = z.object({
+  decision: z.enum(['blocked', 'manual-only', 'ready-to-prepare']),
+  blocks: z.array(z.object({ code: z.string(), text: bilingual })),
+  warnings: z.array(z.string()),
+  steps: z.array(bilingual),
+  rollback: bilingual,
+  statement: z.string(),
+});
+export const addonsStateSchema = z.object({
+  device: z.string().nullish(),
+  reason: z.string().nullish(),
+  categories: z.record(
+    z.string(),
+    z.object({ title: bilingual, closed_by_default: z.boolean(), open: z.boolean() }),
+  ),
+  addons: z.array(
+    z.object({
+      id: z.string(),
+      title: bilingual,
+      category: z.string(),
+      risk: z.enum(['low', 'medium', 'high']),
+      source: z.object({ author: z.string(), url: z.string() }),
+      licence: z.object({
+        spdx: z.string().nullish(),
+        url: z.string().nullish(),
+        status: z.string().optional(),
+      }),
+      version: z.string().nullish(),
+      version_confirmed: z.boolean(),
+      install: bilingual,
+      uninstall: bilingual,
+      mode: z.enum(['pinned-artifact', 'manual-only']),
+      decision: decisionSchema.nullish(),
+      levels: z.object({
+        downloaded: z.boolean(),
+        transferred: z.boolean(),
+        'user-confirmed-installed': z.boolean(),
+        'verified-on-device': z.string(),
+      }),
+      update_available: z.boolean(),
+    }),
+  ),
+  patches: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      source: z.string(),
+      state: z.string(),
+      autostart_via: z.string().nullish(),
+      risk: z.string(),
+      notes: z.string(),
+      recorded_for: z.object({
+        model: z.string().nullish(),
+        rm: z.string().nullish(),
+        firmware: z.string().nullish(),
+      }),
+    }),
+  ),
+  patch_warnings: z.array(
+    z.object({ code: z.string(), patch: z.string(), detail: z.string().optional() }),
+  ),
+  patch_manager: z.object({ agent_inventory: z.string(), writes: z.string(), note: z.string() }),
+  statement: z.string(),
+});
+export const addonPlanSchema = decisionSchema.extend({
+  addon: z.string(),
+  action: z.string(),
+  dry_run: z.boolean(),
+});

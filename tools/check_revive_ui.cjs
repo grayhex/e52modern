@@ -140,7 +140,8 @@ const port = new Promise((resolve, reject) => {
     await page.getByRole("button", { name: "Plan safe copy: MBedTLS", exact: true }).click();
     const plan = page.getByTestId("safety-plan");
     await plan.waitFor();
-    assert((await plan.innerText()).includes("SymPort-TLS/MBedTLS.sis"));
+    // The plan view loads after the plan exists; wait for its content instead of reading it at once.
+    await plan.getByText("SymPort-TLS/MBedTLS.sis").first().waitFor();
     const confirm = plan.getByLabel("I confirm this step");
     await confirm.check();
     await plan.getByRole("button", { name: "1. Take snapshot" }).click();
@@ -176,7 +177,6 @@ const port = new Promise((resolve, reject) => {
     await page.locator("#revive-home").waitFor();
     await page.getByTestId("home-recs").waitFor();
     assert((await page.getByTestId("home-recs").innerText()).includes("Basis"), "recommendations carry their basis");
-    assert(await page.locator('[data-shortcut="addons"]').isDisabled(), "add-ons shortcut is disabled until the feature exists");
     await page.locator('[data-shortcut="legacy-services"]').click();
     await page.locator("#revive-services").waitFor();
     const matrix = page.getByTestId("services-matrix");
@@ -196,6 +196,24 @@ const port = new Promise((resolve, reject) => {
     assert(await overflow(page), "overflow in services");
     await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
     await page.screenshot({ path: path.join(shots, "services-1366.png"), fullPage: true });
+    // Add-ons and Patch Manager.
+    await page.locator('[data-shortcut="addons"]').click();
+    await page.locator("#revive-addons").waitFor();
+    await page.locator('[data-addon="tls-mbedtls"][data-decision="ready-to-prepare"]').waitFor();
+    const rp = page.locator('[data-addon="rompatcher-debloated"]');
+    await rp.waitFor();
+    assert.equal(await rp.getAttribute("data-decision"), "blocked");
+    assert(await rp.locator('[data-block="licence-missing"]').count() === 1, "unlicensed add-on is blocked with a reason");
+    assert((await page.locator('[data-addon="tls-ssl-patch"]').innerText()).includes("closed"), "system patches start closed");
+    assert((await page.getByTestId("levels-tls-mbedtls").innerText()).includes("not available (no agent)"));
+    await page.getByLabel("Patch name").fill("Patch A");
+    await page.getByLabel(/Starts via/).fill("domainsrv");
+    await page.getByLabel("State you observed").selectOption("autostart");
+    await page.getByRole("button", { name: "Add to inventory" }).click();
+    await page.getByTestId("patch-list").getByText(/Patch A — autostart/).waitFor();
+    assert((await page.getByTestId("patch-note").innerText()).includes("No agent reads patches"));
+    await rp.getByRole("button", { name: "Dry run" }).click();
+    await page.getByTestId("plan-rompatcher-debloated").getByText(/autostart-conflict/).waitFor();
     await page.close();
 
     // 2c. Reborn wizard for an identified N95: import -> pin -> backup statement -> consents -> copy -> user-reported install.

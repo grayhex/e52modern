@@ -87,6 +87,18 @@ class SafetyNet:
         plan['events'].append({'at': now(), 'action': action, 'status': status, **extra})
         return self.save(plan)
 
+    def find_plans(self, device_id: str) -> list[dict]:
+        base = self.root / 'plans'
+        out = []
+        for path in base.glob('*.json') if base.is_dir() else []:
+            try:
+                plan = json.loads(path.read_text(encoding='utf-8'))
+            except (OSError, ValueError):
+                continue
+            if plan['device']['id'] == device_id:
+                out.append(plan)
+        return out
+
     # ---- helpers ---------------------------------------------------------------------------------
     @staticmethod
     def _binding(row: dict, key: str, items: list[dict]) -> dict:
