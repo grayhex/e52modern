@@ -144,7 +144,8 @@ const port = new Promise((resolve, reject) => {
     await page.getByRole("button", { name: "Plan safe copy: MBedTLS", exact: true }).click();
     const plan = page.getByTestId("safety-plan");
     await plan.waitFor();
-    assert((await plan.innerText()).includes("SymPort-TLS/MBedTLS.sis"));
+    // The plan view loads after the plan exists; wait for its content instead of reading it at once.
+    await plan.getByText("SymPort-TLS/MBedTLS.sis").first().waitFor();
     const confirm = plan.getByLabel("I confirm this step");
     await confirm.check();
     await plan.getByRole("button", { name: "1. Take snapshot" }).click();
