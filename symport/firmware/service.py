@@ -153,6 +153,35 @@ class FirmwareExplorer:
                     "note": None if imports is not None else "Imports are not available for this file (compressed image, ROM-resident image or not E32)."}
         if action == "compare":
             return self._compare(data)
+        if action == "cfw-sources":
+            from .cfw import load_sources
+            from .scanner import load_db
+            db = load_db()
+            return {**load_sources(), "advisories": {a["id"]: {k: a[k] for k in ("title", "published", "severity", "platform", "sources", "caveats")} for a in db["advisories"]},
+                    "db_version": db["db_version"],
+                    "containers": {"zip": "supported", "rpkg": "supported (read-only, v1)", "rom": "experimental core ROM reader",
+                                   "fpsx/vpl/rofs": "not decoded: no verified specification or sample; never assumed compatible"}}
+        if action in ("cfw-inventory", "cfw-scan"):
+            index = self.store.index(key)
+            path = self.store.source_path(key)
+            kind = index["source"]["kind"]
+
+            def read(entry):
+                return read_member(path, kind, entry)
+
+            if action == "cfw-inventory":
+                from .cfw import inventory
+                base = None
+                if data.get("baseline"):
+                    base = self.store.index(data["baseline"])["entries"]
+                return {"id": key, **inventory(index["entries"], read, base)}
+            from .scanner import scan
+            declared = data.get("declared") if isinstance(data.get("declared"), dict) else None
+            if declared:
+                declared = {k: str(declared.get(k, ""))[:80] for k in ("cfw", "model", "version")}
+            return {"id": key, "image": index["source"]["name"], **scan(index["entries"], read, declared)}
+        if action == "eka1-convert":
+            return self._eka1(data)
         if action == "profile":
             index = self.store.index(key)
             version = str(data.get("firmware_version") or "").strip()
@@ -168,6 +197,24 @@ class FirmwareExplorer:
                     "source": "firmware-explorer:" + index["source"]["sha256"], "dlls": dlls,
                     "note": "DLL names only; export ordinals are unknown, so ordinal-level compatibility stays unknown."}
         raise FirmwareError("Unknown firmware operation")
+
+    def _eka1(self, data: dict) -> dict:
+        import base64
+        import tempfile
+
+        from .eka1 import MAX_ROM, convert, report_json
+        try:
+            raw = base64.b64decode(data.get("content", ""), validate=True)
+        except (ValueError, TypeError) as exc:
+            raise FirmwareError("Damaged upload: not valid base64") from exc
+        if not raw or len(raw) > MAX_ROM:
+            raise FirmwareError("The ROM dump must be between 1 byte and 48 MiB")
+        with tempfile.TemporaryDirectory(prefix="eka1-") as tmp:
+            out = Path(tmp) / "out.rpkg"
+            report = convert(raw, out, str(data.get("name") or "rom.dmp"))
+            rpkg = out.read_bytes() if report["status"] == "converted" else b""
+        return {"report": report, "rpkg": base64.b64encode(rpkg).decode(), "rpkg_name": "eka1-converted.rpkg" if rpkg else None,
+                "report_name": "eka1-convert-report.json", "report_json": base64.b64encode(report_json(report)).decode()}
 
     def dll_names(self, key) -> tuple[set[str], str]:
         """DLL file names in an indexed image (used by dependency analysis as firmware data)."""

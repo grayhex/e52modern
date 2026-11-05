@@ -769,7 +769,7 @@ def make_handler(state: Workbench):
                 length = int(self.headers.get("Content-Length", "0"))
             except ValueError:
                 return self._json({"error": "Invalid length"}, 400)
-            if length <= 0 or length > ((64 * 1024 * 1024 * 4 // 3 + 4096) if self.path in ("/api/manager", "/api/bridge", "/api/lab", "/api/inspector", "/api/jailbreak", "/api/revive") else (LIMIT * 4 // 3 + 4096 if self.path in ("/api/library", "/api/contacts", "/api/theme-studio") else 512_000 if self.path in ("/api/media/export", "/api/catalog") else 12_000)):
+            if length <= 0 or length > ((64 * 1024 * 1024 * 4 // 3 + 4096) if self.path in ("/api/manager", "/api/bridge", "/api/lab", "/api/inspector", "/api/jailbreak", "/api/revive", "/api/firmware") else (LIMIT * 4 // 3 + 4096 if self.path in ("/api/library", "/api/contacts", "/api/theme-studio") else 512_000 if self.path in ("/api/media/export", "/api/catalog") else 12_000)):
                 return self._json({"error": "Invalid body size"}, 413)
             try:
                 body = json.loads(self.rfile.read(length))

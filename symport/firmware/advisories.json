@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "db_version": "2026-11-05.1",
+  "reviewed": "2026-11-05",
+  "note": "Advisories describe what a source *claims*. SymPort tests none of them on a phone and does not exploit anything. A pattern match is a lead; no match is not proof of safety.",
+  "advisories": [
+    {
+      "id": "CVE-2025-65885",
+      "title": "Delight CFW: startup scripts injected through a text file in the Data directory",
+      "cfw": "delight",
+      "published": "2025-12-26",
+      "assigner": "MITRE",
+      "cwe": "CWE-77 (assigned by the CISA ADP container)",
+      "severity": {
+        "cvss_v3_1": 5.1,
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",
+        "rating": "MEDIUM",
+        "scored_by": "CISA ADP",
+        "author_claim": "The researcher's write-up calls it critical; that wording is the author's, not the scored severity."
+      },
+      "sources": [
+        {
+          "label": "CVE JSON record (MITRE)",
+          "url": "https://cveawg.mitre.org/api/cve/CVE-2025-65885"
+        },
+        {
+          "label": "CVE.org record",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2025-65885"
+        },
+        {
+          "label": "Researcher write-up (author's claims, not verified by SymPort)",
+          "url": "https://gist.github.com/symbuzzer/3315e88adc2bba0b6cc66d192b49546d"
+        }
+      ],
+      "affected": [
+        {
+          "model": "Nokia 808",
+          "version": "Delight v1.8",
+          "source": "cve"
+        },
+        {
+          "model": "Nokia N8",
+          "version": "Delight v6.7",
+          "source": "cve"
+        },
+        {
+          "model": "Nokia E7",
+          "version": "Delight v1.3",
+          "source": "cve"
+        },
+        {
+          "model": "Nokia C7",
+          "version": "Delight v6.7",
+          "source": "cve"
+        },
+        {
+          "model": "Nokia 700",
+          "version": "Delight v1.2",
+          "source": "cve"
+        },
+        {
+          "model": "Nokia 701",
+          "version": "Delight v1.1",
+          "source": "cve"
+        },
+        {
+          "model": "Nokia 603",
+          "version": "Delight v1.0",
+          "source": "cve"
+        },
+        {
+          "model": "Nokia 500",
+          "version": "Delight v1.2",
+          "source": "cve"
+        },
+        {
+          "model": "Nokia E6",
+          "version": "Delight v1.0",
+          "source": "cve"
+        },
+        {
+          "model": "Nokia Oro",
+          "version": "Delight v1.0",
+          "source": "cve"
+        },
+        {
+          "model": "Vertu Constellation T",
+          "version": "Delight v1.0",
+          "source": "cve"
+        },
+        {
+          "model": "Nokia C6-01",
+          "version": "Delight v1.1",
+          "source": "write-up only (not in the CVE text)"
+        }
+      ],
+      "platform": "Symbian Belle custom firmware. Not S60 3rd Edition: this does not describe the E52, E72 or N95.",
+      "mechanism": "Claimed: a plain-text file in the user-writable data directory is read early at boot and its lines act as startup commands; no validation or user confirmation (author claim).",
+      "mitigation_claimed": [
+        "Author's write-up: delete the file from the data directory and avoid applications that create it.",
+        "Author's write-up: a permanent fix would read the file only from the Z: drive; the write-up says the developer declined."
+      ],
+      "caveats": [
+        "The CVE text names ':\\Data'; the write-up names 'E:\\Data'.",
+        "Affected versions are only in the CVE description text; the vendor field is 'n/a'.",
+        "The vendor page referenced by the CVE could not be read (bot verification)."
+      ],
+      "rules": [
+        "startup-txt-reference"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "startup-txt-reference",
+      "title": "Binary refers to the Delight startup text file",
+      "advisory": "CVE-2025-65885",
+      "status_on_match": "suspicious-pattern",
+      "strings": [
+        "Delight.txt"
+      ],
+      "reliability": "A string in a binary is a lead. It does not show that the file is read, executed or exploitable."
+    },
+    {
+      "id": "writable-path-text",
+      "title": "Binary refers to a text file in the data directory of a writable drive",
+      "advisory": null,
+      "status_on_match": "suspicious-pattern",
+      "regex": "[C-F]:\\\\Data\\\\[A-Za-z0-9_. -]{1,40}\\.txt",
+      "reliability": "Many programs name their own files. Review in context; this only highlights trust in a user-writable path."
+    },
+    {
+      "id": "domainsrv-reference",
+      "title": "Reference to domainsrv (an early-start server named in autostart claims)",
+      "advisory": null,
+      "status_on_match": "informational",
+      "strings": [
+        "domainsrv"
+      ],
+      "reliability": "The name appears in the standard system too; informational only."
+    }
+  ]
+}

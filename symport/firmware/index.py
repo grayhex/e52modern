@@ -12,6 +12,7 @@ from symport.analysis import e32
 
 from . import formats
 from .rom import RomError, RomImage
+from .rpkg import RpkgError, is_rpkg, read_entries
 
 SCHEMA = "symport.firmware/1"
 MAX_ENTRIES = 200_000
@@ -26,20 +27,24 @@ class FirmwareError(ValueError):
 
 
 def detect(path: Path) -> str:
-    """``zip`` or ``rom``; anything else is rejected with the reason."""
+    """``zip``, ``rpkg`` or ``rom``; anything else is rejected with the reason (never guessed)."""
     with open(path, "rb") as f:
-        head = f.read(8)
+        head = f.read(16)
         if head[:4] == b"PK\x03\x04":
             return "zip"
         if not head:
             raise FirmwareError("Empty file")
+        if is_rpkg(head):
+            return "rpkg"
         size = path.stat().st_size
         with mmap.mmap(f.fileno(), size, access=mmap.ACCESS_READ) as view:
             try:
                 RomImage(view)
             except RomError as exc:
-                raise FirmwareError("Unsupported firmware file: " + str(exc) + ". Upload a ZIP of an unpacked Z: tree or a raw core ROM "
-                                    "image. Nokia FPSX/VPL containers and ROFS images must be unpacked with a dedicated tool first.") from exc
+                raise FirmwareError("Unsupported firmware file: " + str(exc) + ". Supported: a ZIP of an unpacked Z: tree, an EKA2L1 RPKG v1 "
+                                    "or a raw core ROM image. Nokia FPSX/VPL containers and ROFS images are not decoded (no verified "
+                                    "specification or sample): unpack them with a dedicated tool first. A file is never assumed "
+                                    "compatible because of its extension.") from exc
     return "rom"
 
 
@@ -134,6 +139,21 @@ def build_index(path: Path, kind: str, name: str, progress=None) -> dict:
                     progress(i, len(names))
             if progress:
                 progress(len(names), len(names))
+    elif kind == "rpkg":
+        with open(path, "rb") as f, mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as view:
+            try:
+                header, found = read_entries(view)
+            except RpkgError as exc:
+                raise FirmwareError("RPKG file rejected: " + str(exc)) from exc
+            for i, (rpath, offset, size) in enumerate(sorted(found), 1):
+                clean = _clean(rpath)
+                if clean is None:
+                    skipped.append({"path": rpath[:200], "reason": "unsafe path"})
+                    continue
+                entries.append(_entry(clean, size, bytes(view[offset:offset + min(size, 64)]), lambda o=offset, s=size: bytes(view[o:o + s])))
+                if progress and i % 200 == 0:
+                    progress(i, len(found))
+            rom_info = {"version": f"{header['major']}.{header['minor']}.{header['build']}", "base": "n/a", "size": path.stat().st_size}
     else:
         with open(path, "rb") as f, mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as view:
             rom = RomImage(view)
@@ -162,6 +182,9 @@ def build_index(path: Path, kind: str, name: str, progress=None) -> dict:
     if kind == "rom":
         index["rom"] = rom_info
         index["limitations"].append("Core ROM reader is experimental and was verified only on synthetic images.")
+    if kind == "rpkg":
+        index["rpkg"] = rom_info
+        index["limitations"].append("RPKG is read as a container only: contents are indexed, nothing is booted or accepted by an emulator.")
     return index
 
 
@@ -192,6 +215,13 @@ def read_member(path: Path, kind: str, entry: dict) -> bytes:
                     with archive.open(info) as f:
                         return f.read(info.file_size + 1)[:info.file_size]
         raise FirmwareError("File not found in archive")
+    if kind == "rpkg":
+        with open(path, "rb") as f, mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as view:
+            _header, found = read_entries(view)
+            for rpath, offset, size in found:
+                if _clean(rpath) == rel:
+                    return bytes(view[offset:offset + size])
+        raise FirmwareError("File not found in RPKG")
     with open(path, "rb") as f, mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as view:
         rom = RomImage(view)
         for r, address, size in rom.entries():

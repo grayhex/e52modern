@@ -49,7 +49,7 @@ describe('route registry', () => {
       'Инструменты',
       'Разработка и эмуляция',
     ]);
-    expect(groups.map((g) => g.items.length)).toEqual([7, 5, 4, 6, 4]);
+    expect(groups.map((g) => g.items.length)).toEqual([7, 5, 4, 7, 4]);
     expect(new Set(allItems.map((i) => i.id)).size).toBe(allItems.length);
   });
   it('redirects every legacy URL to an existing page and keeps its query', () => {
