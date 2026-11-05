@@ -52,6 +52,7 @@ blob=sis(0xE0001234,'Synthetic MBedTLS')
 spec=dict(w.revive.tls.components['mbedtls-lib'],size=len(blob),sha256=hashlib.sha256(blob).hexdigest(),package={'uid':'0xe0001234','signed':False,'targets':[]})
 w.revive.tls.components=dict(w.revive.tls.components,**{'mbedtls-lib':spec})
 w.revive.execute({'action':'tls-import','name':'MBedTLS.sis','content':base64.b64encode(blob).decode()})
+w.revive.services.probe=lambda url,hosts:{'ok':True,'status':200,'location':None,'meta_refresh':'https://avalibeyaz.com/s3/connecttest.php' if 'conntest' in url else None}
 w.revive.tls.probe=lambda host:{'ok':True,'tls_version':'TLSv1.3','cipher':'TEST','leaf':{'subject':'CN='+host,'issuer':'CN=Synthetic CA','not_before':'Jan  1 00:00:00 2026 GMT','not_after':'Jan  1 00:00:00 2030 GMT'}}
 s=ThreadingHTTPServer(('127.0.0.1',0),make_handler(w))
 print(s.server_port,flush=True)
@@ -168,6 +169,33 @@ const port = new Promise((resolve, reject) => {
     assert(await overflow(page), "overflow in TLS section");
     await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
     await page.screenshot({ path: path.join(shots, "tls-1366.png"), fullPage: true });
+    await page.close();
+
+    // 2b2. Revive home and legacy services (server probe is replaced by a synthetic one in the fixture).
+    page = await open("en", 1366);
+    await page.locator("#revive-home").waitFor();
+    await page.getByTestId("home-recs").waitFor();
+    assert((await page.getByTestId("home-recs").innerText()).includes("Basis"), "recommendations carry their basis");
+    assert(await page.locator('[data-shortcut="addons"]').isDisabled(), "add-ons shortcut is disabled until the feature exists");
+    await page.locator('[data-shortcut="legacy-services"]').click();
+    await page.locator("#revive-services").waitFor();
+    const matrix = page.getByTestId("services-matrix");
+    await matrix.waitFor();
+    assert.equal(await matrix.locator("tbody tr").count(), 14);
+    const uaprof = await page.locator('[data-service="reborn-uaprof-n8"]').innerText();
+    assert(uaprof.includes("Not supported") && uaprof.includes("Belle"), uaprof);
+    assert(!(await matrix.innerText()).includes("Available"), "nothing is marked available without evidence");
+    await page.getByRole("button", { name: /Check substitute hosts/ }).click();
+    await page.getByTestId("services-diag").waitFor();
+    await page.locator('[data-diag="reborn-conntest"]').getByText("matches-registry").waitFor();
+    await page.getByLabel("I changed this setting myself on the phone").check();
+    await page.getByLabel("Value before").fill("https://old.example/");
+    await page.getByLabel("Value after").fill("https://lite.duckduckgo.com");
+    await page.getByRole("button", { name: "Record", exact: true }).click();
+    await page.getByTestId("services-records").getByText(/Set the value back to: https:\/\/old.example\//).waitFor();
+    assert(await overflow(page), "overflow in services");
+    await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
+    await page.screenshot({ path: path.join(shots, "services-1366.png"), fullPage: true });
     await page.close();
 
     // 2c. Reborn wizard for an identified N95: import -> pin -> backup statement -> consents -> copy -> user-reported install.

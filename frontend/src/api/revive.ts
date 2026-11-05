@@ -406,3 +406,90 @@ export const rebornStageSchema = z.object({
   stages: z.record(z.string(), z.object({ result: z.string() }).passthrough()),
   success: z.string(),
 });
+
+// ---- Revive home + legacy services ----
+export const homeSchema = z.object({
+  device: z.string().nullish(),
+  reason: z.string().nullish(),
+  profile: z.string().nullish(),
+  sections: z.array(z.object({ id: z.string(), available: z.boolean() })),
+  recommendations: z.array(
+    z.object({
+      id: z.string(),
+      area: z.string(),
+      title: bilingual,
+      basis: z.string(),
+      action: z.string(),
+    }),
+  ),
+  history: z.array(
+    z.object({
+      at: z.string().nullish(),
+      kind: z.string(),
+      item: z.string(),
+      result: z.string().nullish(),
+      source: z.string(),
+    }),
+  ),
+  statement: z.string(),
+});
+const serviceStatus = z.enum([
+  'available',
+  'manual-setup-required',
+  'not-confirmed',
+  'unsupported',
+]);
+export const servicesStateSchema = z.object({
+  device: z.string().nullish(),
+  reason: z.string().nullish(),
+  profile: z.string().nullish(),
+  services: z.array(
+    z.object({
+      id: z.string(),
+      title: bilingual,
+      category: z.string(),
+      description: z.string(),
+      original_url: z.string().nullish(),
+      original_url_note: z.string().nullish(),
+      apply_method: z.string(),
+      host_probeable: z.boolean(),
+      origin: z.object({ kind: z.string() }).passthrough(),
+      substitute: z
+        .object({
+          entry: z.string().nullish(),
+          final_url: z.string().nullish(),
+          trust: z.string(),
+          mechanism: z.string(),
+        })
+        .passthrough()
+        .nullish(),
+      record: z
+        .object({ result: z.string(), at: z.string(), restore: bilingual })
+        .passthrough()
+        .nullish(),
+    }),
+  ),
+  matrix: z.array(
+    z.object({
+      target: z.string(),
+      name: z.string(),
+      services: z.record(z.string(), z.object({ status: serviceStatus, reason: bilingual })),
+    }),
+  ),
+  bridge: z.object({ status: z.string(), requirements: z.array(z.string()), note: z.string() }),
+  statement: z.string(),
+});
+export const servicesDiagnoseSchema = z.object({
+  ran_on: z.string(),
+  results: z.array(
+    z
+      .object({
+        id: z.string(),
+        status: z.string(),
+        reason: z.string().optional(),
+        live_target: z.string().nullish(),
+      })
+      .passthrough(),
+  ),
+  statement: z.string(),
+});

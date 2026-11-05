@@ -42,6 +42,15 @@ PROFILES: dict[str, dict] = {
         'targets': ('nokia-n95', 'nokia-n95-8gb'),
         'operations': ['identify-device', 'space-check', 'rights-check'],
     },
+    'legacy-services': {
+        'title': {'en': 'Restore services', 'ru': 'Восстановить сервисы'},
+        'summary': {
+            'en': 'Old system endpoints, what replaces them and what is proven. Read-only; settings are changed by you.',
+            'ru': 'Старые системные адреса, чем они заменяются и что подтверждено. Только чтение; настройки меняете вы.',
+        },
+        'targets': S60V3_TARGETS + CONFIRM_TARGETS,
+        'operations': ['identify-device', 'services-matrix', 'endpoint-diagnose', 'service-setting'],
+    },
     'post-check': {
         'title': {'en': 'Diagnostics after installation', 'ru': 'Диагностика после установки'},
         'summary': {
@@ -103,6 +112,28 @@ OPERATIONS: dict[str, dict] = {
         'restore_point': 'not-needed',
         'note': {'en': 'Rights cannot be read through a file transport; this is your observation, not a device fact.',
                  'ru': 'Права нельзя прочитать через файловый транспорт; это ваше наблюдение, а не факт устройства.'},
+    },
+    'services-matrix': {
+        'title': {'en': 'Service matrix for this model', 'ru': 'Матрица сервисов для этой модели'},
+        'risk': 'low', 'execution': 'read-only', 'requires': ['identity'],
+        'source': {'kind': 'builtin', 'ref': 'services.json (reviewed 2026-11-05)'},
+        'restore_point': 'not-needed',
+    },
+    'endpoint-diagnose': {
+        'title': {'en': 'Check substitute hosts (from the server)', 'ru': 'Проверить хосты-заменители (с сервера)'},
+        'risk': 'low', 'execution': 'read-only', 'requires': [],
+        'source': {'kind': 'builtin', 'ref': 'allow-listed hosts only'},
+        'restore_point': 'not-needed',
+        'note': {'en': 'Runs on the SymPort server; it does not prove a Nokia phone can open the URL.',
+                 'ru': 'Выполняется на сервере SymPort; не доказывает, что Nokia сможет открыть адрес.'},
+    },
+    'service-setting': {
+        'title': {'en': 'Change a setting on the phone and record before/after', 'ru': 'Изменить настройку на телефоне и записать до/после'},
+        'risk': 'medium', 'execution': 'manual-on-phone', 'requires': ['identity'],
+        'source': {'kind': 'manual', 'ref': 'phone settings'},
+        'restore_point': 'recommended',
+        'note': {'en': 'SymPort never changes phone settings. Record the old value so it can be restored.',
+                 'ru': 'SymPort не меняет настройки телефона. Запишите старое значение, чтобы вернуть его.'},
     },
     'reread-device': {
         'title': {'en': 'Re-read the connection', 'ru': 'Перечитать подключение'},

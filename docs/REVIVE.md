@@ -190,3 +190,40 @@ is separate and not claimed. No proprietary binaries are stored in the repositor
 * After installation you record, per item, calls/SMS, file manager, Wi-Fi, HTTPS on the phone,
   alternative links and app launch/uninstall. They are stored as `user-reported` evidence and never
   turn into an installation claim by themselves.
+
+## Revive home and Restore services (#33 addendum, #37)
+
+**Home.** Shortcuts to *Restore services* and *Add-ons and patches* (disabled while the feature is
+not in the build), suggestions for the model identified *from the device* (network components,
+service endpoints, verified application kits) and one history for the phone. Suggestions are never
+actions: nothing is installed, patched or marked fixed. A Reborn-hybrid suggestion appears only when
+`support_evidence` holds a record for the exact model and firmware, which today it never does. The
+history keeps *what / when / result / source* — never setting values, messages or secrets.
+
+**Services registry** (`symport/revive/services.json`, reviewed 2026-11-05). Source: the public
+[symbuzzer/reborncfw](https://github.com/symbuzzer/reborncfw) repository (GPL-3.0; the two Nokia
+UAProf files carry Nokia's own notice). It is a set of **meta-refresh redirects**, not the firmware's
+source: `conntest`, `dummy`, `homepage`, `store`, `tts`, `y` (s60tube), `update/N8`, `update/E7`
+and two UAProf XML files. The source never states the original Nokia URL (`original_url: null`);
+`update/N8` and `update/E7` could not be read (HTTP 404), so they have no target; the `dummy`
+redirect names a host spelled `avallibeyaz.com` (double *l*) that SymPort never contacts. The
+redirects point at a third-party server whose collaborators can edit them: trust is
+`third-party-unverified` and none of it is promoted to a trusted distribution source.
+
+**Statuses per model** (E52, E72, N95, N95 8GB, N97 mini): `available` is never assigned without
+evidence; `manual-setup-required` (the browser homepage is a user setting), `not-confirmed` (the
+source does not state applicability) and `unsupported`. The N8/E7 update widgets and UAProf files
+are `unsupported` on every S60 model: Belle endpoints are not carried over. Maps, A-GPS/SUPL, WLAN
+connectivity check, browser/mail/radio are listed with no reviewed source, so `not-confirmed`.
+
+**Diagnostics** run **on the SymPort server** with certificate verification, only against an
+allow-list of hosts, with redirects not followed; they compare the live meta-refresh target with the
+registry (`matches-registry` / `drifted` / `no-redirect-found` / `unreachable`). They state that
+they prove nothing about what a Nokia phone can open (its clock, certificates and TLS decide).
+
+**Your settings.** SymPort never changes a phone setting. You record the value before and after and
+the result of your test on the phone; credentials/tokens in values are refused; the record is
+bound to the connection and shows how to put the old value back.
+
+**Self-hosted bridge:** not implemented (`status: not-implemented`). Any future bridge needs an
+allow-list, no open proxy, authentication, SSRF protection and no credential forwarding.
