@@ -92,6 +92,46 @@ def wait_job(service, key):
     pytest.fail("Catalog batch did not finish")
 
 
+def test_job_poll_waits_for_the_current_catalog_update(tmp_path):
+    import threading
+
+    from symport.catalog.service import AppCatalog, save
+
+    catalog_fixture(tmp_path)
+    service = AppCatalog(tmp_path, None)
+    key = "a" * 24
+    path = service.root / "jobs" / (key + ".json")
+    save(path, {"state": "running"})
+    updating, release, reading, done = (threading.Event() for _ in range(4))
+    result = []
+
+    def update():
+        with service.lock:
+            updating.set()
+            assert release.wait(5)
+            save(path, {"state": "done"})
+
+    def poll():
+        reading.set()
+        result.append(service.job(key))
+        done.set()
+
+    writer = threading.Thread(target=update)
+    reader = threading.Thread(target=poll)
+    writer.start()
+    try:
+        assert updating.wait(2)
+        reader.start()
+        assert reading.wait(2)
+        assert not done.wait(0.05)
+    finally:
+        release.set()
+        writer.join(5)
+        if reader.ident is not None:
+            reader.join(5)
+    assert done.is_set() and result == [{"state": "done"}]
+
+
 def test_curated_catalog_has_30_traceable_entries():
     catalog = Catalog(Path(__file__).resolve().parents[1] / "catalog")
     assert len(catalog.entries) >= 30

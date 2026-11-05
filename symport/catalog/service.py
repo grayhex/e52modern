@@ -113,7 +113,9 @@ class AppCatalog:
     def job(self, key: str) -> dict:
         if not isinstance(key, str) or len(key) != 24 or any(c not in 'abcdef0123456789' for c in key):
             raise ValueError('Invalid job ID')
-        return json.loads((self.root / 'jobs' / (key + '.json')).read_text(encoding="utf-8"))
+        # Readers share the writer lock: Windows can deny an open while replace() is in flight.
+        with self.lock:
+            return json.loads((self.root / 'jobs' / (key + '.json')).read_text(encoding="utf-8"))
 
     def _run(self, job: dict, request: dict):
         path = self.root / 'jobs' / (job['id'] + '.json')

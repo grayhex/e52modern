@@ -28,7 +28,7 @@ jobs:
           [System.Management.Automation.Language.Parser]::ParseFile("$PWD/tools/install.ps1", [ref]$null, [ref]$errors) | Out-Null
           if ($errors.Count) { throw ($errors | Out-String) }
       - name: Windows adapter and security tests
-        run: python -m pytest tests/test_windows_bridge.py tests/test_transports.py tests/test_bridge_update.py tests/test_first_connection.py tests/test_n95.py tests/test_n97_mini.py
+        run: python -m pytest tests/test_windows_bridge.py tests/test_transports.py tests/test_bridge_update.py tests/test_first_connection.py tests/test_n95.py tests/test_n97_mini.py tests/test_catalog.py::test_job_poll_waits_for_the_current_catalog_update
       - name: Build and execute real portable EXE
         run: python tools/windows/build_bridge.py
       - name: Assemble source and license notices
