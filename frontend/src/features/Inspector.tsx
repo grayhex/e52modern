@@ -1,3 +1,4 @@
+import { GenericPhone } from '../components/kit';
 import { ModelProfileSelect } from '../components/ModelProfileSelect';
 import { deviceProfiles } from '../components/deviceProfiles';
 import type { Target } from '../components/targets';
@@ -109,13 +110,21 @@ export default function Inspector() {
             <input value={path} onChange={(e) => setPath(e.target.value)} />
           </Field>
           <ModelProfileSelect target={target} onTarget={setTarget} />
-          {targetArtwork && (
+          {targetArtwork?.image ? (
             <img
               src={targetArtwork.image}
               alt={target.model}
               style={{ height: 110, width: 70, objectFit: 'contain' }}
             />
-          )}
+          ) : targetArtwork ? (
+            <div style={{ width: 70 }}>
+              <GenericPhone
+                width={70}
+                height={128}
+                label={t('Generic phone illustration', 'Обобщённая иллюстрация телефона')}
+              />
+            </div>
+          ) : null}
           {Object.entries(target).map(([k, v]) => (
             <Field
               label={t(

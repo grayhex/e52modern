@@ -17,7 +17,7 @@ from pathlib import Path
 
 from symport.catalog.packages import validate_package
 from symport.catalog.service import save
-from symport.phone.registry import selectable_profiles
+from symport.phone.registry import selectable_profiles, theme_profiles
 from symport.sis.reader import extract, inspect
 from symport.sis.writer import SisDependency, SisFile, SisPackage, build
 from symport.theme.inspect import contrast
@@ -28,7 +28,7 @@ RESOURCE = re.compile(
     re.I,
 )
 
-PROFILES = {key:(p["screen"]["width"],p["screen"]["height"]) for key,p in selectable_profiles().items()}
+PROFILES = {key:(p["screen"]["width"],p["screen"]["height"]) for key,p in theme_profiles().items()}
 
 
 class ThemeStudio:
@@ -53,7 +53,14 @@ class ThemeStudio:
         folder = self.folder(key)
         if not (folder / "project.json").is_file():
             raise ValueError("Theme project not found")
-        return json.loads((folder / "project.json").read_text(encoding="utf-8"))
+        project = json.loads((folder / "project.json").read_text(encoding="utf-8"))
+        self.require_profile(project.get('profile'))
+        return project
+
+    @staticmethod
+    def require_profile(profile):
+        if not isinstance(profile,str) or profile not in PROFILES:
+            raise ValueError("Themes for this model/platform are not supported. S60 5th creation, import, preview and build are unavailable.")
 
     def store(self, project):
         project["updated"] = datetime.now(UTC).isoformat()
@@ -229,6 +236,7 @@ class ThemeStudio:
             if len(list(self.root.glob("*/project.json"))) >= 40:
                 raise ValueError("Maximum 40 theme projects; remove an unused project")
             profile, name = data.get("profile", "nokia-e52"), data.get("name", "SymPort Theme")
+            self.require_profile(profile)
             if (
                 profile not in PROFILES
                 or not isinstance(name, str)

@@ -19,15 +19,18 @@ from .contracts import LIMIT
 
 
 class MountedVolumes:
-    def __init__(self, roots: dict[str, str]):
+    def __init__(self, roots: dict[str, str], *, identities: dict[str, str] | None = None):
         self.roots = {k: Path(v).absolute() for k, v in roots.items()}
+        self.identities = dict(identities or {})
 
     def devices(self) -> list[dict]:
         result = []
         for key, root in self.roots.items():
             connected = root.is_dir() and not root.is_symlink()
             usage = shutil.disk_usage(root) if connected else None
-            row = {"id": key, "transport": "mounted-volume", "connected": connected,
+            stat = root.stat() if connected else None
+            root_identity = hashlib.sha256(str((str(root), stat.st_dev if stat else None, stat.st_ino if stat else None, self.identities.get(key))).encode()).hexdigest()
+            row = {"connection_identity": root_identity, "id": key, "transport": "mounted-volume", "connected": connected,
                    "model": None, "rm": None, "firmware": None, "battery": None,
                    "free": usage.free if usage else None,
                    "total": usage.total if usage else None,
@@ -43,7 +46,7 @@ class MountedVolumes:
         if not connected:
             return m.rest("error", "volume-probe", "The enrolled drive is not mounted or is a symlink")
         src = "mounted-volume"
-        mass = "Mass Storage exposes only the memory card filesystem"
+        mass = "Mass Storage exposes only the enrolled filesystem (internal mass memory or card)"
         try:
             names = sorted(os.listdir(root))
         except OSError:

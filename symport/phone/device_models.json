@@ -44,7 +44,15 @@
       "selectable": true,
       "target_model": "Nokia E52",
       "family": "Eseries",
-      "toolchain_profile": "nokia-e52"
+      "toolchain_profile": "nokia-e52",
+      "native_platform_uid": 270498145,
+      "theme_studio": {
+        "status": "supported",
+        "reason": {
+          "en": "Existing S60 3rd static theme pipeline",
+          "ru": "Существующий статический редактор тем S60 3rd"
+        }
+      }
     },
     {
       "id": "nokia-e72",
@@ -88,7 +96,15 @@
       "selectable": true,
       "target_model": "Nokia E72",
       "family": "Eseries",
-      "toolchain_profile": "nokia-e72"
+      "toolchain_profile": "nokia-e72",
+      "native_platform_uid": 270498145,
+      "theme_studio": {
+        "status": "supported",
+        "reason": {
+          "en": "Existing S60 3rd static theme pipeline",
+          "ru": "Существующий статический редактор тем S60 3rd"
+        }
+      }
     },
     {
       "id": "nokia-n95",
@@ -139,7 +155,15 @@
       "selectable": true,
       "target_model": "Nokia N95-1",
       "family": "Nseries",
-      "toolchain_profile": "nokia-n95"
+      "toolchain_profile": "nokia-n95",
+      "native_platform_uid": 270545598,
+      "theme_studio": {
+        "status": "supported",
+        "reason": {
+          "en": "Existing S60 3rd static theme pipeline",
+          "ru": "Существующий статический редактор тем S60 3rd"
+        }
+      }
     },
     {
       "id": "nokia-n95-8gb",
@@ -190,7 +214,15 @@
       "selectable": true,
       "target_model": "Nokia N95 8GB",
       "family": "Nseries",
-      "toolchain_profile": "nokia-n95-8gb"
+      "toolchain_profile": "nokia-n95-8gb",
+      "native_platform_uid": 270545598,
+      "theme_studio": {
+        "status": "supported",
+        "reason": {
+          "en": "Existing S60 3rd static theme pipeline",
+          "ru": "Существующий статический редактор тем S60 3rd"
+        }
+      }
     },
     {
       "id": "nokia-n95-family",
@@ -231,7 +263,71 @@
       "selectable": false,
       "target_model": "Nokia N95 (variant unknown)",
       "family": "Nseries",
-      "toolchain_profile": null
+      "toolchain_profile": null,
+      "native_platform_uid": 270545598,
+      "theme_studio": {
+        "status": "unsupported",
+        "reason": {
+          "en": "Select an exact device variant",
+          "ru": "Выберите точную модификацию"
+        }
+      }
+    },
+    {
+      "id": "nokia-n97-mini",
+      "model": "N97 MINI",
+      "name": "Nokia N97 mini",
+      "name_ru": "Nokia N97 mini",
+      "family": "Nseries",
+      "image": "/phones/nokia-n97-mini.png",
+      "artwork": null,
+      "screen": {
+        "width": 360,
+        "height": 640,
+        "orientation": "portrait"
+      },
+      "screen_modes": [
+        {
+          "width": 360,
+          "height": 640,
+          "orientation": "portrait"
+        },
+        {
+          "width": 640,
+          "height": 360,
+          "orientation": "landscape"
+        }
+      ],
+      "s60": "5th",
+      "symbian": "9.4",
+      "input": "touch-qwerty-slider",
+      "storage": "internal-8gb-and-removable-microsd-unmounted",
+      "platform_uids": [
+        271069535
+      ],
+      "native_platform_uid": 271069535,
+      "profile": "profiles/nokia-n97-mini.toml",
+      "toolchain_profile": "nokia-n97-mini",
+      "rms": [],
+      "aliases": [
+        "N97 mini",
+        "N97mini",
+        "N97 mini-1"
+      ],
+      "exact_aliases": true,
+      "source": "https://en.wikipedia.org/wiki/Nokia_N97_mini",
+      "fact_status": "documented",
+      "measured": false,
+      "hardware": "not-tested",
+      "selectable": true,
+      "target_model": "Nokia N97 mini",
+      "theme_studio": {
+        "status": "unsupported",
+        "reason": {
+          "en": "Themes for S60 5th Edition are not supported yet. This editor only builds S60 3rd resources.",
+          "ru": "Темы для S60 5th Edition пока не поддерживаются. Этот редактор собирает только ресурсы S60 3rd."
+        }
+      }
     }
   ]
 }

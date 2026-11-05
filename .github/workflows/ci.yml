@@ -136,6 +136,17 @@ jobs:
           from symport.sis.reader import inspect
           from symport.theme.studio import ThemeStudio
           assert identify("N95")["variant_known"] is False
+          assert identify("N97mini")["id"] == "nokia-n97-mini"
+          assert identify("N97") is None
+          with tempfile.TemporaryDirectory() as folder:
+              studio = ThemeStudio(Path(folder))
+              assert "nokia-n97-mini" not in studio.execute({"action":"list"})["profiles"]
+              try:
+                  studio.execute({"action":"create", "profile":"nokia-n97-mini", "name":"Blocked"})
+              except ValueError as error:
+                  assert "S60 5th" in str(error)
+              else:
+                  raise AssertionError("Mini theme creation must be blocked")
           assert identify("N95", rm="RM-320")["id"] == "nokia-n95-8gb"
           for key in ("nokia-n95", "nokia-n95-8gb"):
               with tempfile.TemporaryDirectory() as folder:

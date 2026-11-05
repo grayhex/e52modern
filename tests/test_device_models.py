@@ -12,7 +12,10 @@ def test_registry_ships_e52_and_e72_with_artwork_and_geometry():
     assert by_model["E72"]["screen"] == {"width": 320, "height": 240, "orientation": "landscape"}
     assert by_model["E72"]["symbian"] == "9.3" and by_model["E72"]["s60"] == "3rd FP2"
     for entry in by_model.values():
-        assert (models.REGISTRY_FILE.parents[1] / "web_assets" / entry["image"].lstrip("/")).is_file()
+        if entry['image']:
+            assert (models.REGISTRY_FILE.parents[1] / "web_assets" / entry["image"].lstrip("/")).is_file()
+        else:
+            assert entry['artwork'] is None
 
 
 def test_presentation_for_registered_models_is_unchanged():

@@ -14,6 +14,7 @@ describe('N95 model registry and previews', () => {
       'nokia-e72',
       'nokia-n95',
       'nokia-n95-8gb',
+      'nokia-n97-mini',
     ]);
     expect(profileById('nokia-n95')?.image).not.toBe(profileById('nokia-n95-8gb')?.image);
     expect(profileById('nokia-n95-family')?.selectable).toBe(false);
@@ -24,7 +25,7 @@ describe('N95 model registry and previews', () => {
     'puts the native portrait screen in the %s master',
     (id) => {
       const p = profileById(id);
-      if (!p) throw Error('Missing device profile');
+      if (!p?.artwork) throw Error('Missing device profile artwork');
       const { container } = render(
         <DeviceFrame profile={id}>
           <rect width="240" height="320" fill="white" />

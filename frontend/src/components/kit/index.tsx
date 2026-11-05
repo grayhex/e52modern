@@ -227,9 +227,24 @@ export function Skeleton({ lines = 3 }: { lines?: number }) {
 }
 
 /** Neutral S60 handset outline used when a model has no registered artwork (never a real photo). */
-export function GenericPhone({ label }: { label: string }) {
+export function GenericPhone({
+  label,
+  width,
+  height,
+}: {
+  label: string;
+  width?: number;
+  height?: number;
+}) {
   return (
-    <svg className="k-generic-phone" viewBox="0 0 120 220" role="img" aria-label={label}>
+    <svg
+      className="k-generic-phone"
+      width={width}
+      height={height}
+      viewBox="0 0 120 220"
+      role="img"
+      aria-label={label}
+    >
       <rect x="10" y="6" width="100" height="208" rx="14" className="k-phone-body" />
       <rect x="22" y="26" width="76" height="100" rx="4" className="k-phone-screen" />
       <circle cx="60" cy="150" r="10" className="k-phone-key" />

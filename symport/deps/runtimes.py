@@ -30,7 +30,7 @@ PLATFORMS: dict[int, dict] = {
 # Earlier 3rd Edition UIDs on later handsets are inferred from package practice; the device's
 # native documented product UID is marked separately. Firmware version constraints stay unknown.
 DEVICE_PLATFORMS = {
-    key: {uid: ("documented" if uid == (0x102032BE if p['symbian']=='9.2' else 0x101F7961) else "inferred") for uid in p['platform_uids']}
+    key: {uid: ("documented" if uid == p.get('native_platform_uid') else "inferred") for uid in p['platform_uids']}
     for key,p in registry().items()
 }
 

@@ -109,10 +109,14 @@ class Agent:
         profiles += self._auto_profiles
         roots = {**config.get("volumes", {}), **self._auto_roots}
         signature = hashlib.sha256(
-            json.dumps([config, profiles, roots], sort_keys=True).encode()
+            json.dumps([config, profiles, roots, self._volume_identities], sort_keys=True).encode()
         ).hexdigest()
         if signature != self._signature:
             with self.manager.lock:
+                for identifier in set(self._enrolled_identities) | set(self._volume_identities):
+                    if self._enrolled_identities.get(identifier) != self._volume_identities.get(identifier):
+                        self.manager.observed.proofs.pop(identifier, None)
+                        self.manager.rows.pop(identifier, None)
                 self.config = config
                 os.environ["SYMPORT_DEVICE_ROOTS"] = json.dumps(roots)
                 os.environ["SYMPORT_GAMMU_CONFIG"] = config.get("gammu_config", "")
@@ -123,7 +127,7 @@ class Agent:
                     json.dump({"schema": 1, "connections": profiles}, file)
                 temporary.replace(generated)
                 os.environ["SYMPORT_CONNECTIONS_FILE"] = str(generated)
-                self.manager.transport = LocalTransports(self.root)
+                self.manager.transport = LocalTransports(self.root, volume_identities=self._volume_identities)
                 self._enrolled_roots = dict(self._auto_roots)
                 self._enrolled_identities = dict(self._volume_identities)
                 self.server.origins = set(config.get("origins", []))
@@ -236,6 +240,8 @@ def self_test(report: Path | None):
     from .settings import protect, save_config
     assert identify("N95", rm="RM-320")["id"] == "nokia-n95-8gb"
     assert identify("N95")["variant_known"] is False
+    assert identify("Nokia N97mini")["id"] == "nokia-n97-mini"
+    assert identify("N97") is None
 
     with tempfile.TemporaryDirectory(prefix="symport-bridge-check-") as tmp:
         root = Path(tmp)

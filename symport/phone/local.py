@@ -13,9 +13,9 @@ from .obex import ObexAdapter
 
 
 class LocalTransports:
-    def __init__(self, repo: Path | None = None):
+    def __init__(self, repo: Path | None = None, *, volume_identities: dict[str, str] | None = None):
         repo = repo or Path.cwd()
-        self.files = MountedVolumes(json.loads(os.getenv("SYMPORT_DEVICE_ROOTS", "{}")))
+        self.files = MountedVolumes(json.loads(os.getenv("SYMPORT_DEVICE_ROOTS", "{}")), identities=volume_identities)
         self.gammu = GammuAdapter(repo, "gammu", lambda: os.getenv("SYMPORT_GAMMU_CONFIG"))
         self.adapters = {"gammu": self.gammu}
         self.configuration_error = None

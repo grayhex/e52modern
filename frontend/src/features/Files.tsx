@@ -4,7 +4,7 @@ import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useApi, usePreferences } from '../state/app';
-import { useDevices } from '../api/queries';
+import { useConnectionKey, useDevices } from '../api/queries';
 import {
   Card,
   CapabilityHint,
@@ -27,6 +27,12 @@ function join(path: string, name: string) {
   return [path.replace(/\/$/, ''), name].filter(Boolean).join('/');
 }
 export default function Files() {
+  const { device } = usePreferences();
+  const connection = useConnectionKey(device);
+  return <FileWorkspace key={`${device}:${connection}`} />;
+}
+
+function FileWorkspace() {
   const api = useApi();
   const queryClient = useQueryClient();
   const { t, device, setDevice } = usePreferences();

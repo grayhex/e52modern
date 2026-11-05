@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { useApi, usePreferences } from '../state/app';
-import { useDevices } from '../api/queries';
+import { useConnectionKey, useDevices } from '../api/queries';
 import { mediaSchema, payload, type MediaItem } from '../api/workspace';
 import { Card, CapabilityHint, DeviceSelect, ErrorMessage } from '../components/ui';
 import { Field, Modal } from '../components/workspace';
@@ -19,13 +19,14 @@ const url = (device: string, item: MediaItem, download = false) =>
   }).toString();
 export default function Media() {
   const { device, setDevice, t } = usePreferences();
+  const connection = useConnectionKey(device);
   return (
     <>
       <PageHeader title={t('Media Gallery', 'Медиагалерея')} />
       <Card>
         <DeviceSelect value={device} onChange={setDevice} />
       </Card>
-      <Gallery key={device} device={device} />
+      <Gallery key={`${device}:${connection}`} device={device} />
       <Transfer kind="media" />
     </>
   );

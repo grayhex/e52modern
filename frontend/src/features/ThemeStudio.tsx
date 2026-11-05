@@ -19,7 +19,9 @@ export default function ThemeStudio() {
     { t } = usePreferences(),
     [id, setId] = useState(''),
     [name, setName] = useState('My Nokia Theme'),
-    [pickedProfile, setProfile] = useState(''),
+    [pickedProfile, setProfile] = useState(
+      () => new URLSearchParams(location.hash.split('?')[1]).get('profile') ?? '',
+    ),
     profiles = useProfiles(),
     profile = pickedProfile || profiles[0]?.value || '',
     [variant, setVariant] = useState('light');
@@ -28,8 +30,19 @@ export default function ThemeStudio() {
     queryFn: ({ signal }) =>
       api.request('/api/theme-studio', { action: 'list' }, themeStudioSchema, signal),
   });
+  const selected = profiles.find((p) => p.value === profile)?.model;
+  const support = selected?.theme_studio;
+  const supported = support?.status !== 'unsupported' && Boolean(state.data?.profiles[profile]);
+  const reason =
+    support?.status === 'unsupported'
+      ? t(support.reason.en, support.reason.ru)
+      : t(
+          'Themes for this platform are not supported yet.',
+          'Темы для этой платформы пока не поддерживаются.',
+        );
   const create = useMutation({
     mutationFn: async (file?: File) => {
+      if (!supported) throw Error(reason);
       if (file && file.size > 8 * 1024 ** 2) throw Error(t('SIS limit: 8 MiB', 'Лимит SIS: 8 МиБ'));
       return api.request(
         '/api/theme-studio',
@@ -86,7 +99,7 @@ export default function ThemeStudio() {
         <div className="form-row">
           <button
             className="btn primary"
-            disabled={create.isPending || !name.trim()}
+            disabled={create.isPending || !name.trim() || !supported}
             onClick={() => create.mutate(undefined)}
           >
             {t('Create editable CLEAR theme', 'Создать редактируемую тему CLEAR')}
@@ -95,7 +108,7 @@ export default function ThemeStudio() {
             <input
               type="file"
               accept=".sis,.sisx"
-              disabled={create.isPending}
+              disabled={create.isPending || !supported}
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) create.mutate(f);
@@ -104,6 +117,11 @@ export default function ThemeStudio() {
             />
           </Field>
         </div>
+        {!supported && profile && (support?.status === 'unsupported' || state.isSuccess) && (
+          <p role="status" className="note">
+            <strong>{t('Not supported yet', 'Пока не поддерживается')}</strong> · {reason}
+          </p>
+        )}
         <p className="note">
           {t(
             'Palette, wallpaper and app-UID icons are editable in CLEAR projects. Imported SKN colour tables and SVG-T icons stay intact; supported MBM bitmaps and whole resources can be replaced. System layout is controlled by S60 firmware.',

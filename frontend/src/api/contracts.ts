@@ -9,6 +9,13 @@ export const capabilityStateSchema = z.object({
   evidence: z.string(),
   checked_at: z.string(),
 });
+const screenModesSchema = z.array(
+  z.object({ width: z.number(), height: z.number(), orientation: z.string() }),
+);
+const themeSupportSchema = z.object({
+  status: z.enum(['supported', 'unsupported']),
+  reason: z.object({ en: z.string(), ru: z.string() }),
+});
 export const deviceSchema = z.object({
   id: z.string(),
   name: maybeText,
@@ -51,6 +58,8 @@ export const deviceSchema = z.object({
       s60: z.string(),
       symbian: maybeText,
       input: maybeText,
+      screen_modes: screenModesSchema.optional(),
+      theme_studio: themeSupportSchema.optional(),
     })
     .nullish(),
   firmware_update: z
@@ -76,6 +85,8 @@ export const modelSchema = z.object({
   s60: z.string(),
   symbian: maybeText,
   toolchain_profile: maybeText,
+  screen_modes: screenModesSchema.optional(),
+  theme_studio: themeSupportSchema.optional(),
 });
 export type PhoneModel = z.infer<typeof modelSchema>;
 export const discoverySchema = z.object({

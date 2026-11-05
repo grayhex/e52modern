@@ -80,7 +80,7 @@ INSTALL_REASON = (
     "SymPort never installs software. Copying a package proves nothing about installation; "
     "confirm it on the phone screen."
 )
-IDENTITY_FIELDS = ("id", "transport", "connection_kind", "manufacturer", "model", "rm", "firmware")
+IDENTITY_FIELDS = ("id", "transport", "connection_kind", "manufacturer", "model", "rm", "firmware", "usb_mode", "connection_identity")
 
 
 def now() -> str:
@@ -90,8 +90,9 @@ def now() -> str:
 def fingerprint(row: dict) -> str:
     """Stable id of *this* connection to *this* phone; changes with model, firmware or link.
 
-    No IMEI/serial is used so it can appear in reports; a different phone of the same model on
-    the same profile is distinguished by the user switching connection, not by this value.
+    No raw IMEI/serial is used. Adapters may provide an opaque connection identity (including
+    session-salted native evidence) to distinguish same-model phones or replacement volumes.
+    Without such evidence, a model name alone cannot distinguish two identical handsets.
     """
     parts = [str(row.get(name) or "") for name in IDENTITY_FIELDS]
     return hashlib.sha256("\x1f".join(parts).encode()).hexdigest()[:16]
