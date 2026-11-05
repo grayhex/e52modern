@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { observeLocalization } from './fileBrowserLocale';
 import { FileBrowser, FileBrowserProvider } from '@harryy/react-file-browser';
 import { useApi, usePreferences } from '../state/app';
 import { createPhoneAdapter, toDevicePath, type PhoneFileCapabilities } from '../api/phoneFiles';
@@ -19,14 +20,20 @@ export default function PhoneFileBrowser({
   onPath: (path: string) => void;
 }) {
   const api = useApi();
-  const { t } = usePreferences();
+  const { t, language } = usePreferences();
+  const box = useRef<HTMLDivElement>(null);
+  // The library has English-only labels: localise them in Russian (names of files are never touched).
+  useEffect(() => {
+    const node = box.current;
+    return node && language === 'ru' ? observeLocalization(node) : undefined;
+  }, [language]);
   const adapter = useMemo(
     () => createPhoneAdapter(api, device, capabilities),
     [api, device, capabilities.upload, capabilities.mkdir, capabilities.delete], // eslint-disable-line react-hooks/exhaustive-deps
   );
   const writable = capabilities.upload || capabilities.mkdir || capabilities.delete;
   return (
-    <div className="phone-files">
+    <div className="phone-files" ref={box}>
       {/* storage:null keeps file names out of localStorage; transfers live in memory only. */}
       <FileBrowserProvider options={{ storage: null, maxConcurrentUploads: 2 }}>
         <FileBrowser

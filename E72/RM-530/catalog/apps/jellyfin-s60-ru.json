@@ -1,0 +1,74 @@
+{
+  "category": "multimedia",
+  "developer": "Hinduc0der",
+  "version": "0.3.22",
+  "release_date": "2026-10-15",
+  "release_tag": "v0.3.22",
+  "source_commit": "0fe6616bffc1b129b2214b31788b86c880e7ba5d",
+  "platforms": [
+    "Symbian 9.x",
+    "S60 3rd Edition FP1+",
+    "Qt 4.7.3"
+  ],
+  "format": "sis",
+  "homepage": "https://github.com/Hinduc0der/jellyfin-s60v3",
+  "license": "GPL-3.0",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/Hinduc0der/jellyfin-s60v3/releases/tag/v0.3.22",
+  "dependencies": [],
+  "network": "online",
+  "backend": "Нужен собственный сервер Jellyfin и отдельный companion рядом с ним (Python, Windows): он перекодирует видео и отдаёт RTSP; видео играет встроенный RealPlayer. Без companion телефону не к чему подключаться.",
+  "tls": "RTSP без TLS: токен передаётся в открытом виде (docs/02-network.md проекта). Использовать только в доверенной сети или через VPN.",
+  "signature": "SIS подписан самоподписанным сертификатом из набора Qt SDK («Qt Development Frameworks», Nokia); срок действия истёк 2019-10-03. SymPort не обходит проверки: установка может быть отклонена телефоном (см. Certificate Inspector; дату на телефоне не подменять).",
+  "compatibility": "untested",
+  "e52_evidence": null,
+  "compatibility_basis": "SIS объявляет S60 3rd Edition FP2 (0x102752AE), но требует Qt не ниже 4.7.3 (наличие на E52 не подтверждено), а сертификат просрочен. Статическая совместимость ≠ установка ≠ запуск; проект тестировался автором на Nokia E90.",
+  "sources": [
+    "https://github.com/Hinduc0der/jellyfin-s60v3",
+    "https://github.com/Hinduc0der/jellyfin-s60v3/releases/tag/v0.3.22"
+  ],
+  "checked_at": "2026-11-04",
+  "limitations": [
+    "Требуется среда выполнения Qt ≥ 4.7.3: SymPort её не поставляет и не может проверить её наличие на телефоне.",
+    "Нет субтитров и выбора звуковой дорожки; перемотка — удержанием джойстика в RealPlayer (документация проекта).",
+    "Сертификат пакета просрочен; установка на E52 не проверялась.",
+    "На физическом E52 не тестировалось (автор тестировал на E90)."
+  ],
+  "collection": [
+    "online"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Qt для Symbian ≥ 4.7.3 (объявлена в SIS как зависимость «Qt»; наличие на телефоне не проверено)",
+    "Сервер Jellyfin и companion (rtp_relay.py) в одной сети с телефоном",
+    "Встроенный RealPlayer"
+  ],
+  "runtime_requirements": [
+    {
+      "runtime": "qt",
+      "name": "Qt",
+      "min_version": "4.7.3",
+      "declared_in": "SIS controller (проверено SymPort)",
+      "status": "unverified"
+    }
+  ],
+  "guide": {
+    "title": "Jellyfin для S60: установка и настройка",
+    "steps": [
+      "Установите и запустите companion рядом с Jellyfin (Windows, Python без зависимостей): docs/01-server.md проекта.",
+      "Для доступа не из домашней сети настройте сеть и проброс портов по docs/02-network.md; токен идёт в RTSP-URL без шифрования.",
+      "Проверьте, что на телефоне есть Qt ≥ 4.7.3; SymPort Qt не поставляет. Неизвестное считайте непроверенным.",
+      "Передайте SIS на телефон (Приложения → Каталог → передача), откройте файл в диспетчере файлов и подтвердите установку на экране телефона.",
+      "При первом запуске введите адрес сервера host:port и подтвердите вход кодом Quick Connect в Jellyfin."
+    ],
+    "docs": "https://github.com/Hinduc0der/jellyfin-s60v3/tree/v0.3.22/docs"
+  },
+  "id": "jellyfin-s60-ru",
+  "name": "Jellyfin for S60 (RU)",
+  "description": "Клиент Jellyfin для телефонов S60 3rd Edition: библиотека, продолжение просмотра и музыка; видео отдаёт RTSP-companion. Русский интерфейс.",
+  "source_id": "jellyfin-s60-ru",
+  "conflicts_with": [
+    "jellyfin-s60-en"
+  ]
+}

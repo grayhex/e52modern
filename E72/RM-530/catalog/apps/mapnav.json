@@ -1,0 +1,58 @@
+{
+  "id": "mapnav",
+  "name": "MapNav",
+  "category": "maps",
+  "developer": "magdel",
+  "description": "GPS-навигация, компас, точки и локальные карты.",
+  "version": "4.8.18",
+  "release_date": "2018-09-04",
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.1"
+  ],
+  "format": "jar+jad",
+  "homepage": "https://github.com/magdel/MapNav",
+  "license": "MIT",
+  "redistribution": "manual-original-source-only",
+  "delivery": "manual",
+  "manual_url": "https://github.com/magdel/MapNav/releases/tag/4.8.18",
+  "dependencies": [],
+  "network": "mixed",
+  "backend": "Официальный релиз распространяется ZIP. Скачайте его, извлеките JAR/JAD и передайте через «Игры и ПО». Карты и службы GPS на E52 не тестировались.",
+  "tls": "Сетевой сервис не проверялся; используйте только доверенный backend.",
+  "signature": "Подпись и установка на E52 не проверены. Системные ограничения не обходятся.",
+  "compatibility": "likely-compatible",
+  "compatibility_basis": "Дистрибутив/профиль проверен по источнику; физический E52 не тестировался.",
+  "e52_evidence": null,
+  "sources": [
+    "https://github.com/magdel/MapNav",
+    "https://github.com/magdel/MapNav/releases/tag/4.8.18"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "mapnav",
+  "limitations": [
+    "Официальный релиз распространяется ZIP. Скачайте его, извлеките JAR/JAD и передайте через «Игры и ПО». Карты и службы GPS на E52 не тестировались.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": "Официальный релиз распространяется ZIP. Скачайте его, извлеките JAR/JAD и передайте через «Игры и ПО». Карты и службы GPS на E52 не тестировались.",
+  "requirements": [
+    "Официальный релиз распространяется ZIP. Скачайте его, извлеките JAR/JAD и передайте через «Игры и ПО». Карты и службы GPS на E52 не тестировались."
+  ],
+  "contained_packages": [
+    {
+      "name": "mapnav-midlet-4.8.18-me.jad",
+      "size": 1172,
+      "sha256": "87a6dd2da1810973ad4ce60cf1b86bc0787a4408f5ea03bc437c83a48b6452de",
+      "structure_checked": true
+    },
+    {
+      "name": "mapnav-midlet-4.8.18-me.jar",
+      "size": 404846,
+      "sha256": "44b6cf7bb96c1baa213e072acb9cd354b399369ca7e2d4e51899672fd27024c9",
+      "structure_checked": true
+    }
+  ]
+}

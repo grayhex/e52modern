@@ -1,0 +1,46 @@
+{
+  "id": "celeste",
+  "name": "Celeste Classic J2ME",
+  "category": "games",
+  "developer": "r58Playz",
+  "description": "Открытый порт Celeste Classic для Java ME с аппаратным управлением.",
+  "version": "1.0",
+  "release_date": "2025-02-10",
+  "release_tag": "v1.0",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.1"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/r58Playz/celeste-j2me",
+  "license": "GPL-3.0",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/r58Playz/celeste-j2me/releases/tag/v1.0",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Порт использует Cibyl. JAD не совпадает с JAR по идентичности; используется только JAR.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/r58Playz/celeste-j2me",
+    "https://github.com/r58Playz/celeste-j2me/releases/tag/v1.0"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "celeste",
+  "limitations": [
+    "Порт использует Cibyl. JAD не совпадает с JAR по идентичности; используется только JAR.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Порт использует Cibyl. JAD не совпадает с JAR по идентичности; используется только JAR."
+  ]
+}

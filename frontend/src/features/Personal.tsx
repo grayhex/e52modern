@@ -1,4 +1,5 @@
 import { encode } from '../utils/files';
+import { PageHeader } from '../components/kit';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -33,7 +34,7 @@ export default function Personal({ domain: initial }: { domain: Domain }) {
   const [domain, setDomain] = useState(initial);
   return (
     <>
-      <h1>{t(names[domain][0], names[domain][1])}</h1>
+      <PageHeader title={t(names[domain][0], names[domain][1])} />
       <Card>
         <div className="form-row">
           <DeviceSelect value={device} onChange={setDevice} />

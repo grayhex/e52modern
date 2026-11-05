@@ -1,0 +1,46 @@
+{
+  "id": "brainfuck",
+  "name": "Brainfuck Editor",
+  "category": "development",
+  "developer": "shinovon",
+  "description": "Мини-редактор и интерпретатор для офлайн-экспериментов с языком Brainfuck.",
+  "version": "0.3.1",
+  "release_date": "2023-07-06",
+  "release_tag": "0.3.2",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-1.0",
+    "CLDC-1.0"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/shinovon/BrainfuckJ2ME",
+  "license": "not-specified",
+  "redistribution": "not-reviewed; original-author download only",
+  "delivery": "manual",
+  "manual_url": "https://github.com/shinovon/BrainfuckJ2ME/releases/tag/0.3.2",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Среда обучения, не компилятор Symbian-приложений.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/shinovon/BrainfuckJ2ME",
+    "https://github.com/shinovon/BrainfuckJ2ME/releases/tag/0.3.2"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "brainfuck",
+  "limitations": [
+    "Среда обучения, не компилятор Symbian-приложений.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline"
+  ],
+  "delivery_reason": "Нет однозначной лицензии на автоматическое кэширование; получите пакет непосредственно у автора.",
+  "requirements": [
+    "Среда обучения, не компилятор Symbian-приложений."
+  ]
+}

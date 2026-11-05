@@ -532,3 +532,73 @@ a.k-btn {
     padding: var(--k-4);
   }
 }
+
+/* App catalog cards: compact, equal rhythm, provenance and compatibility as separate facts. */
+.catalog-grid {
+  display: grid;
+  gap: var(--k-3);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  align-items: stretch;
+}
+.catalog-app {
+  display: flex;
+  flex-direction: column;
+  gap: var(--k-2);
+  padding: var(--k-4);
+  min-width: 0;
+}
+.catalog-app-head {
+  display: flex;
+  align-items: center;
+  gap: var(--k-3);
+}
+.catalog-app-icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--nokia-radius-control);
+  border: 1px solid var(--nokia-brand-border);
+  font-weight: 700;
+  font-size: 13px;
+}
+.catalog-app-title {
+  flex: 1;
+  min-width: 0;
+}
+.catalog-app-title h3 {
+  margin: 0;
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.catalog-app .catalog-description {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 4.5em;
+}
+.catalog-app-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--k-2);
+  align-items: center;
+}
+.catalog-app-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--k-2) var(--k-4);
+  align-items: center;
+  margin-top: auto;
+  padding-top: var(--k-2);
+}
+.k-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

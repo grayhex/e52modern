@@ -1,4 +1,5 @@
 import { useProfiles } from '../api/queries';
+import { PageHeader } from '../components/kit';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi, usePreferences } from '../state/app';
@@ -48,7 +49,7 @@ export default function ThemeStudio() {
   });
   return (
     <>
-      <h1>{t('Advanced Theme Studio', 'Редактор тем')}</h1>
+      <PageHeader title={t('Advanced Theme Studio', 'Редактор тем')} />
       <Card>
         <div className="react-fields">
           <Field label={t('Project', 'Проект')}>

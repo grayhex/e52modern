@@ -1,4 +1,5 @@
 import { usePreferences } from '../state/app';
+import { PageHeader } from '../components/kit';
 import Telemetry from './Telemetry';
 import Workbench, { Updates } from './Workbench';
 
@@ -7,7 +8,7 @@ export default function Diagnostics() {
   const { t } = usePreferences();
   return (
     <>
-      <h1>{t('Device Diagnostics', 'Диагностика устройства')}</h1>
+      <PageHeader title={t('Device Diagnostics', 'Диагностика устройства')} />
       <Telemetry />
       <details>
         <summary>{t('Device test protocol', 'Протокол испытаний')}</summary>

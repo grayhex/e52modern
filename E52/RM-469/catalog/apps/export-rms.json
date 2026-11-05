@@ -1,0 +1,46 @@
+{
+  "id": "export-rms",
+  "name": "ExportRMS",
+  "category": "development",
+  "developer": "shinovon",
+  "description": "Экспорт RMS в пределах возможностей Java sandbox для диагностики MIDlet.",
+  "version": "1.0.0",
+  "release_date": "2025-10-15",
+  "release_tag": "v2.1.0",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.0"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/shinovon/ExportRMS",
+  "license": "not-specified",
+  "redistribution": "not-reviewed; original-author download only",
+  "delivery": "manual",
+  "manual_url": "https://github.com/shinovon/ExportRMS/releases/tag/v2.1.0",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Не является полной резервной копией телефона и не гарантирует доступ к данным других MIDlet.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/shinovon/ExportRMS",
+    "https://github.com/shinovon/ExportRMS/releases/tag/v2.1.0"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "export-rms",
+  "limitations": [
+    "Не является полной резервной копией телефона и не гарантирует доступ к данным других MIDlet.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline"
+  ],
+  "delivery_reason": "Нет однозначной лицензии на автоматическое кэширование; получите пакет непосредственно у автора.",
+  "requirements": [
+    "Не является полной резервной копией телефона и не гарантирует доступ к данным других MIDlet."
+  ]
+}

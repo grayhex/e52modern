@@ -1,4 +1,5 @@
 import { Download, Network, ShieldCheck } from 'lucide-react';
+import { PageHeader } from '../components/kit';
 import { useWorkspace } from '../hooks/useWorkspace';
 import { usePreferences } from '../state/app';
 import { packageLink } from '../utils/packages';
@@ -13,7 +14,7 @@ export default function Packages() {
   const library = workspace.data?.library ?? [];
   return (
     <>
-      <h1>{t('Installation packages', 'Установочные пакеты')}</h1>
+      <PageHeader title={t('Installation packages', 'Установочные пакеты')} />
       <ErrorMessage error={workspace.error} />
       <Card>
         <h2>{t('Built packages', 'Собранные пакеты')}</h2>

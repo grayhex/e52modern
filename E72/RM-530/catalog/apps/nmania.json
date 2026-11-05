@@ -1,0 +1,46 @@
+{
+  "id": "nmania",
+  "name": "nmania",
+  "category": "games",
+  "developer": "Feodor0090",
+  "description": "Ритм-игра для клавиатурных телефонов с загрузкой собственных карт.",
+  "version": "2.7.0",
+  "release_date": "2025-10-12",
+  "release_tag": "2.7.0",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.1"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/Feodor0090/nmania",
+  "license": "GPL-3.0",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/Feodor0090/nmania/releases/tag/2.7.0",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Карты и музыка приобретаются/копируются отдельно с разрешения правообладателей. Производительность зависит от VM.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/Feodor0090/nmania",
+    "https://github.com/Feodor0090/nmania/releases/tag/2.7.0"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "nmania",
+  "limitations": [
+    "Карты и музыка приобретаются/копируются отдельно с разрешения правообладателей. Производительность зависит от VM.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Карты и музыка приобретаются/копируются отдельно с разрешения правообладателей. Производительность зависит от VM."
+  ]
+}

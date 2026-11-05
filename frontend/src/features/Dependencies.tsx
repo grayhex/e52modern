@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '../components/kit';
 import { useMutation } from '@tanstack/react-query';
 import { encode } from '../utils/files';
 import { initialChoice } from '../utils/packages';
@@ -49,7 +50,7 @@ export default function Dependencies() {
   const report = analyze.data;
   return (
     <>
-      <h1>{t('Dependencies & compatibility', 'Зависимости и совместимость')}</h1>
+      <PageHeader title={t('Dependencies & compatibility', 'Зависимости и совместимость')} />
       <Card>
         <p className="note">
           {t(

@@ -1,0 +1,46 @@
+{
+  "id": "meshcore",
+  "name": "MeshCore J2ME",
+  "category": "communication",
+  "developer": "dobrishinov",
+  "description": "Клиент Companion Radio: сообщения, ретрансляторы и диагностика mesh-сети.",
+  "version": "1.0",
+  "release_date": "2026-05-08",
+  "release_tag": "v1.0.0",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.1",
+    "CLDC-1.1"
+  ],
+  "format": "jar+jad",
+  "homepage": "https://github.com/dobrishinov/MeshCore-J2ME",
+  "license": "GPL-3.0",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/dobrishinov/MeshCore-J2ME/releases/tag/v1.0.0",
+  "dependencies": [],
+  "network": "online",
+  "backend": "Требуются MeshCore Companion Radio и Wi-Fi TCP мост; это не автономная радиостанция.",
+  "tls": "Работа онлайн-сервиса и TLS на E52 не проверялась. Не передавайте учётные данные неизвестным прокси.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/dobrishinov/MeshCore-J2ME",
+    "https://github.com/dobrishinov/MeshCore-J2ME/releases/tag/v1.0.0"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "meshcore",
+  "limitations": [
+    "Требуются MeshCore Companion Radio и Wi-Fi TCP мост; это не автономная радиостанция.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Требуются MeshCore Companion Radio и Wi-Fi TCP мост; это не автономная радиостанция."
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "id": "passgen",
+  "name": "PassGen",
+  "category": "system",
+  "developer": "scadl",
+  "description": "Небольшой офлайн-генератор паролей для Java ME.",
+  "version": "1.0.0",
+  "release_date": "2019-03-24",
+  "release_tag": "1.0",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-1.0",
+    "CLDC-1.0"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/scadl/PassGen-J2ME",
+  "license": "MIT",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/scadl/PassGen-J2ME/releases/tag/1.0",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Криптографическая стойкость генератора не аудировалась. JAD имеет неверный размер; используется только JAR.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/scadl/PassGen-J2ME",
+    "https://github.com/scadl/PassGen-J2ME/releases/tag/1.0"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "passgen",
+  "limitations": [
+    "Криптографическая стойкость генератора не аудировалась. JAD имеет неверный размер; используется только JAR.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Криптографическая стойкость генератора не аудировалась. JAD имеет неверный размер; используется только JAR."
+  ]
+}

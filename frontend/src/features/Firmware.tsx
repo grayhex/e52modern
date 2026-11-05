@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '../components/kit';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronRight, File as FileIcon, Folder, Search, Trash2, Upload } from 'lucide-react';
 import { useApi, usePreferences } from '../state/app';
@@ -82,7 +83,7 @@ export default function Firmware() {
   });
   return (
     <>
-      <h1>Firmware &amp; ROM Explorer</h1>
+      <PageHeader title={'Firmware & ROM Explorer'} />
       <Card>
         <p className="note">
           {t(

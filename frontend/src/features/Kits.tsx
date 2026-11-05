@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '../components/kit';
 import { useMutation } from '@tanstack/react-query';
 import { encode } from '../utils/files';
 import { initialChoice } from '../utils/packages';
@@ -52,7 +53,7 @@ export default function Kits() {
   const kit = build.data;
   return (
     <>
-      <h1>{t('Application kits', 'Комплекты приложений')}</h1>
+      <PageHeader title={t('Application kits', 'Комплекты приложений')} />
       <Card>
         <h2>{t('Kit with required runtimes', 'Комплект с необходимыми runtime')}</h2>
         <p className="note">
