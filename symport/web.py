@@ -27,7 +27,6 @@ from symport.catalog import AppCatalog
 from symport.config import find_repo_root
 from symport.inspector import Inspector
 from symport.jailbreak import JailbreakManager
-from symport.revive import ReviveService
 from symport.lab import EmulatorLab
 from symport.library import ThemeLibrary
 from symport.phone import DeviceManager
@@ -36,6 +35,7 @@ from symport.phone.bridge_security import host_allowed
 from symport.phone.contacts import parse_export, vcards
 from symport.phone.contracts import LIMIT
 from symport.phone.media_downloads import MediaDownloads, byte_range
+from symport.revive import ReviveService
 
 ASSETS = Path(__file__).with_name("web_assets")
 NAMES = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")

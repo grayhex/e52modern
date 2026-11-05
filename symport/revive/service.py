@@ -93,7 +93,7 @@ class ReviveService:
     @staticmethod
     def present(facts: dict) -> dict:
         """Facts for display: each value tagged with its source, manual input kept separate."""
-        obs, ident, row = facts['observed'], facts['identity'], facts['row']
+        obs, ident = facts['observed'], facts['identity']
         prof = ident['profile']
 
         def fact(value, source, note=None):
