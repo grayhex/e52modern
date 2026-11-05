@@ -1,5 +1,6 @@
 import { useWorkspace } from '../hooks/useWorkspace';
 import { PageHeader } from '../components/kit';
+import SettingsBackup from './SettingsBackup';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { bytes } from '../utils/files';
 import { useState } from 'react';
@@ -230,6 +231,7 @@ export default function Backups() {
           {plan && <JsonReport value={plan} />}
         </Card>
       )}
+      <SettingsBackup device={device} />
       {confirm.dialog(async (action) => {
         if (typeof action === 'object') {
           await api.request(

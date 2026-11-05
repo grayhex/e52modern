@@ -62,6 +62,8 @@ class ReviveService:
         self.services = LegacyServices(self)
         from .addons import AddonManager
         self.addons = AddonManager(self)
+        from .settings_backup import SettingsBackup
+        self.settings = SettingsBackup(self)
 
     # ---- storage ---------------------------------------------------------------------------
     def _key(self, row: dict) -> str:
@@ -154,6 +156,10 @@ class ReviveService:
                 'addons-state': lambda d: self.addons.state(d), 'addons-plan': lambda d: self.addons.plan(d),
                 'addons-prepare': lambda d: self.addons.prepare(d), 'addons-open-category': lambda d: self.addons.open_category(d),
                 'addons-mark': lambda d: self.addons.mark(d), 'addons-verify-file': lambda d: self.addons.verify_file(d),
+                'settings-state': lambda d: self.settings.state(d), 'settings-export': lambda d: self.settings.export(d),
+                'settings-download': lambda d: self.settings.download(d), 'settings-import': lambda d: self.settings.import_archive(d),
+                'settings-delete': lambda d: self.settings.delete(d), 'settings-restore-preview': lambda d: self.settings.restore_preview(d),
+                'settings-restore-apply': lambda d: self.settings.restore_apply(d),
                 'patch-save': lambda d: self.addons.patch_save(d), 'patch-delete': lambda d: self.addons.patch_delete(d),
             }.get(action)
             if handler is None and isinstance(action, str) and action.startswith('safety-'):

@@ -26,7 +26,7 @@ class Transport:
   observed=json.loads((root/'identity.json').read_text())
   if observed is None: return []
   base=dict(id='test-phone',name=observed.get('model'),transport='windows-bridge',connection_kind='usb',connected=True,free=800*1024*1024,total=2*1024**3,**observed)
-  return [row(base,available=['identity.read','storage.read','files.list','files.download'],untested_writes=['files.upload','packages.transfer'])]
+  return [row(base,available=['identity.read','storage.read','files.list','files.download','contacts.read'],untested_writes=['files.upload','packages.transfer'])]
  def execute(self,data):
   a,p=data['action'],data.get('path','')
   if a=='mkdir': return {}
@@ -42,6 +42,10 @@ class Transport:
    return {'content':base64.b64encode(self.files[p]).decode()}
   if a=='delete':
    del self.files[p]; return {}
+  if a=='personal-read': return {'snapshot':'s'*32,'domain':data['domain'],'rows':[]}
+  if a=='personal-export': return {'content':base64.b64encode(json.dumps({'domain':'contacts','rows':[{'name':'Synthetic Person'}]}).encode()).decode(),'name':'x.json','mime':'application/json'}
+  if a=='personal-preview': return {'plan':'p'*32,'dry_run':True,'changes':[{'operation':'add','before':None,'after':r} for r in data['rows']],'conflicts':[],'skipped':0,'deletions':0}
+  if a=='personal-apply': return {'status':'verified-by-readback','verified':1,'requested':1,'backup':'c'*32}
   raise ValueError('Synthetic transport: '+a)
 w=Workbench(root)
 w.devices.transport=Transport()
@@ -214,6 +218,30 @@ const port = new Promise((resolve, reject) => {
     assert((await page.getByTestId("patch-note").innerText()).includes("No agent reads patches"));
     await rp.getByRole("button", { name: "Dry run" }).click();
     await page.getByTestId("plan-rompatcher-debloated").getByText(/autostart-conflict/).waitFor();
+    await page.close();
+
+    // 2b3. Settings and databases (Backups page).
+    page = await open("en", 1366, "#phone/backups");
+    await page.locator("#settings-backup").waitFor();
+    await page.getByLabel("Connection", { exact: true }).selectOption({ index: 1 });
+    const cats = page.getByTestId("settings-categories");
+    await cats.locator('[data-category="contacts"][data-level="exportable"]').waitFor();
+    assert.equal(await cats.locator('[data-category="notes"]').getAttribute("data-level"), "unavailable");
+    assert.equal(await cats.locator('[data-category="sms"]').getAttribute("data-level"), "unverified");
+    assert.equal(await cats.locator('[data-category="profiles"]').getAttribute("data-level"), "manual-only");
+    assert((await page.getByTestId("settings-statement").innerText()).includes("Not a backup of the phone"));
+    const exportButton = page.getByRole("button", { name: "Export selected" });
+    assert(await exportButton.isDisabled(), "export needs a selection and consent");
+    await cats.locator('[data-category="contacts"] input[type="checkbox"]').check();
+    await page.getByLabel(/I own this phone/).check();
+    await exportButton.click();
+    await page.getByTestId("settings-backups").locator("li").first().waitFor();
+    await page.getByRole("button", { name: /Preview restore: Contacts/ }).click();
+    await page.getByTestId("restore-preview").waitFor();
+    await page.getByLabel(/Write this one store/).check();
+    await page.getByRole("button", { name: "Restore", exact: true }).click();
+    await page.locator('[data-testid="restore-result"][data-level="restored-with-readback"]').waitFor();
+    assert(await overflow(page), "overflow in settings backup");
     await page.close();
 
     // 2c. Reborn wizard for an identified N95: import -> pin -> backup statement -> consents -> copy -> user-reported install.
