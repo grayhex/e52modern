@@ -64,6 +64,8 @@ class ReviveService:
         self.addons = AddonManager(self)
         from .settings_backup import SettingsBackup
         self.settings = SettingsBackup(self)
+        from .media_prep import MediaPrep
+        self.media = MediaPrep(self)
 
     # ---- storage ---------------------------------------------------------------------------
     def _key(self, row: dict) -> str:
@@ -160,6 +162,10 @@ class ReviveService:
                 'settings-download': lambda d: self.settings.download(d), 'settings-import': lambda d: self.settings.import_archive(d),
                 'settings-delete': lambda d: self.settings.delete(d), 'settings-restore-preview': lambda d: self.settings.restore_preview(d),
                 'settings-restore-apply': lambda d: self.settings.restore_apply(d),
+                'media-presets': lambda d: self.media.presets(d), 'media-upload': lambda d: self.media.upload(d),
+                'media-convert': lambda d: self.media.convert(d), 'media-job': lambda d: self.media.view(d.get('job')),
+                'media-export': lambda d: self.media.export(d), 'media-discard': lambda d: self.media.discard(d),
+                'media-record': lambda d: self.media.record(d),
                 'patch-save': lambda d: self.addons.patch_save(d), 'patch-delete': lambda d: self.addons.patch_delete(d),
             }.get(action)
             if handler is None and isinstance(action, str) and action.startswith('safety-'):

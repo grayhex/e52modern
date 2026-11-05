@@ -1,5 +1,6 @@
 import { bytes } from '../utils/files';
 import { PageHeader } from '../components/kit';
+import MediaPrep from './MediaPrep';
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
@@ -23,6 +24,7 @@ export default function Media() {
   return (
     <>
       <PageHeader title={t('Media Gallery', 'Медиагалерея')} />
+      <MediaPrep device={device} />
       <Card>
         <DeviceSelect value={device} onChange={setDevice} />
       </Card>
