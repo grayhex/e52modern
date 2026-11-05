@@ -134,3 +134,26 @@ Chromium проверяет реальные карточки, ручной ре
 `EOpNull` не содержит payload и не должен извлекать файл с индексом 0. Основание —
 [официальный sisfiledescription.h](https://github.com/SymbianSource/oss.FCL.sf.mw.appinstall/blob/master/secureswitools/swisistools/source/sisxlibrary/sisfiledescription.h).
 Оба случая покрыты регрессионными тестами; проверки хешей и CRC не отключались.
+
+## Verified Essentials (#40)
+
+*Applications → Application kits → Verified Essentials* offers six profiles — **Communication,
+Internet, Offline, Media, Files and tools, N95 Classic / FP1** — defined in
+`catalog/essentials.json` as lists of *existing* catalog cards (no duplicated cards or API).
+For the chosen model (E52, E72, N95, N95 8GB) every card is either **eligible** or **not offered**
+with its reasons:
+
+* eligible = a pinned, validated distribution exists (`delivery: automatic`) and the catalog plan
+  finds no problem for that model; the item shows licence, author link, network need and the
+  evidence levels `declared / model / hardware / installation`;
+* not offered = manual-only or unavailable distribution (for example Opera Mini, FShell, PyS60),
+  a model the card excludes, a profile that does not target the model (the N95 Classic profile is
+  refused for E52/E72), or a catalog problem.
+
+Eligibility is **static compatibility**: nothing is claimed as hardware-verified (`hardware:
+not-tested`) or installed. The profile returns the dependency-aware copy/install order from the
+catalog plan and can be saved as an ordinary collection, so the existing recovery transfer and its
+guards are used unchanged (a transfer copies files; you install on the phone). A short "how to use it
+in 2026" guide covers TLS, companion servers, services that no longer exist and the offline profile.
+Documented verifiable profiles: FP1 (N95 Classic: X-plore, GPS Tracker, S2PuTTY) and FP2 (E52/E72
+Files and tools: X-plore, IP calculator, password generator).

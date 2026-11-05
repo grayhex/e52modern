@@ -244,6 +244,22 @@ const port = new Promise((resolve, reject) => {
     assert(await overflow(page), "overflow in settings backup");
     await page.close();
 
+    // 2b4. Verified Essentials (Application kits page).
+    page = await open("en", 1366, "#apps/kits");
+    await page.locator("#essentials").waitFor();
+    await page.locator('[data-testid="essentials-items"] [data-item="xplore"][data-eligible="true"]').waitFor();
+    assert((await page.getByTestId("essentials-order").innerText()).includes("xplore"));
+    await page.locator('[data-essentials="n95-classic"]').click();
+    await page.locator('[data-testid="essentials-na"]').waitFor();
+    assert((await page.getByTestId("essentials-na").innerText()).includes("does not target"), "N95 profile is refused for the E52");
+    await page.locator("#essentials select").selectOption("nokia-n95");
+    await page.locator('[data-testid="essentials-items"] [data-item="gps-tracker"][data-eligible="true"]').waitFor();
+    assert.equal(await page.locator('[data-item="opera-mini"]').count(), 0);
+    await page.getByRole("button", { name: "Save as a collection" }).click();
+    await page.getByTestId("essentials-saved").waitFor();
+    assert(await overflow(page), "overflow in essentials");
+    await page.close();
+
     // 2c. Reborn wizard for an identified N95: import -> pin -> backup statement -> consents -> copy -> user-reported install.
     fs.writeFileSync(identity, JSON.stringify({ model: "Nokia N95-1", rm: "RM-159", firmware: "v 12.0.013" }));
     page = await open("en", 1366);
