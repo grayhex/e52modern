@@ -60,6 +60,8 @@ class ReviveService:
         self.reborn = RebornWizard(self)
         from .services import LegacyServices
         self.services = LegacyServices(self)
+        from symport.agent import AgentHost
+        self.agent = AgentHost(None, journal=self.devices.record)
 
     # ---- storage ---------------------------------------------------------------------------
     def _key(self, row: dict) -> str:
@@ -149,6 +151,11 @@ class ReviveService:
                 'reborn-stage': lambda d: self.reborn.stage(d),
                 'services-state': lambda d: self.services.state(d), 'services-diagnose': lambda d: self.services.diagnose(d),
                 'services-record': lambda d: self.services.record(d),
+                'agent-state': lambda d: self.agent.state(), 'agent-pair-start': lambda d: self.agent.pair_start(),
+                'agent-pair-finish': lambda d: self.agent.pair_finish(), 'agent-disconnect': lambda d: self.agent.disconnect(),
+                'agent-grant': lambda d: self.agent.grant(d.get('permission'), d.get('seconds', 3600)),
+                'agent-revoke': lambda d: self.agent.revoke(d.get('permission')),
+                'agent-call': lambda d: self.agent.call(d.get('op'), d.get('args'), d.get('confirm') is True),
             }.get(action)
             if handler is None and isinstance(action, str) and action.startswith('safety-'):
                 handler = (lambda d, a=action: self.safety.execute(a, d)) if action in SAFETY_ACTIONS else None
