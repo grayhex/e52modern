@@ -1,3 +1,6 @@
+import { ModelProfileSelect } from '../components/ModelProfileSelect';
+import { deviceProfiles } from '../components/deviceProfiles';
+import type { Target } from '../components/targets';
 import { encode } from '../utils/files';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { initialTarget } from '../components/targets';
@@ -15,7 +18,7 @@ export default function Inspector() {
   const api = useApi(),
     { t, device, setDevice } = usePreferences();
   const [choice, setChoice] = useState(initialChoice),
-    [target, setTarget] = useState<Record<string, string>>(initialTarget),
+    [target, setTarget] = useState<Target>(initialTarget),
     [path, setPath] = useState(
       () => new URLSearchParams(location.hash.split('?')[1]).get('path') ?? '',
     ),
@@ -78,6 +81,7 @@ export default function Inspector() {
         z.object({ code: z.string(), recommendations: z.array(z.string()) }),
       ),
   });
+  const targetArtwork = deviceProfiles.find((p) => p.target_model === target.model);
   return (
     <>
       <h1>Certificate & Compatibility Inspector</h1>
@@ -103,6 +107,14 @@ export default function Inspector() {
           <Field label={t('Package path on phone', 'Путь пакета на телефоне')}>
             <input value={path} onChange={(e) => setPath(e.target.value)} />
           </Field>
+          <ModelProfileSelect target={target} onTarget={setTarget} />
+          {targetArtwork && (
+            <img
+              src={targetArtwork.image}
+              alt={target.model}
+              style={{ height: 110, width: 70, objectFit: 'contain' }}
+            />
+          )}
           {Object.entries(target).map(([k, v]) => (
             <Field
               label={t(

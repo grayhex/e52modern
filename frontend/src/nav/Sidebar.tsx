@@ -267,7 +267,16 @@ function PhoneCard({ railed, tip }: { railed: boolean; tip: TipFactory }) {
     connected: t('Connected', 'Подключено'),
     disconnected: t('Disconnected', 'Отключено'),
   } as const;
-  const model = selected?.model_profile?.name ?? selected?.model ?? selected?.name ?? null;
+  const model =
+    (selected?.model_profile
+      ? t(
+          selected.model_profile.name,
+          selected.model_profile.name_ru ?? selected.model_profile.name,
+        )
+      : undefined) ??
+    selected?.model ??
+    selected?.name ??
+    null;
   const title =
     model ??
     (state === 'connected'
@@ -282,7 +291,15 @@ function PhoneCard({ railed, tip }: { railed: boolean; tip: TipFactory }) {
       {...tip(summary)}
     >
       <span className="phone-card-icon" aria-hidden="true">
-        <Smartphone size={railed ? 20 : 22} strokeWidth={1.8} />
+        {selected?.model_profile ? (
+          <img
+            src={selected.model_profile.image}
+            alt=""
+            style={{ height: railed ? 28 : 38, width: 24, objectFit: 'contain' }}
+          />
+        ) : (
+          <Smartphone size={railed ? 20 : 22} strokeWidth={1.8} />
+        )}
         <span className="phone-card-dot" />
       </span>
       {!railed && (

@@ -7,8 +7,10 @@ from __future__ import annotations
 
 import re
 
+from symport.phone.registry import registry
+
 # Platform ("S60ProductID" / "Series60ProductID") dependency UIDs. ``rank`` orders releases inside
-# one family; ``e52`` is the relationship to the Nokia E52 (S60 3rd Edition FP2, Symbian 9.3).
+# one family; product IDs are compared with the selected documented device profile.
 PLATFORMS: dict[int, dict] = {
     0x101F7961: {"name": "S60 3rd Edition", "symbian": "9.1", "family": "s60-3rd", "rank": 0,
                  "source": "profiles/nokia-e52.toml packaging.platform_dependency (documented)"},
@@ -24,13 +26,14 @@ PLATFORMS: dict[int, dict] = {
                  "source": "jellyfin-s60v3 klient/klient.pro comments (Symbian Belle)"},
 }
 
-# Product IDs a phone of the given profile is *inferred* to accept. An S60 3rd FP2 handset is
-# commonly listed as compatible with the earlier 3rd Edition IDs too; this is an inference from
-# package practice (packages list several IDs) and the profile's documented 0x101F7961, not a
-# device attestation.
+# Static product-family candidates, never an installed product-package/version attestation.
+# Earlier 3rd Edition UIDs on later handsets are inferred from package practice; the device's
+# native documented product UID is marked separately. Firmware version constraints stay unknown.
 DEVICE_PLATFORMS = {
-    "nokia-e52": {0x101F7961: "documented", 0x102032BE: "inferred", 0x102752AE: "inferred"},
+    key: {uid: ("documented" if uid == (0x102032BE if p['symbian']=='9.2' else 0x101F7961) else "inferred") for uid in p['platform_uids']}
+    for key,p in registry().items()
 }
+
 
 PLATFORM_NAMES = re.compile(r"^(s60|series60)productid$", re.I)
 

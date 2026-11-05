@@ -158,8 +158,13 @@ class FirmwareExplorer:
             version = str(data.get("firmware_version") or "").strip()
             if not 1 <= len(version) <= 120:
                 raise FirmwareError("Enter the exact firmware version this image belongs to")
+            from symport.phone.registry import selectable_profiles
+            selected = data.get("profile", "nokia-e52")
+            profile = selectable_profiles().get(selected)
+            if not profile:
+                raise FirmwareError("Choose an exact Nokia model profile")
             dlls = {e["name"].lower(): {} for e in index["entries"] if e["kind"] in ("e32-dll", "rom-image-dll")}
-            return {"schema": 1, "id": "firmware-" + key, "device": "nokia-e52", "firmware_version": version,
+            return {"schema": 1, "id": "firmware-" + key, "device": selected, "firmware_version": version, "platform": profile["s60"], "symbian": profile["symbian"], "model_evidence": "user-declared; not inferred from firmware",
                     "source": "firmware-explorer:" + index["source"]["sha256"], "dlls": dlls,
                     "note": "DLL names only; export ordinals are unknown, so ordinal-level compatibility stays unknown."}
         raise FirmwareError("Unknown firmware operation")

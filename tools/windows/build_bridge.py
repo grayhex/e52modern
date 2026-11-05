@@ -19,6 +19,7 @@ subprocess.run([sys.executable, '-m', 'PyInstaller', '--noconfirm', '--clean', '
     '--icon', str(ROOT / 'symport/web_assets/brand/appmark-192.png'),
     '--add-data', str(ROOT / 'symport/web_assets/brand/appmark-192.png') + ';symport/web_assets/brand',
     '--add-data', str(ROOT / 'symport/phone/firmware_reference.json') + ';symport/phone',
+    '--add-data', str(ROOT / 'symport/phone/model_registry.json') + ';symport/phone',
     '--collect-all', 'gammu', '--hidden-import', 'pystray._win32', '--hidden-import', 'serial.tools.list_ports_windows',
     '--exclude-module', 'cryptography', '--exclude-module', 'symport.web',
     str(ROOT / 'tools/windows/bridge_entry.py')], check=True, cwd=ROOT)
@@ -26,5 +27,6 @@ subprocess.run([str(out / 'portable/SymPortBridge.exe'), '--self-test', '--repor
 report = json.loads((out / 'self-test.json').read_text())
 assert report['gammu'].get('gammu'), report
 assert report['credential_protection'] == 'passed', report
+assert report['model_registry'] == 'passed', report
 print(json.dumps(report))
 print('Frozen bridge worker, DPAPI and authenticated HTTP checks passed')

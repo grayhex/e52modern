@@ -1,3 +1,4 @@
+import { defaultDeviceProfile, deviceProfiles, profileById } from '../components/deviceProfiles';
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import createCache from '@emotion/cache';
@@ -102,12 +103,11 @@ function Overview() {
         : 'none';
   const profile = selected?.model_profile;
   // The connection did not identify the model: show the project's artwork, labelled as an illustration only.
-  const [artwork, setArtwork] = useState<'e52' | 'e72'>('e52');
+  const [artwork, setArtwork] = useState('nokia-e52');
+  const illustration = profileById(artwork) ?? defaultDeviceProfile;
   const picture = profile
     ? { src: profile.image, alt: profile.name }
-    : artwork === 'e72'
-      ? { src: '/phones/nokia-e72.png', alt: 'Nokia E72' }
-      : { src: '/phones/nokia-e52-silver.png', alt: 'Nokia E52' };
+    : { src: illustration.image, alt: illustration.name };
   const candidates = [
     {
       key: 'battery',
@@ -250,11 +250,11 @@ function Overview() {
                     )}
                   </Typography>
                   <Stack direction="row" spacing={0.5}>
-                    {(['e52', 'e72'] as const).map((id) => (
+                    {deviceProfiles.map(({ id, name }) => (
                       <Chip
                         key={id}
                         size="small"
-                        label={id.toUpperCase()}
+                        label={name.replace(/^Nokia /, '')}
                         clickable
                         color={artwork === id ? 'primary' : 'default'}
                         variant={artwork === id ? 'filled' : 'outlined'}
@@ -276,7 +276,7 @@ function Overview() {
                 )}
               </Stack>
               <Typography variant="h2" component="h2" sx={{ fontSize: 30, fontWeight: 700, m: 0 }}>
-                {profile?.name ??
+                {(profile ? t(profile.name, profile.name_ru ?? profile.name) : undefined) ??
                   selected?.model ??
                   selected?.name ??
                   t('Symbian phone', 'Телефон Symbian')}

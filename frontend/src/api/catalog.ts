@@ -9,6 +9,14 @@ export const appSchema = z
     version: z.string(),
     format: z.string(),
     compatibility: z.string(),
+    model_compatibility: z
+      .record(
+        z.string(),
+        z
+          .object({ status: z.string(), reason: z.string(), basis: z.string() })
+          .catchall(jsonSchema),
+      )
+      .default({}),
     delivery: z.string(),
     network: z.string(),
     collection: z.array(z.string()),

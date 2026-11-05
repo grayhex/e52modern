@@ -143,7 +143,7 @@ def evaluate(info: dict, profile: Profile, firmware: FirmwareProfile | None, rep
         by_ord = sum(len(i["ordinals"]) for i in imports)
         add("e32.imports", UNKNOWN,
             f"imports {by_ord} ordinals from {len(names)} DLLs ({', '.join(names)}); no firmware "
-            "profile supplied, so DLL/ordinal availability on this E52 is unknown",
+            "profile supplied, so DLL/ordinal availability on this device is unknown",
             level=FIRMWARE, dlls=names)
     else:
         missing_dll, missing_ord = [], {}

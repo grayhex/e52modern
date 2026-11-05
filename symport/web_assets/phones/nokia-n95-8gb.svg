@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1868" viewBox="0 0 1000 1868" role="img" aria-labelledby="title desc">
+<title id="title">Nokia N95 8GB — original front illustration</title><desc id="desc">Closed dual slider, blank glass screen; editable original vector drawing. No hardware connection or live telemetry is depicted.</desc>
+<defs>
+ <linearGradient id="case" x1="0" x2="1"><stop stop-color="#1d2024"/><stop offset=".035" stop-color="#4b4d50"/><stop offset=".15" stop-color="#111419"/><stop offset=".65" stop-color="#080a0d"/><stop offset=".94" stop-color="#111419"/><stop offset="1" stop-color="#33363a"/></linearGradient>
+ <linearGradient id="rim" x1="0" x2="1" y2=".75"><stop stop-color="#454a4c"/><stop offset=".04" stop-color="#f8faf9"/><stop offset=".11" stop-color="#919b9d"/><stop offset=".4" stop-color="#f1f4f2"/><stop offset=".6" stop-color="#5a6061"/><stop offset=".86" stop-color="#e9eeee"/><stop offset="1" stop-color="#60696a"/></linearGradient>
+ <linearGradient id="key" x1="0" y1="0" x2=".12" y2="1"><stop stop-color="#25292e"/><stop offset=".35" stop-color="#15181c"/><stop offset="1" stop-color="#25292e"/></linearGradient>
+ <linearGradient id="glass" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#263033"/><stop offset=".32" stop-color="#0a0f12"/><stop offset=".75" stop-color="#03070a"/><stop offset="1" stop-color="#151c20"/></linearGradient>
+ <linearGradient id="reflection" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".13"/><stop offset=".46" stop-color="#fff" stop-opacity=".015"/><stop offset=".49" stop-color="#fff" stop-opacity=".09"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".015"/></linearGradient>
+ <radialGradient id="lens"><stop stop-color="#476d7a"/><stop offset=".3" stop-color="#17282f"/><stop offset=".58" stop-color="#090e12"/><stop offset=".8" stop-color="#303d44"/><stop offset="1" stop-color="#05080a"/></radialGradient>
+ <pattern id="grille" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M0 0L10 10M10 0L0 10" stroke="#c4c8c6" stroke-width="1.4"/></pattern>
+ <pattern id="brushing" width="5" height="7" patternUnits="userSpaceOnUse"><path d="M0 1H5M0 5H5" stroke="#fff" stroke-opacity=".07" stroke-width=".7"/></pattern>
+ <clipPath id="bodyClip"><rect x="25" y="14" width="950" height="1840" rx="84"/></clipPath>
+ <clipPath id="screenClip"><rect x="119" y="228" width="762" height="1016" rx="9"/></clipPath>
+</defs>
+<g id="slider-rail"><path d="M24 85Q5 88 6 145V1737Q8 1803 43 1809L55 85Z" fill="#121417"/><path d="M968 90Q992 95 991 148V1745L972 1810Z" fill="#1b2023"/><path d="M20 366V1510" stroke="#31343b" stroke-width="6"/></g>
+<g id="case"><rect x="25" y="14" width="950" height="1840" rx="84" fill="url(#case)" stroke="#4a5052" stroke-width="3"/><rect x="37" y="24" width="925" height="1818" rx="75" fill="none" stroke="#777e85" stroke-opacity=".65" stroke-width="3"/><path d="M60 77Q60 42 105 40H893Q936 43 939 93" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="4"/></g>
+<g id="brushed-texture" clip-path="url(#bodyClip)"><rect x="28" y="20" width="943" height="1825" fill="url(#brushing)"/></g>
+<g id="brand" fill="#d8dce0" font-family="Arial,Helvetica,sans-serif">
+ <text x="107" y="132" font-size="36" font-weight="500" letter-spacing="1">N95 8GB</text>
+
+</g>
+<g id="earpiece"><rect x="496" y="99" width="165" height="43" rx="18" fill="url(#rim)"/><rect x="504" y="107" width="149" height="26" rx="12" fill="#22282b"/><rect x="509" y="111" width="139" height="18" rx="8" fill="url(#grille)"/></g>
+<g id="camera-sensor"><rect x="699" y="108" width="37" height="37" rx="10" fill="url(#rim)"/><rect x="707" y="115" width="21" height="24" rx="6" fill="#9ca999"/>
+ <rect x="769" y="82" width="106" height="110" rx="33" fill="url(#rim)"/><rect x="777" y="89" width="90" height="96" rx="26" fill="#0a0e11"/><circle cx="822" cy="137" r="30" fill="url(#lens)"/><circle cx="822" cy="137" r="10" fill="#040809"/><circle cx="812" cy="124" r="5" fill="#9dced9" opacity=".5"/></g>
+<g id="screen"><rect x="107" y="216" width="786" height="1040" rx="17" fill="#596162"/><rect x="113" y="222" width="774" height="1028" rx="12" fill="#03070a"/><rect x="119" y="228" width="762" height="1016" rx="9" fill="url(#glass)"/><rect x="119" y="228" width="762" height="1016" rx="9" fill="url(#reflection)"/><path d="M127 1242H873" stroke="#b0bcc2" stroke-opacity=".25" stroke-width="2"/></g>
+<g id="navigation"><rect x="111" y="1414" width="778" height="374" rx="67" fill="url(#rim)" stroke="#30383b" stroke-width="4"/><rect x="124" y="1428" width="752" height="346" rx="53" fill="#0c1115"/>
+ <path d="M141 1462Q144 1440 177 1440H363V1706H177Q141 1706 141 1668Z" fill="url(#key)" stroke="#81898a" stroke-width="2"/>
+ <path d="M637 1440H818Q855 1442 856 1472V1669Q855 1706 820 1706H637Z" fill="url(#key)" stroke="#81898a" stroke-width="2"/>
+ <rect x="367" y="1437" width="266" height="275" rx="64" fill="url(#key)" stroke="#80898b" stroke-width="3"/>
+ <rect x="428" y="1512" width="144" height="127" rx="37" fill="url(#rim)"/>
+ <rect x="442" y="1526" width="116" height="99" rx="27" fill="#1d242a" stroke="#3a4549" stroke-width="3"/>
+ <g stroke="#cdd1d4" stroke-width="7" stroke-linecap="round"><path d="M489 1478H511M489 1673H511M401 1581V1605M599 1581V1605"/></g>
+</g>
+<g id="softkeys"><path d="M72 1444Q72 1406 106 1404H108V1582H71Z" fill="url(#key)" stroke="#7d8588" stroke-width="2"/><path d="M892 1404H903Q932 1406 932 1448V1582H892Z" fill="url(#key)" stroke="#7d8588" stroke-width="2"/>
+ <path d="M91 1476V1531M914 1476V1531" stroke="#cdd1d4" stroke-width="8" stroke-linecap="round"/>
+ <path d="M71 1592H108V1755Q72 1753 71 1713Z" fill="url(#key)" stroke="#7d8588" stroke-width="2"/><path d="M892 1592H932V1713Q930 1754 892 1755Z" fill="url(#key)" stroke="#7d8588" stroke-width="2"/>
+ <path d="M91 1633V1693Q91 1714 109 1713" fill="none" stroke="#168c72" stroke-width="9" stroke-linecap="round"/>
+ <path d="M913 1633V1693Q913 1714 895 1713" fill="none" stroke="#b44b4a" stroke-width="9" stroke-linecap="round"/>
+</g>
+<g id="system-keys" fill="none" stroke="#a9c4d3" stroke-width="9" stroke-linejoin="round">
+ <path d="M237 1546l-19 18 19 20M258 1546l19 18-19 20M237 1592l-19 18 19 20M258 1592l19 18-19 20"/>
+ <path d="M743 1563l-25 27 25 28M762 1563l25 27-25 28" stroke="#cdd1d4"/>
+</g>
+<g id="edit-clear-keys"><path d="M155 1719H846V1759H155Z" fill="url(#key)" stroke="#778082" stroke-width="2"/>
+ <path d="M233 1730l25 20-7 8-25-20Z M225 1737l-4 17 15 3" fill="none" stroke="#cdd1d4" stroke-width="5"/>
+ <text x="742" y="1756" fill="#cdd1d4" font-family="Arial,sans-serif" font-size="35">C</text>
+</g>
+<path id="bottom-highlight" d="M89 1807Q500 1840 914 1807" fill="none" stroke="#69737b" stroke-width="3" stroke-opacity=".65"/>
+</svg>

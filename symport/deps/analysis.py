@@ -32,7 +32,9 @@ def _norm_target(target) -> dict:
 
 
 def device_profile(target: dict) -> str | None:
-    return "nokia-e52" if re.search(r"\bE52\b", target.get("model", ""), re.I) else None
+    from symport.phone.registry import target_profile
+    resolved = target_profile(target)
+    return resolved["id"] if resolved else None
 
 
 def _basename(path: str) -> str:
@@ -97,7 +99,12 @@ def analyze_package(raw: bytes, *, name: str = "package.sis", target=None, firmw
             relation, basis = ("not-accepted-by-target" if profile else "target-unknown"), "known-platform"
         else:
             relation, basis = "unknown-platform-id", "unrecognised"
-        platforms.append({"uid": _hex(item["uid"]), "label": (known or {}).get("name") or (item["names"] or ["?"])[0],
+        # UID establishes a platform family, not the installed product-package version.
+        # Nonzero version ranges need a matching firmware product inventory, which we do not infer.
+        version_required = any(item.get("from_version") or []) or item.get("to_version") is not None
+        if relation == "accepted-by-target" and version_required:
+            relation = "product-version-unknown"
+        platforms.append({"min_version": _version(item.get("from_version")), "max_version": _version(item.get("to_version")),"uid": _hex(item["uid"]), "label": (known or {}).get("name") or (item["names"] or ["?"])[0],
                           "symbian": (known or {}).get("symbian"), "relation": relation, "basis": basis,
                           "source": (known or {}).get("source")})
     if not platforms:
@@ -108,9 +115,18 @@ def analyze_package(raw: bytes, *, name: str = "package.sis", target=None, firmw
         issues.append("platform-target-unknown")
     elif any(p["relation"] == "accepted-by-target" for p in platforms):
         platform_verdict = "supported-static"
+    elif any(p["relation"] in ("unknown-platform-id", "product-version-unknown") for p in platforms):
+        platform_verdict = "unknown"
+        issues.append("platform-target-unknown")
     else:
         platform_verdict = "unsupported"
         issues.append("platform-unsupported")
+
+    from symport.phone.registry import registry
+    documented_os = registry().get(profile, {}).get('symbian')
+    if documented_os and target['os'] and target['os'] != documented_os:
+        issues.append('target-os-mismatch')
+        platform_verdict = 'unsupported'
 
     # --- declared package dependencies --------------------------------------------------------
     declared = []
@@ -215,9 +231,16 @@ def analyze_package(raw: bytes, *, name: str = "package.sis", target=None, firmw
                              "min_version": next((d["min_version"] for d in decl if d["min_version"]), None),
                              "dlls": runtime_imports.get(family, []), "distribution": spec["distribution"]})
 
+    for binary in binaries:
+        if profile and binary.get('cpu') in ('x86', 'mcore', 'armv6'):
+            issues.append('binary-abi-unsupported')
+        if profile and binary.get('kernel') == 'eka1':
+            issues.append('binary-kernel-unsupported')
+        if profile and (str(binary.get('cpu', '')).startswith('unknown') or str(binary.get('kernel', '')).startswith('unknown')):
+            issues.append('binary-abi-unknown')
     issues = list(dict.fromkeys(issues))
-    blocking = {"platform-unsupported", "system-dll-missing", "dependency-version"}
-    unresolved = {"platform-undeclared", "platform-target-unknown", "dependency-unverified", "runtime-required-unverified",
+    blocking = {"platform-unsupported", "target-os-mismatch", "binary-abi-unsupported", "binary-kernel-unsupported", "system-dll-missing", "dependency-version"}
+    unresolved = {"binary-abi-unknown", "platform-undeclared", "platform-target-unknown", "dependency-unverified", "runtime-required-unverified",
                   "imports-undecoded", "system-dll-unverified", "payload-unreadable"}
     if blocking & set(issues):
         verdict = "blocked"

@@ -65,7 +65,9 @@ def main():
             else:
                 Image.open(targets[task["index"]]).save(project / "bitmap-preview.png", "PNG")
         return
-    width, height = (320, 240) if spec["profile"] == "nokia-e72" else (240, 320)
+    from symport.phone.registry import registry
+    geometry = registry()[spec["profile"]]["screen"]
+    width, height = geometry["width"], geometry["height"]
     work = project / "generated"
     assets = work / "theme/assets/light"
     assets.mkdir(parents=True, exist_ok=True)

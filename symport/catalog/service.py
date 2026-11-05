@@ -102,6 +102,7 @@ class AppCatalog:
                 key = secrets.token_hex(12)
                 job = {'id': key, 'action': action, 'state': 'running', 'created': now(),
                        'items': [{'id': i, 'stage': 'queued', 'events': []} for i in plan['ids']],
+                       'profile': plan['device'], 'model_compatibility': plan['model_compatibility'],
                        'target': data.get('device') if action == 'transfer' else None}
                 self.active = key
                 save(self.root / 'jobs' / (key + '.json'), job)
@@ -124,9 +125,11 @@ class AppCatalog:
         try:
             if job['action'] == 'transfer':
                 device = next((d for d in self.devices.execute({'action': 'discover'})['devices'] if d['id'] == request['device']), None)
-                required = self.catalog.plan([i['id'] for i in job['items']])['bytes']
+                required = self.catalog.plan([i['id'] for i in job['items']], job['profile'])['bytes']
                 if not device or not (device['connected'] or (device.get('configured') and 'opp-push' in device['capabilities'])) or not any(c in device['capabilities'] for c in ('files', 'transfer')):
                     raise ValueError('Connected file-capable phone required')
+                if device.get('model_profile') and device['model_profile']['id'] != job['profile']:
+                    raise ValueError('Selected package target differs from the model reported by the adapter; review the target or use manual file transfer')
                 if device.get('free') is not None and device['free'] < required:
                     raise ValueError('Insufficient or unknown free space on phone')
             for item in job['items']:
@@ -147,12 +150,21 @@ class AppCatalog:
                         raise ValueError('Curated JAR/JAD pair is incomplete')
                     for cached, evidence in artifacts:
                         evidence['validation'] = validate_package(cached.name, cached.read_bytes(), jar=jar)
+                        if cached.suffix.lower() in ('.sis', '.sisx'):
+                            from symport.deps import analyze_package
+                            from symport.phone.registry import selectable_profiles
+                            target_profile = selectable_profiles()[job['profile']]
+                            analysis = analyze_package(cached.read_bytes(), name=cached.name,
+                                target={'model': target_profile['target_model'], 'os': target_profile['symbian']})
+                            evidence['target_analysis'] = analysis
+                            if analysis['verdict'] == 'blocked':
+                                raise ValueError('Package is incompatible with the selected target: ' + ', '.join(analysis['issues']))
                         if cached.suffix.lower() == '.jad' and '://' in evidence['validation']['descriptor']['MIDlet-Jar-URL']:
                             raise ValueError('Remote JAD URL is not suitable for offline local transfer; use the curated JAR-only variant')
                         if cached.suffix.lower() == '.jar':
                             validation = evidence['validation']
                             if validation['midp'] not in ('MIDP-1.0', 'MIDP-2.0', 'MIDP-2.1') or validation['cldc'] not in ('CLDC-1.0', 'CLDC-1.1'):
-                                raise ValueError('JAR MIDP/CLDC profile is not supported by the E52 profile')
+                                raise ValueError('JAR MIDP/CLDC profile is not supported by the selected Nokia profile')
                     update(item, 'validated')
                     if job['action'] == 'transfer' and any(c in device['capabilities'] for c in ('files-stage', 'opp-push')):
                         if entry['format'] == 'jar+jad':

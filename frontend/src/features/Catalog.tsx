@@ -1,3 +1,4 @@
+import { deviceProfiles, profileLabel } from '../components/deviceProfiles';
 import { bytes } from '../utils/files';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { packageLink } from '../utils/packages';
@@ -51,16 +52,19 @@ export default function Catalog() {
   const confirm = useConfirmedAction<{ action: string; job?: string; app?: string }>();
   const localized = (app: CatalogApp, key: string) =>
     text(app[language === 'en' && typeof app[key + '_en'] === 'string' ? key + '_en' : key]);
+  const forModel = (a: CatalogApp) => a.model_compatibility?.[profile]?.status ?? 'not-tested';
   const visible =
     state.data?.apps.filter(
       (a) =>
         (a.category !== 'high-risk' || filters.category === 'high-risk') &&
-        (allProfiles || !['unsupported', 'unavailable'].includes(a.compatibility)) &&
+        (allProfiles || !['unsupported', 'unavailable'].includes(forModel(a))) &&
         `${a.name} ${a.description} ${text(a.description_en)}`
           .toLocaleLowerCase()
           .includes(search.toLocaleLowerCase()) &&
         Object.entries(filters).every(([k, v]) =>
-          !v || k === 'collection' ? !v || a.collection.includes(v) : text(a[k]) === v,
+          !v || k === 'collection'
+            ? !v || a.collection.includes(v)
+            : (k === 'compatibility' ? forModel(a) : text(a[k])) === v,
         ),
     ) ?? [];
   function change(ids: Set<string>) {
@@ -86,8 +90,11 @@ export default function Catalog() {
                 plan.reset();
               }}
             >
-              <option value="nokia-e52">Nokia E52 · 240×320 / S60 3rd FP2</option>
-              <option value="nokia-e72">Nokia E72 · 320×240 / S60 3rd FP2</option>
+              {deviceProfiles.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {profileLabel(p)}
+                </option>
+              ))}
               <option value="all">
                 {t('All compatibility states', 'Все статусы совместимости')}
               </option>
@@ -126,7 +133,9 @@ export default function Catalog() {
                 {[
                   ...new Set(
                     state.data?.apps.flatMap((a) =>
-                      k === 'collection' ? a.collection : [text(a[k])],
+                      k === 'collection'
+                        ? a.collection
+                        : [k === 'compatibility' ? forModel(a) : text(a[k])],
                     ),
                   ),
                 ]
@@ -194,7 +203,11 @@ export default function Catalog() {
             <p>
               {app.version} · {app.format} · {app.network}
             </p>
-            <span className="chip">{app.compatibility}</span>
+            <span className="chip">
+              {forModel(app) === 'not-tested'
+                ? t('Not tested', 'Нет результатов испытаний')
+                : forModel(app)}
+            </span>
             <div className="form-row">
               <button className="btn ghost" onClick={() => setDetail(app)}>
                 {t('Details', 'Подробнее')}
@@ -411,6 +424,11 @@ export default function Catalog() {
       {detail && (
         <Modal title={detail.name} onClose={() => setDetail(null)}>
           <p>{localized(detail, 'description')}</p>
+          <h3>
+            {t('Selected model evidence', 'Результат для выбранной модели')} ·{' '}
+            {deviceProfiles.find((p) => p.id === profile)?.name ?? profile}
+          </h3>
+          <JsonReport value={detail.model_compatibility?.[profile] ?? { status: 'not-tested' }} />
           <dl className="device-details">
             {[
               'version',

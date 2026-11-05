@@ -17,6 +17,7 @@ from pathlib import Path
 
 from symport.catalog.packages import validate_package
 from symport.catalog.service import save
+from symport.phone.registry import selectable_profiles
 from symport.sis.reader import extract, inspect
 from symport.sis.writer import SisDependency, SisFile, SisPackage, build
 from symport.theme.inspect import contrast
@@ -26,7 +27,8 @@ RESOURCE = re.compile(
     r"^(?:[!cCeE]:\\resource\\skins\\[a-fA-F0-9]{8}\\[^\\]+\.(?:mbm|mif)|[!cCeE]:\\private\\10207114\\import\\[a-fA-F0-9]{8}\\[^\\]+\.skn)$",
     re.I,
 )
-PROFILES = {"nokia-e52": (240, 320), "nokia-e72": (320, 240)}
+
+PROFILES = {key:(p["screen"]["width"],p["screen"]["height"]) for key,p in selectable_profiles().items()}
 
 
 class ThemeStudio:
@@ -234,7 +236,7 @@ class ThemeStudio:
                 or any(ord(c) < 32 or ord(c) > 126 or c in '"\\' for c in name)
             ):
                 raise ValueError(
-                    "Choose E52/E72 and a printable ASCII theme name (1–60 characters)"
+                    "Choose a supported Nokia profile and a printable ASCII theme name (1–60 characters)"
                 )
             key = secrets.token_hex(12)
             folder = self.folder(key)
@@ -305,6 +307,11 @@ class ThemeStudio:
                             "Nonstandard file operations/options or duplicate targets cannot be preserved by repack"
                         )
                     project["dependencies"] = info.get("dependencies", {}).get("items", [])
+                    if any(d["kind"] == "target-device" and (
+                        d.get("uid") not in selectable_profiles()[profile]["platform_uids"]
+                        or d.get("from_version") not in (None, [0, 0, 0]) or d.get("to_version")
+                    ) for d in project["dependencies"]):
+                        project["blockers"].append("Imported platform/version constraints cannot be safely preserved for the selected model")
                     if (
                         info["package"].get("version") is None
                         or len(info["package"].get("names", [])) != 1
@@ -601,7 +608,7 @@ class ThemeStudio:
                 if any(
                     d["kind"] == "target-device"
                     and (
-                        d.get("uid") != 0x101F7961
+                        d.get("uid") not in selectable_profiles()[project["profile"]]["platform_uids"]
                         or d.get("from_version") not in (None, [0, 0, 0])
                         or d.get("to_version")
                     )
@@ -637,7 +644,7 @@ class ThemeStudio:
                     "SymPort",
                     version=tuple(version),
                     files=[SisFile(target, raw) for target, raw in paths.items()],
-                    platforms=[0x101F7961],
+                    platforms=[0x102032BE if selectable_profiles()[project["profile"]]["symbian"]=="9.2" else 0x101F7961],
                     dependencies=dependencies,
                 )
             )
@@ -657,6 +664,10 @@ class ThemeStudio:
                 "status": "static-checked",
                 "signature": "unsigned",
                 "installation": "not-tested",
+                "physical_device": "not-tested",
+                "profile": project["profile"],
+                "platform": selectable_profiles()[project["profile"]]["s60"],
+                "firmware_resources": "not-tested",
             }
             return self.store(project)
         else:

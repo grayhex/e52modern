@@ -102,7 +102,7 @@ class DeviceManager:
                 item['imei'] = '•' * max(0, len(imei) - 4) + imei[-4:]
             item['firmware_update'] = assess(item)
             from .models import presentation
-            item['model_profile'] = presentation(str(item.get('model') or ''))
+            item['model_profile'] = presentation(str(item.get('model') or ''), rm=item.get('rm'), product_code=item.get('product_code'))
             devices.append(self.observed.overlay(item))
         # Rows of connections that vanished must not keep proving anything.
         self.rows = {d['id']: d for d in devices}

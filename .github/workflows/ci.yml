@@ -129,6 +129,24 @@ jobs:
           test "$ready" -eq 1
           python3 -c 'import json; d=json.load(open("/tmp/workbench-state.json")); assert d["schema"] == "symport.web/1"'
           docker exec e52modern-ui python tools/check_gammu_contract.py
+          docker exec -i e52modern-ui python - <<'PY'
+          import base64, tempfile, urllib.request
+          from pathlib import Path
+          from symport.phone.registry import identify
+          from symport.sis.reader import inspect
+          from symport.theme.studio import ThemeStudio
+          assert identify("N95")["variant_known"] is False
+          assert identify("N95", rm="RM-320")["id"] == "nokia-n95-8gb"
+          for key in ("nokia-n95", "nokia-n95-8gb"):
+              with tempfile.TemporaryDirectory() as folder:
+                  studio = ThemeStudio(Path(folder))
+                  p = studio.execute({"action": "create", "name": "FP1 smoke", "profile": key})
+                  p = studio.execute({"action": "build", "id": p["id"], "revision": p["revision"], "confirm_unsigned": True})
+                  raw = base64.b64decode(studio.execute({"action": "export", "id": p["id"]})["content"])
+                  assert [d["uid"] for d in inspect(raw)["dependencies"]["items"] if d["kind"] == "target-device"] == [0x102032BE]
+                  assert p["build"]["physical_device"] == "not-tested"
+              assert urllib.request.urlopen("http://127.0.0.1:8765/phones/" + key + ".png").headers.get_content_type() == "image/png"
+          PY
           docker exec e52modern-ui python -m symport theme build --variant light --json > /tmp/workbench-build.json
           docker exec e52modern-ui python -m symport theme package --variant light --backend native --json > /tmp/workbench-package.json
           python3 -c 'import json; assert json.load(open("/tmp/workbench-build.json"))["status"] == "ok"; assert json.load(open("/tmp/workbench-package.json"))["status"] == "ok"'

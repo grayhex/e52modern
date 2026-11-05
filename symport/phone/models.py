@@ -48,14 +48,7 @@ def documented_model(value: str) -> dict | None:
     return None
 
 
-def presentation(value: str) -> dict | None:
-    """Model identity from adapter response; geometry is a documented model profile."""
-    model = documented_model(value)
-    if not model or model['model'] not in ('E52', 'E72'):
-        return None
-    e72 = model['model'] == 'E72'
-    return {'id':'nokia-e72' if e72 else 'nokia-e52', 'name':'Nokia '+model['model'],
-            'image':'/phones/nokia-e72.png' if e72 else '/phones/nokia-e52-silver.png',
-            'screen': {'width':320 if e72 else 240,'height':240 if e72 else 320,'orientation':'landscape' if e72 else 'portrait'},
-            's60':'3rd FP2','symbian':'9.3','input':'qwerty' if e72 else 'numeric-keypad',
-            'source':'documented-model-profile'}
+def presentation(value: str, *, rm=None, product_code=None) -> dict | None:
+    """Documented geometry/platform selected from observed identity; no capabilities inferred."""
+    from .registry import identify
+    return identify(value, rm=rm, product_code=product_code)

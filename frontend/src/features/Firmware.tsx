@@ -1,3 +1,4 @@
+import { deviceProfiles, profileLabel } from '../components/deviceProfiles';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronRight, File as FileIcon, Folder, Search, Trash2, Upload } from 'lucide-react';
@@ -648,11 +649,12 @@ function Profile({ id }: { id: string }) {
   const api = useApi();
   const { t } = usePreferences();
   const [version, setVersion] = useState('');
+  const [model, setModel] = useState('nokia-e52');
   const profile = useMutation({
     mutationFn: () =>
       api.request(
         '/api/firmware',
-        { action: 'profile', id, firmware_version: version },
+        { action: 'profile', id, firmware_version: version, profile: model },
         profileSchema,
       ),
   });
@@ -671,6 +673,15 @@ function Profile({ id }: { id: string }) {
         )}
       </p>
       <div className="form-row">
+        <Field label={t('Declared device model', 'Модель устройства (укажите самостоятельно)')}>
+          <select value={model} onChange={(e) => setModel(e.target.value)}>
+            {deviceProfiles.map((p) => (
+              <option key={p.id} value={p.id}>
+                {profileLabel(p)}
+              </option>
+            ))}
+          </select>
+        </Field>
         <Field
           label={t('Exact firmware version of this image', 'Точная версия прошивки этого образа')}
         >

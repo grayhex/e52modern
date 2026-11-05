@@ -9,12 +9,13 @@ import secrets
 import time
 from datetime import UTC, datetime
 
+from symport.phone.registry import collection_profiles
+
+from .compatibility import assessment
 from .service import save
 
-PROFILES = {
-    "nokia-e52": {"model": "Nokia E52", "symbian": "9.3", "s60": "3rd FP2", "screen": [240, 320]},
-    "nokia-e72": {"model": "Nokia E72", "symbian": "9.3", "s60": "3rd FP2", "screen": [320, 240]},
-}
+PROFILES = collection_profiles()
+
 TEMPLATES = [
     ("basic", "Basic set", "Базовый набор", ["xplore", "opera-mini", "s2putty"]),
     ("internet", "Internet", "Интернет", ["opera-mini", "mpgram", "s2putty"]),
@@ -98,7 +99,7 @@ class Collections:
         ):
             raise ValueError("Collection name must be 1–60 printable characters")
         if profile not in PROFILES or not isinstance(apps, list) or not 1 <= len(apps) <= 50:
-            raise ValueError("Select an E52/E72 profile and 1–50 applications")
+            raise ValueError("Select a supported Nokia profile and 1–50 applications")
         clean, seen = [], set()
         for app in apps:
             if (
@@ -145,7 +146,7 @@ class Collections:
     def plan(self, document, profile, device=""):
         target = PROFILES.get(profile)
         if not target:
-            raise ValueError("Choose Nokia E52 or E72")
+            raise ValueError("Choose a supported Nokia profile")
         catalog = self.service.catalog
         requested = {a["id"]: a for a in document["apps"]}
         ordered, visiting, visited, problems = [], set(), set(), []
@@ -191,9 +192,11 @@ class Collections:
                     else "Version or distribution SHA-256 changed. Review and re-save the collection before transferring."
                 )
                 status = "changed"
+            model_evidence = assessment(entry, profile)
             supported = entry.get("target_profiles")
             if (
-                supported
+                model_evidence["status"] == "unsupported"
+                or supported
                 and profile not in supported
                 or entry["compatibility"] in ("unsupported", "unavailable")
             ):
@@ -224,7 +227,8 @@ class Collections:
                     "status": status,
                     "reasons": reasons,
                     "sources": entry["sources"],
-                    "compatibility": entry["compatibility"],
+                    "compatibility": model_evidence["status"],
+                    "model_evidence": model_evidence,
                     "artifacts": artifacts,
                     "dependencies": entry["dependencies"],
                     "requirements": entry.get("requirements", []),

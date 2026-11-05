@@ -39,7 +39,11 @@ export const deviceSchema = z.object({
     .optional(),
   model_profile: z
     .object({
+      id: z.string().optional(),
       name: z.string(),
+      name_ru: z.string().optional(),
+      variant_known: z.boolean().optional(),
+      identity_note: z.string().nullish(),
       image: z.string(),
       screen: z.object({ width: z.number(), height: z.number(), orientation: z.string() }),
       s60: z.string(),
