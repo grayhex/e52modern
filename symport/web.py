@@ -35,6 +35,7 @@ from symport.phone.bridge_security import host_allowed
 from symport.phone.contacts import parse_export, vcards
 from symport.phone.contracts import LIMIT
 from symport.phone.media_downloads import MediaDownloads, byte_range
+from symport.revive import ReviveService
 
 ASSETS = Path(__file__).with_name("web_assets")
 NAMES = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")
@@ -188,6 +189,7 @@ class Workbench:
         self.firmware = FirmwareExplorer(repo / 'build/symport/firmware')
         self.inspector = Inspector(repo, self.resolve_lab_package, self.devices, self.lab, self.firmware)
         self.jailbreak = JailbreakManager(repo, self.devices)
+        self.revive = ReviveService(repo, self.devices)
         self.token = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
         self.jobs: list[dict] = []
@@ -767,7 +769,7 @@ def make_handler(state: Workbench):
                 length = int(self.headers.get("Content-Length", "0"))
             except ValueError:
                 return self._json({"error": "Invalid length"}, 400)
-            if length <= 0 or length > ((64 * 1024 * 1024 * 4 // 3 + 4096) if self.path in ("/api/manager", "/api/bridge", "/api/lab", "/api/inspector", "/api/jailbreak") else (LIMIT * 4 // 3 + 4096 if self.path in ("/api/library", "/api/contacts", "/api/theme-studio") else 512_000 if self.path in ("/api/media/export", "/api/catalog") else 12_000)):
+            if length <= 0 or length > ((64 * 1024 * 1024 * 4 // 3 + 4096) if self.path in ("/api/manager", "/api/bridge", "/api/lab", "/api/inspector", "/api/jailbreak", "/api/revive") else (LIMIT * 4 // 3 + 4096 if self.path in ("/api/library", "/api/contacts", "/api/theme-studio") else 512_000 if self.path in ("/api/media/export", "/api/catalog") else 12_000)):
                 return self._json({"error": "Invalid body size"}, 413)
             try:
                 body = json.loads(self.rfile.read(length))
@@ -804,6 +806,8 @@ def make_handler(state: Workbench):
                     return self._json(state.firmware.execute(body))
                 if self.path == '/api/jailbreak':
                     return self._json(state.jailbreak.execute(body))
+                if self.path == '/api/revive':
+                    return self._json(state.revive.execute(body))
                 if self.path == '/api/lab':
                     return self._json(state.lab.execute(body))
                 if self.path == "/api/catalog":

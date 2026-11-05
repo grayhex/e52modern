@@ -10,6 +10,7 @@ import {
   FolderOpen,
   Hammer,
   History,
+  LifeBuoy,
   Image,
   LayoutDashboard,
   Layers,
@@ -178,6 +179,13 @@ export const groups: NavGroup[] = [
         icon: Stethoscope,
         en: 'Device diagnostics',
         ru: 'Диагностика устройства',
+        status: 'ready',
+      },
+      {
+        id: 'tools/revive',
+        icon: LifeBuoy,
+        en: 'SymPort Revive',
+        ru: 'SymPort Revive',
         status: 'ready',
       },
       {

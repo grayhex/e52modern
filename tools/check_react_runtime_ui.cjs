@@ -56,8 +56,8 @@ fs.mkdirSync(shots, { recursive: true });
         .isDisabled())
     )
       throw Error("Start enabled without firmware");
-    // 5 menu groups, 25 pages in the menu (Lucide icons) after the navigation restructure.
-    if ((await page.locator(".nav-link svg.nav-icon").count()) !== 25)
+    // 5 menu groups, 26 pages in the menu (Lucide icons) after the navigation restructure.
+    if ((await page.locator(".nav-link svg.nav-icon").count()) !== 26)
       throw Error("Navigation graphics missing");
     await page.getByLabel("Format", { exact: true }).selectOption("vpl");
     await page.getByLabel("VPL + FPSX", { exact: true }).setInputFiles([
