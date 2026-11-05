@@ -1,0 +1,44 @@
+{
+  "id": "pys60",
+  "name": "Python for S60",
+  "category": "development",
+  "developer": "Nokia",
+  "description": "Python 1.4.5 runtime для скриптов на Symbian S60 3rd Edition.",
+  "version": "1.4.5",
+  "release_date": "2008-12-03",
+  "platforms": [
+    "Symbian 9.x",
+    "S60 3rd Edition"
+  ],
+  "format": "sis",
+  "homepage": "https://sourceforge.net/projects/pys60/",
+  "license": "Python/Nokia distribution terms; review original archive",
+  "redistribution": "manual-original-source-only",
+  "delivery": "manual",
+  "manual_url": "https://sourceforge.net/projects/pys60/files/pys60/1.4.5/PythonForS60_1_4_5_3rdEd.sis/download",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Старый runtime Python 2.2, не Python 3. Получите оригинальный SIS Nokia и изучите условия. ScriptShell и дополнительные модули загружаются отдельно; не устанавливайте 2nd Edition на E52.",
+  "tls": "Для основной функции сеть не требуется.",
+  "signature": "В SIS обнаружена подпись, но её срок, цепочка доверия и принятие прошивкой не проверялись. Старый сертификат может не приниматься.",
+  "compatibility": "likely-compatible",
+  "compatibility_basis": "Дистрибутив/профиль проверен по источнику; физический E52 не тестировался.",
+  "e52_evidence": null,
+  "sources": [
+    "https://sourceforge.net/projects/pys60/",
+    "https://sourceforge.net/projects/pys60/files/pys60/1.4.5/PythonForS60_1_4_5_3rdEd.sis/download"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "pys60",
+  "limitations": [
+    "Старый runtime Python 2.2, не Python 3. Получите оригинальный SIS Nokia и изучите условия. ScriptShell и дополнительные модули загружаются отдельно; не устанавливайте 2nd Edition на E52.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline"
+  ],
+  "delivery_reason": "Старый runtime Python 2.2, не Python 3. Получите оригинальный SIS Nokia и изучите условия. ScriptShell и дополнительные модули загружаются отдельно; не устанавливайте 2nd Edition на E52.",
+  "requirements": [
+    "Старый runtime Python 2.2, не Python 3. Получите оригинальный SIS Nokia и изучите условия. ScriptShell и дополнительные модули загружаются отдельно; не устанавливайте 2nd Edition на E52."
+  ]
+}

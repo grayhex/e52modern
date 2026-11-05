@@ -1,0 +1,46 @@
+{
+  "id": "aikon",
+  "name": "AIKON",
+  "category": "communication",
+  "developer": "emir",
+  "description": "Java ME клиент к собственному серверу диалогов и поиска.",
+  "version": "0.18.4",
+  "release_date": "2026-10-04",
+  "release_tag": "v0.18.4",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.1"
+  ],
+  "format": "jar+jad",
+  "homepage": "https://github.com/emir/AIKON",
+  "license": "MIT",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/emir/AIKON/releases/tag/v0.18.4",
+  "dependencies": [],
+  "network": "online",
+  "backend": "Нужен собственный Go backend, ключи провайдеров на сервере и настройка доверенного сертификата. Возможны расходы на API.",
+  "tls": "Работа онлайн-сервиса и TLS на E52 не проверялась. Не передавайте учётные данные неизвестным прокси.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/emir/AIKON",
+    "https://github.com/emir/AIKON/releases/tag/v0.18.4"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "aikon",
+  "limitations": [
+    "Нужен собственный Go backend, ключи провайдеров на сервере и настройка доверенного сертификата. Возможны расходы на API.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Нужен собственный Go backend, ключи провайдеров на сервере и настройка доверенного сертификата. Возможны расходы на API."
+  ]
+}

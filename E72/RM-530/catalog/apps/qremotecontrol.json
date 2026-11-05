@@ -1,0 +1,52 @@
+{
+  "id": "qremotecontrol",
+  "name": "QRemoteControl",
+  "category": "internet",
+  "developer": "QRemoteControl contributors",
+  "description": "Пульт управления ПК. Авторские исходники и инструкция; сборка для E52/E72 не установлена.",
+  "version": "2.6.1 source (Symbian binary unconfirmed)",
+  "release_date": null,
+  "release_tag": null,
+  "source_commit": "ba5652a571660c9986a0158a8c24eb3e8bda4380",
+  "platforms": [
+    "Qt mobile; Symbian variant requires separate verification"
+  ],
+  "format": "sis",
+  "homepage": "https://github.com/machinekoder/QRemoteControl-Client",
+  "license": "GPL-3.0 (gpl.txt)",
+  "redistribution": "author-source-only",
+  "delivery": "manual",
+  "manual_url": "https://github.com/machinekoder/QRemoteControl-Client",
+  "dependencies": [],
+  "network": "online",
+  "backend": "Состояние внешних сервисов не подтверждено.",
+  "tls": "Современные TLS/серверы не проверены.",
+  "signature": "Не проверена: оригинальный установочный дистрибутив не получен.",
+  "compatibility": "unavailable",
+  "e52_evidence": null,
+  "compatibility_basis": "Оригинальный репозиторий содержит клиент, но не опубликованный SIS для E52/E72. Текущий Qt Quick/Qt 5 код не подтверждает совместимость S60 3rd FP2; нужны соответствующие Qt runtime и сервер QRemoteControl на ПК.",
+  "sources": [
+    "https://github.com/machinekoder/QRemoteControl-Client",
+    "https://github.com/hstsethi/awesome-symbian/blob/ed79fd54fc5c46640faf65adac39d70f3cdf0a1b/readme.md"
+  ],
+  "checked_at": "2026-11-04",
+  "source_id": "qremotecontrol",
+  "limitations": [
+    "Оригинальный репозиторий содержит клиент, но не опубликованный SIS для E52/E72. Текущий Qt Quick/Qt 5 код не подтверждает совместимость S60 3rd FP2; нужны соответствующие Qt runtime и сервер QRemoteControl на ПК.",
+    "Работа на физической E52/E72 не проверена."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": "Оригинальный репозиторий содержит клиент, но не опубликованный SIS для E52/E72. Текущий Qt Quick/Qt 5 код не подтверждает совместимость S60 3rd FP2; нужны соответствующие Qt runtime и сервер QRemoteControl на ПК.",
+  "requirements": [
+    "Совместимый клиент Symbian, Qt runtime и сервер QRemoteControl на компьютере."
+  ],
+  "target_profiles": [],
+  "description_en": "PC remote-control client. Author source and instructions; no E52/E72 distribution is confirmed.",
+  "delivery_reason_en": "No original E52/E72 SIS is published in the repository. Current Qt Quick/Qt 5 source does not establish S60 3rd FP2 compatibility; a compatible Qt client and PC server are required.",
+  "compatibility_basis_en": "No original E52/E72 SIS is published in the repository. Current Qt Quick/Qt 5 source does not establish S60 3rd FP2 compatibility; a compatible Qt client and PC server are required.",
+  "backend_en": "External service availability has not been confirmed.",
+  "tls_en": "Modern TLS and server compatibility have not been tested.",
+  "signature_en": "Not inspected: no original installable distribution was obtained."
+}

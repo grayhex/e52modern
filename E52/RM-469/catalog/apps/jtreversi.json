@@ -1,0 +1,47 @@
+{
+  "id": "jtreversi",
+  "name": "jtReversi",
+  "category": "games",
+  "developer": "asalamon74",
+  "description": "Офлайн-реверси для MIDP телефонов.",
+  "version": "0.87.00",
+  "release_date": null,
+  "release_tag": null,
+  "source_commit": "e8499450fe8966acaa7d2b3e1458300cb1527968",
+  "platforms": [
+    "MIDP-1.0",
+    "CLDC-1.0"
+  ],
+  "format": "jar+jad",
+  "homepage": "https://github.com/asalamon74/jtreversi",
+  "license": "GPL-2.0",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/asalamon74/jtreversi",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "Старый, больше не поддерживаемый проект; сетевой сервис не нужен.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/asalamon74/jtreversi",
+    "https://github.com/asalamon74/jtreversi/tree/master"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "jtreversi",
+  "limitations": [
+    "Старый, больше не поддерживаемый проект; сетевой сервис не нужен.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline",
+    "recommended"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Старый, больше не поддерживаемый проект; сетевой сервис не нужен."
+  ]
+}

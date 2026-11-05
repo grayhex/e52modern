@@ -134,7 +134,7 @@ def test_incompatible_abi_and_unknown_abi_remain_distinct():
 
 def test_catalog_migration_preserves_e52_and_does_not_verify_n95():
     c = Catalog(REPO / "catalog")
-    original = json.loads((REPO / "catalog/apps/xplore.json").read_text())
+    original = json.loads((REPO / "catalog/apps/xplore.json").read_text(encoding="utf-8"))
     entry = c.entries["xplore"]
     for key, value in original.items():
         assert entry[key] == value
@@ -282,13 +282,13 @@ def test_downloaded_fp2_sis_is_never_transferred_to_fp1(tmp_path):
 
     catalog_fixture(tmp_path)
     entry_path = tmp_path / "catalog/apps/example.json"
-    entry = json.loads(entry_path.read_text())
+    entry = json.loads(entry_path.read_text(encoding="utf-8"))
     entry["format"] = "sis"
     entry["dependencies"] = []
-    entry_path.write_text(json.dumps(entry))
+    entry_path.write_text(json.dumps(entry), encoding="utf-8")
     raw = sis(0xE0001111, "FP2 only")
     sources_path = tmp_path / "catalog/sources.json"
-    sources = json.loads(sources_path.read_text())
+    sources = json.loads(sources_path.read_text(encoding="utf-8"))
     artifact = sources["example"]["artifacts"][0]
     artifact.update(
         name="example.sis",

@@ -13,9 +13,10 @@ const shots = path.resolve(
 );
 fs.mkdirSync(shots, { recursive: true });
 const identity = path.join(tmp, "identity.json");
-const models = JSON.parse(
-  fs.readFileSync(path.join(repo, "symport/phone/model_registry.json"), "utf8"),
+const registry = JSON.parse(
+  fs.readFileSync(path.join(repo, "symport/phone/device_models.json"), "utf8"),
 );
+const models = Object.fromEntries(registry.models.map((p) => [p.id, p]));
 fs.writeFileSync(
   identity,
   JSON.stringify({ model: "Nokia N95-1", rm: "RM-159" }),

@@ -1,5 +1,6 @@
-import { deviceProfiles, profileLabel, profileById } from '../components/deviceProfiles';
 import { DeviceFrame } from '../components/DeviceFrame';
+import { useProfiles } from '../api/queries';
+import { PageHeader } from '../components/kit';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi, usePreferences } from '../state/app';
@@ -18,7 +19,9 @@ export default function ThemeStudio() {
     { t } = usePreferences(),
     [id, setId] = useState(''),
     [name, setName] = useState('My Nokia Theme'),
-    [profile, setProfile] = useState('nokia-e52'),
+    [pickedProfile, setProfile] = useState(''),
+    profiles = useProfiles(),
+    profile = pickedProfile || profiles[0]?.value || '',
     [variant, setVariant] = useState('light');
   const state = useQuery({
     queryKey: ['theme-studio'],
@@ -47,7 +50,7 @@ export default function ThemeStudio() {
   });
   return (
     <>
-      <h1>{t('Advanced Theme Studio', 'Редактор тем')}</h1>
+      <PageHeader title={t('Advanced Theme Studio', 'Редактор тем')} />
       <Card>
         <div className="react-fields">
           <Field label={t('Project', 'Проект')}>
@@ -65,9 +68,9 @@ export default function ThemeStudio() {
           </Field>
           <Field label={t('Screen profile', 'Профиль экрана')}>
             <select value={profile} onChange={(e) => setProfile(e.target.value)}>
-              {deviceProfiles.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {profileLabel(p)}
+              {profiles.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
                 </option>
               ))}
             </select>
@@ -583,9 +586,11 @@ function PhonePreview({
   const api = useApi(),
     { t } = usePreferences(),
     [view, setView] = useState('menu'),
-    geometry = profileById(project.profile)?.screen ?? { width: 240, height: 320 },
-    w = geometry.width,
-    h = geometry.height;
+    model = useProfiles().find((p) => p.value === project.profile)?.model,
+    // Geometry and artwork come from the model registry; an unregistered profile falls back to 240×320.
+    w = model?.screen?.width ?? 240,
+    h = model?.screen?.height ?? 320,
+    landscape = w > h;
   const image = useQuery({
     queryKey: ['theme-asset', project.id, project.revision],
     queryFn: ({ signal }) =>
@@ -633,7 +638,7 @@ function PhonePreview({
             12:00
           </text>
           {view === 'menu' ? (
-            Array.from({ length: w > h ? 6 : 9 }, (_, i) => {
+            Array.from({ length: landscape ? 6 : 9 }, (_, i) => {
               const x = 20 + (i % 3) * (w / 3),
                 y = 54 + Math.floor(i / 3) * 68;
               return (

@@ -30,7 +30,7 @@ the adapter, but an unrecognised code does not choose a variant. Conflicting mod
 plain `N95` show **N95 (variant unknown)** / **N95 (модификация не определена)** with a neutral
 illustration. Read the suffix/RM in device information before choosing an exact package target.
 
-The shared source of truth is `symport/phone/model_registry.json` (Python and React). TOML files
+The shared source of truth is `symport/phone/device_models.json` (Python and React). TOML files
 retain `{value, status, source}` for every fact. Presentation facts are marked `measured: false`.
 A documented FP1 platform does not prove the currently installed firmware/S60 version.
 
@@ -99,8 +99,8 @@ checks RU/EN, Inspector and Theme Studio, and captures the three requested scree
 [180/240 px artwork review](screenshots/n95/n95-artwork-180-240.png) and
 [unresolved variant in Russian](screenshots/n95/n95-unknown-ru.png) are also available.
 
-For the parallel UI work in #27: reuse `deviceProfiles.ts`, `ModelProfileSelect` and `DeviceFrame`.
-The JSON registry owns identity/artwork/display geometry; avoid reintroducing two-model ternaries.
-This branch deliberately keeps the existing Classic styling and navigation. If shared Dashboard,
-Sidebar, Inspector or Theme Studio edits conflict, preserve these data-driven hooks while taking
-the polished layout. Merge #27 and this change through normal review, not an automatic merge.
+PR #29 (the UI work for #27) was merged into main during this implementation. Its Classic
+components, dashboard and registry API are preserved. N95 extends that same `device_models.json`
+registry, with shared `ModelProfileSelect` / `DeviceFrame` helpers for model targets and previews.
+There is no second model database. The branch is integrated with that main revision; review and
+merge this N95 PR separately.

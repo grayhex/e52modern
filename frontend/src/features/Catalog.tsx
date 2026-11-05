@@ -1,4 +1,5 @@
-import { deviceProfiles, profileLabel } from '../components/deviceProfiles';
+import { useProfiles } from '../api/queries';
+import { PageHeader, StatusIndicator } from '../components/kit';
 import { bytes } from '../utils/files';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { packageLink } from '../utils/packages';
@@ -32,7 +33,9 @@ export default function Catalog() {
     [path, setPath] = useState(''),
     [setName, setSetName] = useState(''),
     [allProfiles, setAllProfiles] = useState(false),
-    [profile, setProfile] = useState('nokia-e52');
+    [picked, setProfile] = useState(''),
+    profiles = useProfiles(),
+    profile = picked || profiles[0]?.value || '';
   const plan = useMutation({
     mutationFn: () =>
       api.request(
@@ -78,7 +81,7 @@ export default function Catalog() {
     state.data?.jobs.some((j) => j.state === 'running');
   return (
     <>
-      <h1>{t('App Catalog', 'Каталог приложений')}</h1>
+      <PageHeader title={t('App Catalog', 'Каталог приложений')} />
       <Card>
         <div className="react-fields">
           <Field label={t('Target profile', 'Целевой профиль')}>
@@ -90,9 +93,9 @@ export default function Catalog() {
                 plan.reset();
               }}
             >
-              {deviceProfiles.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {profileLabel(p)}
+              {profiles.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
                 </option>
               ))}
               <option value="all">
@@ -183,7 +186,15 @@ export default function Catalog() {
         {visible.map((app) => (
           <article className="catalog-app" key={app.id}>
             <div className="catalog-app-head">
-              <span className="catalog-app-icon">{app.name.slice(0, 2).toUpperCase()}</span>
+              <span className="catalog-app-icon" aria-hidden="true">
+                {app.name.slice(0, 2).toUpperCase()}
+              </span>
+              <div className="catalog-app-title">
+                <h3>{app.name}</h3>
+                <span className="k-meta">
+                  {app.version} · {app.format} · {app.category}
+                </span>
+              </div>
               <input
                 type="checkbox"
                 aria-label={`${t('Select', 'Выбрать')} ${app.name}`}
@@ -197,23 +208,30 @@ export default function Catalog() {
                 }}
               />
             </div>
-            <span className="eyebrow">{app.category}</span>
-            <h3>{app.name}</h3>
             <p className="catalog-description">{localized(app, 'description')}</p>
-            <p>
-              {app.version} · {app.format} · {app.network}
-            </p>
-            <span className="chip">
-              {forModel(app) === 'not-tested'
-                ? t('Not tested', 'Нет результатов испытаний')
-                : forModel(app)}
-            </span>
-            <div className="form-row">
-              <button className="btn ghost" onClick={() => setDetail(app)}>
+            <div className="catalog-app-tags">
+              {/* Where the file comes from, and how much is known about compatibility: two different facts. */}
+              <StatusIndicator tone={app.delivery === 'automatic' ? 'ok' : 'warn'}>
+                {app.delivery === 'automatic'
+                  ? t('Pinned installer (SHA-256)', 'Проверенный установщик (SHA-256)')
+                  : t('External link', 'Внешняя ссылка')}
+              </StatusIndicator>
+              <StatusIndicator tone={forModel(app) === 'verified' ? 'info' : 'unknown'}>
+                {forModel(app) === 'not-tested'
+                  ? t('Not tested', 'Нет результатов испытаний')
+                  : forModel(app)}
+              </StatusIndicator>
+              <span className="k-meta">{app.network}</span>
+            </div>
+            {app.delivery_reason && (
+              <p className="k-note-line k-clamp-2">{localized(app, 'delivery_reason')}</p>
+            )}
+            <div className="catalog-app-actions">
+              <button className="k-btn k-btn--small k-btn--primary" onClick={() => setDetail(app)}>
                 {t('Details', 'Подробнее')}
               </button>
               <a
-                className="btn ghost"
+                className="text-link"
                 href={packageLink(
                   'dev/lab',
                   app.delivery === 'automatic' ? 'catalog' : 'upload',
@@ -225,7 +243,7 @@ export default function Catalog() {
                 {t('Test in emulator', 'Проверить в эмуляторе')}
               </a>
               <a
-                className="btn ghost"
+                className="text-link"
                 href={packageLink(
                   'tools/certificates',
                   app.delivery === 'automatic' ? 'catalog' : 'upload',
@@ -241,13 +259,12 @@ export default function Catalog() {
                   {t('Author source', 'Источник автора')} ↗
                 </a>
               )}
+              {app.delivery === 'manual' && (
+                <a className="text-link" href="#apps/installed">
+                  {t('Transfer your package', 'Передать свой пакет')} →
+                </a>
+              )}
             </div>
-            {app.delivery_reason && <p className="note">{localized(app, 'delivery_reason')}</p>}
-            {app.delivery === 'manual' && (
-              <a className="text-link" href="#apps/installed">
-                {t('Transfer your package', 'Передать свой пакет')} →
-              </a>
-            )}
           </article>
         ))}
       </div>
@@ -425,8 +442,7 @@ export default function Catalog() {
         <Modal title={detail.name} onClose={() => setDetail(null)}>
           <p>{localized(detail, 'description')}</p>
           <h3>
-            {t('Selected model evidence', 'Результат для выбранной модели')} ·{' '}
-            {deviceProfiles.find((p) => p.id === profile)?.name ?? profile}
+            {t('Selected model evidence', 'Результат для выбранной модели')} · {profile}
           </h3>
           <JsonReport value={detail.model_compatibility?.[profile] ?? { status: 'not-tested' }} />
           <dl className="device-details">

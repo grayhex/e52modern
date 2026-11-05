@@ -60,7 +60,8 @@ class DeviceManager:
                     if row is None:
                         raise ValueError('Unknown connection; discover the phone again')
                     return {'device': row}
-                return {'devices': devices, 'connections': self.transport.diagnostics() if hasattr(self.transport, 'diagnostics') else [], 'limitations': {
+                from .models import catalog
+                return {'devices': devices, 'models': catalog(), 'connections': self.transport.diagnostics() if hasattr(self.transport, 'diagnostics') else [], 'limitations': {
                     'contacts': 'Импорт Google CSV / Apple vCard, передача vCard на карту или запись через Gammu с чтением для проверки',
                     'sms': 'Requires a tested Gammu or native Agent adapter',
                     'applications': 'Mounted volumes do not expose the installed application registry; apps-inventory lists SIS package files only',

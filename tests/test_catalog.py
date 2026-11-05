@@ -59,7 +59,7 @@ def artifact(raw, name="Example.jar"):
 
 def catalog_fixture(root):
     base = json.loads(
-        (Path(__file__).resolve().parents[1] / "catalog/apps/hotpants.json").read_text()
+        (Path(__file__).resolve().parents[1] / "catalog/apps/hotpants.json").read_text(encoding="utf-8")
     )
     directory = root / "catalog"
     (directory / "apps").mkdir(parents=True)
@@ -123,7 +123,7 @@ def test_dependency_plan_manual_and_unknown_device(tmp_path):
 def test_source_schema_rejects_false_e52_claim(tmp_path):
     catalog_fixture(tmp_path)
     path = tmp_path / "catalog/apps/example.json"
-    entry = json.loads(path.read_text())
+    entry = json.loads(path.read_text(encoding="utf-8"))
     entry["compatibility"] = "verified-on-e52"
     path.write_text(json.dumps(entry))
     with pytest.raises(ValueError):

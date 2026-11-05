@@ -24,6 +24,7 @@ jobs:
       - run: NODE_PATH="$RUNNER_TEMP/react-e2e/node_modules" node tools/check_react_workspace.cjs
       - run: NODE_PATH="$RUNNER_TEMP/react-e2e/node_modules" node tools/check_p0_ui.cjs
       - run: NODE_PATH="$RUNNER_TEMP/react-e2e/node_modules" node tools/check_connection_wizard.cjs
+      - run: NODE_PATH="$RUNNER_TEMP/react-e2e/node_modules" node tools/check_layout.cjs
       - run: tools/s60/build.sh
       - run: NODE_PATH="$RUNNER_TEMP/react-e2e/node_modules" node tools/check_p1_ui.cjs
       - run: NODE_PATH="$RUNNER_TEMP/react-e2e/node_modules" node tools/check_n95_ui.cjs

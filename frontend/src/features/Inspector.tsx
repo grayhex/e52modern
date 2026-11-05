@@ -2,6 +2,7 @@ import { ModelProfileSelect } from '../components/ModelProfileSelect';
 import { deviceProfiles } from '../components/deviceProfiles';
 import type { Target } from '../components/targets';
 import { encode } from '../utils/files';
+import { PageHeader } from '../components/kit';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { initialTarget } from '../components/targets';
 import { initialChoice } from '../utils/packages';
@@ -84,7 +85,7 @@ export default function Inspector() {
   const targetArtwork = deviceProfiles.find((p) => p.target_model === target.model);
   return (
     <>
-      <h1>Certificate & Compatibility Inspector</h1>
+      <PageHeader title={t('Certificate Inspector', 'Certificate Inspector')} />
       <Card>
         <p className="note">
           {t(

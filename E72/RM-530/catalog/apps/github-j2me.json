@@ -1,0 +1,46 @@
+{
+  "id": "github-j2me",
+  "name": "GitHub J2ME",
+  "category": "internet",
+  "developer": "shinovon",
+  "description": "Просмотр GitHub, репозиториев и файлов с Java-телефона.",
+  "version": "0.9.9",
+  "release_date": "2026-10-17",
+  "release_tag": "v0.9.9",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.1"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/shinovon/GitHub-j2me",
+  "license": "MIT + LGPL components (see author notice)",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/shinovon/GitHub-j2me/releases/tag/v0.9.9",
+  "dependencies": [],
+  "network": "online",
+  "backend": "GitHub API и HTTPS; квоты и серверный прокси могут ограничивать работу.",
+  "tls": "Работа онлайн-сервиса и TLS на E52 не проверялась. Не передавайте учётные данные неизвестным прокси.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/shinovon/GitHub-j2me",
+    "https://github.com/shinovon/GitHub-j2me/releases/tag/v0.9.9"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "github-j2me",
+  "limitations": [
+    "GitHub API и HTTPS; квоты и серверный прокси могут ограничивать работу.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "GitHub API и HTTPS; квоты и серверный прокси могут ограничивать работу."
+  ]
+}

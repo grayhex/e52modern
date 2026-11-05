@@ -1,4 +1,5 @@
 import { encode as encodeBlob } from '../utils/files';
+import { PageHeader } from '../components/kit';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -61,7 +62,7 @@ export default function Files() {
   const label = selected?.name ?? selected?.model ?? device;
   return (
     <>
-      <h1>{t('File manager', 'Файловый менеджер')}</h1>
+      <PageHeader title={t('File manager', 'Файловый менеджер')} />
       <Card>
         <div className="form-row">
           <DeviceSelect value={device} onChange={choose} capability="files" />
@@ -111,8 +112,8 @@ export default function Files() {
         )}
         <p className="note">
           {t(
-            'The file browser labels are in English. Existing files are never overwritten, and uploads are limited to 8 MiB.',
-            'Подписи файлового браузера — на английском. Существующие файлы не перезаписываются, загрузка ограничена 8 МиБ.',
+            'Existing files are never overwritten, and uploads are limited to 8 MiB.',
+            'Существующие файлы не перезаписываются, загрузка ограничена 8 МиБ.',
           )}
         </p>
       </Card>

@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import { PageHeader } from '../components/kit';
 import { z } from 'zod';
 import { useApi, usePreferences } from '../state/app';
 import { objectSchema, text } from '../api/workspace';
@@ -21,7 +22,7 @@ export default function Installed() {
   });
   return (
     <>
-      <h1>{t('Apps & games', 'Программы и игры')}</h1>
+      <PageHeader title={t('Apps & games', 'Программы и игры')} />
       <Transfer kind="software" />
       <Card>
         <h2>{t('Package inventory', 'Пакеты на телефоне')}</h2>

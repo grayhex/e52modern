@@ -291,7 +291,7 @@ function PhoneCard({ railed, tip }: { railed: boolean; tip: TipFactory }) {
       {...tip(summary)}
     >
       <span className="phone-card-icon" aria-hidden="true">
-        {selected?.model_profile ? (
+        {selected?.model_profile?.image ? (
           <img
             src={selected.model_profile.image}
             alt=""

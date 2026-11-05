@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/grayhex/e52modern/blob/main/catalog/schema.json",
+  "title": "SymPort curated application",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "category",
+    "developer",
+    "description",
+    "version",
+    "release_date",
+    "platforms",
+    "format",
+    "homepage",
+    "license",
+    "redistribution",
+    "dependencies",
+    "network",
+    "backend",
+    "tls",
+    "signature",
+    "compatibility",
+    "e52_evidence",
+    "sources",
+    "checked_at",
+    "source_id",
+    "limitations",
+    "collection",
+    "delivery",
+    "manual_url",
+    "delivery_reason"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,63}$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "category": {
+      "enum": [
+        "communication",
+        "development",
+        "documents",
+        "games",
+        "high-risk",
+        "internet",
+        "maps",
+        "multimedia",
+        "system"
+      ]
+    },
+    "developer": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "release_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "format": {
+      "enum": [
+        "jar",
+        "jar+jad",
+        "sis",
+        "sisx"
+      ]
+    },
+    "homepage": {
+      "type": "string"
+    },
+    "license": {
+      "type": "string"
+    },
+    "redistribution": {
+      "type": "string"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "network": {
+      "enum": [
+        "mixed",
+        "offline",
+        "online"
+      ]
+    },
+    "backend": {
+      "type": "string"
+    },
+    "tls": {
+      "type": "string"
+    },
+    "signature": {
+      "type": "string"
+    },
+    "compatibility": {
+      "enum": [
+        "likely-compatible",
+        "unavailable",
+        "unsupported",
+        "untested",
+        "verified-on-e52",
+        "verified-on-s60"
+      ]
+    },
+    "e52_evidence": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "checked_at": {
+      "type": "string"
+    },
+    "source_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "collection": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "delivery": {
+      "enum": [
+        "automatic",
+        "manual"
+      ]
+    },
+    "manual_url": {
+      "type": "string"
+    },
+    "delivery_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

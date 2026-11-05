@@ -1,0 +1,604 @@
+/* Nokia Classic UI kit (components/kit). Tokens come from symport/web_assets/nokia-classic.css.
+   Spacing is a 4/8 px grid; radii are the 5 px control / 7 px panel tokens. Light theme only. */
+:root {
+  --k-1: 4px;
+  --k-2: 8px;
+  --k-3: 12px;
+  --k-4: 16px;
+  --k-5: 24px;
+  --k-6: 32px;
+  --k-control: 36px;
+}
+.k-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--k-4);
+  flex-wrap: wrap;
+  margin: 0 0 var(--k-4);
+}
+.k-page-header h1 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.25;
+}
+.k-subtitle {
+  margin: var(--k-1) 0 0;
+  color: var(--nokia-muted);
+}
+.k-page-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--k-2);
+  flex-wrap: wrap;
+}
+.k-meta {
+  color: var(--nokia-muted);
+  font-size: 13px;
+}
+
+.k-panel {
+  background: var(--nokia-surface);
+  border: 1px solid var(--nokia-border);
+  border-radius: var(--nokia-radius-panel);
+  box-shadow: var(--nokia-shadow);
+  padding: var(--k-4);
+  min-width: 0;
+}
+.k-panel-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--k-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--k-3);
+}
+.k-panel-head h2 {
+  margin: 0;
+  font-size: 16px;
+  flex: 1 1 auto;
+}
+.k-panel-actions {
+  display: flex;
+  gap: var(--k-2);
+}
+
+.k-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid var(--nokia-border);
+  border-radius: var(--nokia-radius-control);
+  background: var(--nokia-surface-alt);
+  color: var(--nokia-text);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.k-status--ok {
+  color: var(--nokia-success);
+  background: var(--nokia-success-soft);
+  border-color: var(--nokia-success);
+}
+.k-status--warn {
+  color: var(--nokia-warning);
+  background: var(--nokia-warning-soft);
+  border-color: var(--nokia-warning);
+}
+.k-status--bad {
+  color: var(--nokia-danger);
+  background: var(--nokia-danger-soft);
+  border-color: var(--nokia-danger);
+  border-width: 2px;
+}
+.k-status--unknown {
+  border-style: dashed;
+  color: var(--nokia-muted);
+}
+.k-status--off {
+  color: var(--nokia-disabled);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.k-status--info {
+  color: var(--nokia-brand);
+  background: var(--nokia-brand-soft);
+  border-color: var(--nokia-brand-border);
+}
+
+.k-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--k-5);
+  padding: var(--k-5);
+  border: 1px dashed var(--nokia-border);
+  border-radius: var(--nokia-radius-panel);
+  background: var(--nokia-surface);
+}
+.k-empty h2 {
+  margin: 0 0 var(--k-2);
+  font-size: 20px;
+}
+.k-empty-text {
+  color: var(--nokia-muted);
+  max-width: 62ch;
+}
+.k-empty-text ol {
+  margin: var(--k-2) 0 0;
+  padding-left: 20px;
+}
+.k-empty-icon {
+  color: var(--nokia-steel);
+  flex: none;
+}
+.k-actions {
+  display: flex;
+  gap: var(--k-2);
+  flex-wrap: wrap;
+  margin-top: var(--k-3);
+}
+.k-error {
+  display: flex;
+  gap: var(--k-3);
+  align-items: flex-start;
+  padding: var(--k-3) var(--k-4);
+  border: 1px solid var(--nokia-danger);
+  border-left-width: 4px;
+  border-radius: var(--nokia-radius-panel);
+  background: var(--nokia-danger-soft);
+  color: var(--nokia-danger);
+}
+.k-error p {
+  margin: var(--k-1) 0 0;
+  color: var(--nokia-text);
+}
+
+.k-metrics {
+  display: grid;
+  gap: var(--k-3);
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+.k-metric {
+  display: flex;
+  gap: var(--k-3);
+  padding: var(--k-3) var(--k-4);
+  background: var(--nokia-surface);
+  border: 1px solid var(--nokia-border);
+  border-radius: var(--nokia-radius-panel);
+  box-shadow: var(--nokia-shadow);
+  min-width: 0;
+}
+.k-metric-icon {
+  color: var(--nokia-brand);
+  flex: none;
+  margin-top: 3px;
+}
+.k-metric-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.k-metric-label {
+  color: var(--nokia-muted);
+  font-size: 12px;
+}
+.k-metric-value {
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--nokia-text);
+}
+.k-metric-note {
+  color: var(--nokia-muted);
+  font-size: 12px;
+}
+.k-bar {
+  height: 6px;
+  background: var(--nokia-surface-strong);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: var(--k-1);
+}
+.k-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--nokia-brand);
+  border-radius: 3px;
+}
+/* Progress is quantised to 10 % steps through classes: the CSP forbids inline styles. */
+.k-bar-0 {
+  width: 2%;
+}
+.k-bar-1 {
+  width: 10%;
+}
+.k-bar-2 {
+  width: 20%;
+}
+.k-bar-3 {
+  width: 30%;
+}
+.k-bar-4 {
+  width: 40%;
+}
+.k-bar-5 {
+  width: 50%;
+}
+.k-bar-6 {
+  width: 60%;
+}
+.k-bar-7 {
+  width: 70%;
+}
+.k-bar-8 {
+  width: 80%;
+}
+.k-bar-9 {
+  width: 90%;
+}
+.k-bar-10 {
+  width: 100%;
+}
+
+.k-toolbar {
+  display: flex;
+  gap: var(--k-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.k-btn,
+a.k-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--k-control);
+  padding: 0 var(--k-4);
+  border: 1px solid var(--nokia-border);
+  border-radius: var(--nokia-radius-control);
+  background: var(--nokia-surface);
+  color: var(--nokia-brand);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.k-btn:hover {
+  background: var(--nokia-brand-soft);
+  border-color: var(--nokia-brand-border);
+}
+.k-btn--primary {
+  background: var(--nokia-brand);
+  color: var(--nokia-on-brand);
+  border-color: var(--nokia-brand);
+}
+.k-btn--primary:hover {
+  background: var(--nokia-brand-hover);
+}
+.k-btn[aria-disabled='true'],
+.k-btn:disabled {
+  color: var(--nokia-disabled);
+  background: var(--nokia-surface-alt);
+  cursor: not-allowed;
+}
+
+.k-identity {
+  display: grid;
+  gap: var(--k-5);
+  grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+  align-items: center;
+}
+.k-identity-media {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--k-2);
+}
+.k-identity-media img,
+.k-identity-media .k-generic-phone {
+  max-width: 100%;
+  height: 300px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 10px rgb(36 54 77 / 18%));
+}
+.k-identity-media.is-illustration img {
+  opacity: 0.88;
+}
+.k-identity-media figcaption {
+  color: var(--nokia-muted);
+  font-size: 12px;
+  text-align: center;
+}
+.k-identity-status {
+  display: flex;
+  gap: var(--k-2);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--k-2);
+}
+.k-identity-name {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.2;
+}
+.k-facts {
+  display: grid;
+  gap: var(--k-3) var(--k-5);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin: var(--k-3) 0;
+}
+.k-facts dt {
+  color: var(--nokia-muted);
+  font-size: 12px;
+}
+.k-facts dd {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--nokia-text);
+}
+.k-facts small {
+  color: var(--nokia-muted);
+}
+
+.k-skeleton {
+  display: grid;
+  gap: var(--k-2);
+}
+.k-skeleton span {
+  display: block;
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--nokia-surface-strong),
+    var(--nokia-surface-alt),
+    var(--nokia-surface-strong)
+  );
+  background-size: 200% 100%;
+  animation: k-shimmer 1.4s linear infinite;
+}
+.k-skeleton .is-short {
+  width: 55%;
+}
+@keyframes k-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .k-skeleton span {
+    animation: none;
+  }
+}
+
+.k-generic-phone .k-phone-body {
+  fill: var(--nokia-surface-strong);
+  stroke: var(--nokia-steel);
+  stroke-width: 2;
+}
+.k-generic-phone .k-phone-screen {
+  fill: var(--nokia-canvas);
+  stroke: var(--nokia-steel);
+}
+.k-generic-phone .k-phone-key {
+  fill: var(--nokia-surface);
+  stroke: var(--nokia-steel);
+}
+
+.k-grid {
+  display: grid;
+  gap: var(--k-4);
+}
+.k-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.k-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.k-grid--wide-left {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+}
+.k-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.k-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--k-3);
+  padding: var(--k-2) 0;
+  border-bottom: 1px solid var(--nokia-border-subtle);
+}
+.k-list li:last-child {
+  border-bottom: 0;
+}
+.k-note-line {
+  color: var(--nokia-muted);
+  font-size: 13px;
+  margin: 0;
+}
+
+@media (max-width: 1100px) {
+  .k-grid--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .k-identity {
+    grid-template-columns: 1fr;
+  }
+  .k-identity-media img,
+  .k-identity-media .k-generic-phone {
+    height: 220px;
+  }
+  .k-grid--2,
+  .k-grid--3,
+  .k-grid--wide-left {
+    grid-template-columns: 1fr;
+  }
+  .k-empty {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .k-identity-name {
+    font-size: 24px;
+  }
+}
+
+.k-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--k-4);
+  min-width: 0;
+}
+.k-hero {
+  padding: var(--k-5);
+  background: linear-gradient(120deg, var(--nokia-brand-soft) 0%, var(--nokia-surface) 70%);
+}
+.k-link {
+  color: var(--nokia-brand);
+  font-weight: 600;
+}
+.k-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--k-1);
+}
+.k-chooser {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--k-2);
+}
+.k-btn--small {
+  min-height: 28px;
+  padding: 0 var(--k-3);
+  font-size: 13px;
+}
+.k-empty-art {
+  height: 180px;
+  flex: none;
+  filter: drop-shadow(0 6px 10px rgb(36 54 77 / 18%));
+}
+.k-storage {
+  display: flex;
+  gap: var(--k-4);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.k-storage-legend {
+  flex: 1 1 180px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--k-2);
+}
+.k-legend {
+  margin: 0;
+  display: flex;
+  gap: var(--k-2);
+  align-items: center;
+  color: var(--nokia-text);
+}
+.k-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex: none;
+}
+.k-swatch--used {
+  background: var(--nokia-brand);
+}
+.k-swatch--free {
+  background: var(--nokia-brand-border);
+}
+.k-log {
+  display: flex;
+  align-items: center;
+  gap: var(--k-2);
+  min-width: 0;
+  color: var(--nokia-text);
+}
+.k-btn--small + .k-btn--small {
+  margin-left: 0;
+}
+@media (max-width: 760px) {
+  .k-hero {
+    padding: var(--k-4);
+  }
+}
+
+/* App catalog cards: compact, equal rhythm, provenance and compatibility as separate facts. */
+.catalog-grid {
+  display: grid;
+  gap: var(--k-3);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  align-items: stretch;
+}
+.catalog-app {
+  display: flex;
+  flex-direction: column;
+  gap: var(--k-2);
+  padding: var(--k-4);
+  min-width: 0;
+}
+.catalog-app-head {
+  display: flex;
+  align-items: center;
+  gap: var(--k-3);
+}
+.catalog-app-icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--nokia-radius-control);
+  border: 1px solid var(--nokia-brand-border);
+  font-weight: 700;
+  font-size: 13px;
+}
+.catalog-app-title {
+  flex: 1;
+  min-width: 0;
+}
+.catalog-app-title h3 {
+  margin: 0;
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.catalog-app .catalog-description {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 4.5em;
+}
+.catalog-app-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--k-2);
+  align-items: center;
+}
+.catalog-app-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--k-2) var(--k-4);
+  align-items: center;
+  margin-top: auto;
+  padding-top: var(--k-2);
+}
+.k-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

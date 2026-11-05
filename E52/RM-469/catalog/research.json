@@ -1,0 +1,129 @@
+[
+  {
+    "name": "JTube",
+    "source": "https://github.com/shinovon/JTube",
+    "status": "unavailable",
+    "reason": "README автора объявляет проект discontinued; доступный бинарник не доказывает живой YouTube-сервис.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "MIDPlay",
+    "source": "https://github.com/phd051199/MIDPlay",
+    "status": "unsupported",
+    "reason": "README описывает mock/demo playback без живого стриминга; исключён из полезных музыкальных приложений.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "TelegramMicro",
+    "source": "https://github.com/faissaloo/telegram-micro",
+    "status": "unsupported",
+    "reason": "Публичный developer preview не может запросить код входа без собственной credential-bearing сборки.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "OpenTTY 1.19 / 1.18.2",
+    "source": "https://github.com/mrlima4095/OpenTTY-J2ME/releases",
+    "status": "unsupported",
+    "reason": "Строгая проверка обнаружила повтор атрибута manifest и JAD-поля после пустой секции; автоматическая загрузка заблокирована.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "Discofi",
+    "source": "https://github.com/gtrxAC/Discofi",
+    "status": "unsupported",
+    "reason": "На stock Symbian требуется изменение TLS; системные патчи не включены в массовую установку.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "Discord J2ME",
+    "source": "https://github.com/gtrxAC/discord-j2me",
+    "status": "unavailable",
+    "reason": "Автор прекратил активную разработку и рекомендует более безопасную альтернативу. Публичные прокси не проверены.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "Garmin Mobile XT / CorePlayer / Quickoffice / Best TaskMan",
+    "source": "https://github.com/hstsethi/awesome-symbian",
+    "status": "unavailable",
+    "reason": "Не найден однозначный легальный доступный дистрибутив подходящей версии. Коммерческие модифицированные архивы не используются.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "Qt for Symbian",
+    "source": "https://wiki.qt.io/Support_for_Symbian",
+    "status": "untested",
+    "reason": "Нужен конкретный легальный runtime под E52 и версии зависимостей; автоматический пакет не выбран.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "FBReaderJ",
+    "source": "https://github.com/geometer/FBReaderJ",
+    "status": "unsupported",
+    "reason": "Это Android-проект, не Java ME MIDlet для E52.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "TrekBuddy / Mobile GMaps / X-plore / Y-Browser / ZXReader / OggPlay",
+    "source": "https://github.com/hstsethi/awesome-symbian",
+    "status": "unavailable",
+    "reason": "Оставлены на дальнейшее исследование оригинальных S60v3 дистрибутивов и условий распространения.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "Symbian TLS / JRT security patches",
+    "source": "https://github.com/shinovon/symbian-tls",
+    "status": "untested",
+    "category": "high-risk",
+    "reason": "Меняют защищённые системные компоненты. Не входят в каталог автоматической установки; требуют отдельного исследования, резервной копии и решения владельца.",
+    "checked_at": "2026-11-03"
+  },
+  {
+    "name": "Opera Mini (Java ME)",
+    "source": "https://www.opera.com/mobile/mini",
+    "status": "unavailable",
+    "reason": "Официальные Java-каналы mini.opera.com вернули HTTP 503; действующий сайт предлагает Android. Версия, JAR/JAD и SHA-256 не подтверждены. Автозагрузка отключена; используйте только легально полученный оригинал.",
+    "checked_at": "2026-11-04"
+  },
+  {
+    "name": "FShell",
+    "source": "https://github.com/d3ru/FShell",
+    "status": "untested",
+    "reason": "В исходниках есть профиль s60/3rd_edition, но полного авторского SIS-релиза нет. clogger-stub.SIS — ROM-заглушка библиотеки, не FShell. Сборка/подпись и нужные capabilities зависят от команд.",
+    "checked_at": "2026-11-04"
+  },
+  {
+    "name": "QRemoteControl",
+    "source": "https://github.com/machinekoder/QRemoteControl-Client",
+    "status": "unavailable",
+    "reason": "Оригинальный репозиторий содержит клиент, но не опубликованный SIS для E52/E72. Текущий Qt Quick/Qt 5 код не подтверждает совместимость S60 3rd FP2; нужны соответствующие Qt runtime и сервер QRemoteControl на ПК.",
+    "checked_at": "2026-11-04"
+  },
+  {
+    "name": "Internet Radio",
+    "source": "https://github.com/fedor4ever/internet-radio",
+    "status": "unavailable",
+    "reason": "Доступны исходники native InternetRadio 2.0 и Qt-варианта. Единственный ir3_qtinternetradio_stub.sis — ROM-stub без приложения. Полный авторский установщик не найден; доступность каталога станций не подтверждена.",
+    "checked_at": "2026-11-04"
+  },
+  {
+    "name": "Rotate It!",
+    "source": "https://github.com/vitalii17/RotateIt/releases/tag/v0.2.1",
+    "status": "unsupported",
+    "reason": "Оригинальный SIS требует Qt 4.7.4 и Qt Quick Components 1.1. Автор указывает Symbian 9.4/Anna/Belle. E52/E72 используют 9.3 и не входят в целевую платформу.",
+    "checked_at": "2026-11-04"
+  },
+  {
+    "name": "NanoCounter",
+    "source": "https://github.com/vitalii17/NanoCounter/releases/tag/v0.1.1",
+    "status": "unsupported",
+    "reason": "Автор указывает Symbian 9.4–Belle FP2. SIS требует Qt 4.7.3 и платформы touch/Symbian^3. Не совместимо с Symbian 9.3 на E52/E72. CRC controller/data отсутствуют в оригинале, SHA-256 закреплён.",
+    "checked_at": "2026-11-04"
+  },
+  {
+    "name": "FileList QML",
+    "source": "https://github.com/ltomuta/filelist",
+    "status": "unsupported",
+    "reason": "Авторский SIS требует Qt 4.7.4, Qt Mobility 1.2 и Qt Quick Components. Target-device UID относятся к Symbian^3/Anna. Не предлагать как совместимое с E52/E72.",
+    "checked_at": "2026-11-04"
+  }
+]

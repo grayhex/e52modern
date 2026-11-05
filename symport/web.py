@@ -35,7 +35,6 @@ from symport.phone.bridge_security import host_allowed
 from symport.phone.contacts import parse_export, vcards
 from symport.phone.contracts import LIMIT
 from symport.phone.media_downloads import MediaDownloads, byte_range
-from symport.phone.registry import registry as phone_profiles
 
 ASSETS = Path(__file__).with_name("web_assets")
 NAMES = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")
@@ -479,8 +478,11 @@ def make_handler(state: Workbench):
                     return self._send(raw, 'image/svg+xml' if graphic.endswith('.svg') else 'image/png')
                 except OSError:
                     return self._json({'error': 'Not found'}, 404)
-            if url.path in {p['image'] for p in phone_profiles().values()}:
-                return self._send((ASSETS / url.path.lstrip('/')).read_bytes(), {'.png':'image/png', '.svg':'image/svg+xml', '.webp':'image/webp'}[Path(url.path).suffix])
+            if re.fullmatch(r'/phones/[a-z0-9-]+\.(?:png|svg|webp)', url.path):
+                try:  # artwork of every registered phone model (symport/phone/device_models.json)
+                    return self._send((ASSETS / url.path.lstrip('/')).read_bytes(), {'.png':'image/png','.svg':'image/svg+xml','.webp':'image/webp'}[Path(url.path).suffix])
+                except OSError:
+                    return self._json({'error': 'Not found'}, 404)
             if url.path.startswith('/vendor/wavesurfer/'):
                 relative = url.path.removeprefix('/vendor/wavesurfer/')
                 if re.fullmatch(r'(?:[a-z0-9.-]+/)*[a-z0-9.-]+\.js', relative) and '..' not in relative:

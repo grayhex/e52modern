@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 import copy
-import json
 import re
-from functools import lru_cache
-from pathlib import Path
 
 
-@lru_cache(maxsize=1)
 def registry():
-    return json.loads(Path(__file__).with_name("model_registry.json").read_text(encoding="utf-8"))
+    from .models import catalog
+    return {p['id']:dict(p, selectable=p.get('selectable',bool(p.get('toolchain_profile'))),
+                         aliases=p.get('aliases',[p['model']]), rms=p.get('rms',[]),
+                         platform_uids=p.get('platform_uids',[])) for p in catalog()}
 
 
 def selectable_profiles():

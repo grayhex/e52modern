@@ -1,0 +1,47 @@
+{
+  "id": "fplay",
+  "name": "FPlay J2ME",
+  "category": "multimedia",
+  "developer": "carlosrafaelgn",
+  "description": "Локальный музыкальный проигрыватель с эквалайзером и настройками цвета.",
+  "version": "1.0.64",
+  "release_date": null,
+  "release_tag": null,
+  "source_commit": "7691e46b6b9cc8fd339476e874d3d613a95afc3c",
+  "platforms": [
+    "MIDP-2.0",
+    "CLDC-1.1"
+  ],
+  "format": "jar+jad",
+  "homepage": "https://github.com/carlosrafaelgn/FPlayJ2ME",
+  "license": "MIT",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/carlosrafaelgn/FPlayJ2ME",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "JSR-75 и MMAPI; воспроизведение зависит от кодеков устройства.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/carlosrafaelgn/FPlayJ2ME",
+    "https://github.com/carlosrafaelgn/FPlayJ2ME/tree/master"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "fplay",
+  "limitations": [
+    "JSR-75 и MMAPI; воспроизведение зависит от кодеков устройства.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline",
+    "recommended"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "JSR-75 и MMAPI; воспроизведение зависит от кодеков устройства."
+  ]
+}

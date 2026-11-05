@@ -62,7 +62,7 @@ USB-драйверы Nokia устанавливаются отдельно.
 файлы карты, а не контакты, SMS или внутренний `C:/`.** Функции появляются только
 при поддержке выбранным транспортом.
 
-[Windows Bridge](docs/WINDOWS_BRIDGE.md) · [USB, Bluetooth и совместимость](docs/TRANSPORTS.md)
+[Windows Bridge](docs/WINDOWS_BRIDGE.md) · [Модели телефонов и как добавить новую](docs/DEVICE_MODELS.md) · [USB, Bluetooth и совместимость](docs/TRANSPORTS.md)
 
 [Первое подключение E52/E72: чтение, копии и проверка передачи](docs/FIRST_CONNECTION_E52.md)
 

@@ -25,7 +25,7 @@ SYMPORT_BROWSER_EXECUTABLE=/path/to/chromium node tools/assets/render_phones.cjs
 
 Requires Playwright and Pillow. The renderer exports alpha PNG and lossless WebP at 1000×1868.
 SVG layer IDs separate shell, rails, brushing, screen glass, earpiece, lens and keys for editing.
-`model_registry.json` records native display and screen-in-artwork geometry for Theme Studio.
+`device_models.json` records native display and screen-in-artwork geometry for Theme Studio.
 Tests check alpha/padding, body aspect, separate masters and no embedded/reference-photo content.
 Review sheets at 180/240 px and screenshots come from `tools/check_n95_ui.cjs`; all phone state in
 these captures is synthetic and explicitly identified as such in the documentation.

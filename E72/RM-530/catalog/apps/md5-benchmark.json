@@ -1,0 +1,46 @@
+{
+  "id": "md5-benchmark",
+  "name": "MD5 Benchmark",
+  "category": "development",
+  "developer": "shinovon",
+  "description": "Сравнение скорости Java VM на простом вычислительном тесте.",
+  "version": "2.0.0",
+  "release_date": "2023-07-10",
+  "release_tag": "2.0.0",
+  "source_commit": null,
+  "platforms": [
+    "MIDP-1.0",
+    "CLDC-1.0"
+  ],
+  "format": "jar",
+  "homepage": "https://github.com/shinovon/MD5BenchmarkJ2ME",
+  "license": "not-specified",
+  "redistribution": "not-reviewed; original-author download only",
+  "delivery": "manual",
+  "manual_url": "https://github.com/shinovon/MD5BenchmarkJ2ME/releases/tag/2.0.0",
+  "dependencies": [],
+  "network": "offline",
+  "backend": "MD5 не подходит для защиты паролей; здесь используется только как тест нагрузки.",
+  "tls": "Сеть для основной функции не требуется.",
+  "signature": "Наличие/доверие подписи не проверено. Не обходятся сертификаты и разрешения Symbian.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/shinovon/MD5BenchmarkJ2ME",
+    "https://github.com/shinovon/MD5BenchmarkJ2ME/releases/tag/2.0.0"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "md5-benchmark",
+  "limitations": [
+    "MD5 не подходит для защиты паролей; здесь используется только как тест нагрузки.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "offline"
+  ],
+  "delivery_reason": "Нет однозначной лицензии на автоматическое кэширование; получите пакет непосредственно у автора.",
+  "requirements": [
+    "MD5 не подходит для защиты паролей; здесь используется только как тест нагрузки."
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "id": "s2putty",
+  "name": "PuTTY for Symbian",
+  "category": "internet",
+  "developer": "shinovon",
+  "description": "Нативный SSH-клиент: доступ к собственному серверу с аппаратной клавиатуры.",
+  "version": "1.6.1",
+  "release_date": "2026-08-05",
+  "release_tag": "v1.6.1",
+  "source_commit": null,
+  "platforms": [
+    "Symbian 9.x",
+    "S60 3rd Edition"
+  ],
+  "format": "sis",
+  "homepage": "https://github.com/shinovon/s2putty",
+  "license": "MIT (PuTTY copyright notice)",
+  "redistribution": "allowed-with-license-notices",
+  "delivery": "automatic",
+  "manual_url": "https://github.com/shinovon/s2putty/releases/tag/v1.6.1",
+  "dependencies": [],
+  "network": "online",
+  "backend": "Нужен SSH-сервер. Движок PuTTY 0.68 устарел; согласуйте алгоритмы с администратором.",
+  "tls": "Работа онлайн-сервиса и TLS на E52 не проверялась. Не передавайте учётные данные неизвестным прокси.",
+  "signature": "В исследованном контроллере SIS подпись не обнаружена. Для установки может потребоваться допустимая подпись; SymPort не обходит проверки и capabilities.",
+  "compatibility": "likely-compatible",
+  "e52_evidence": null,
+  "compatibility_basis": "Профиль MIDP/CLDC или S60 соответствует классу E52; выполнение не проверялось.",
+  "sources": [
+    "https://github.com/shinovon/s2putty",
+    "https://github.com/shinovon/s2putty/releases/tag/v1.6.1"
+  ],
+  "checked_at": "2026-11-03",
+  "source_id": "s2putty",
+  "limitations": [
+    "Нужен SSH-сервер. Движок PuTTY 0.68 устарел; согласуйте алгоритмы с администратором.",
+    "На физическом E52 не тестировалось."
+  ],
+  "collection": [
+    "internet"
+  ],
+  "delivery_reason": null,
+  "requirements": [
+    "Нужен SSH-сервер. Движок PuTTY 0.68 устарел; согласуйте алгоритмы с администратором."
+  ]
+}

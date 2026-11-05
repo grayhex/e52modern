@@ -1,4 +1,5 @@
 import { bytes } from '../utils/files';
+import { PageHeader } from '../components/kit';
 import { encode } from '../utils/files';
 import { useConfirmedAction } from '../hooks/useConfirmedAction';
 import { initialChoice } from '../utils/packages';
@@ -244,7 +245,7 @@ export default function Lab() {
   });
   return (
     <>
-      <h1>Emulator Lab</h1>
+      <PageHeader title={'Emulator Lab'} />
       <Card>
         <div className="card-head">
           <h2>EKA2L1 / MGO</h2>

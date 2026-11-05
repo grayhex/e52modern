@@ -1,918 +1,757 @@
-import { defaultDeviceProfile, deviceProfiles, profileById } from '../components/deviceProfiles';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import createCache from '@emotion/cache';
-import { CacheProvider } from '@emotion/react';
-import { ThemeProvider, useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import ButtonBase from '@mui/material/ButtonBase';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Chip from '@mui/material/Chip';
-import LinearProgress from '@mui/material/LinearProgress';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
 import { BarChart } from '@mui/x-charts/BarChart';
+import { LineChart } from '@mui/x-charts/LineChart';
 import { PieChart } from '@mui/x-charts/PieChart';
 import {
   Activity as ActivityIcon,
   AppWindow,
   Battery,
   Clock3,
-  Cpu,
   DatabaseBackup,
   FolderOpen,
   HardDrive,
   History,
   PackageSearch,
+  PlugZap,
   RefreshCw,
   Signal,
-  Usb,
   Users,
-  type LucideIcon,
 } from 'lucide-react';
-import { useDevices, keys } from '../api/queries';
+import { useDevices, useModels, keys } from '../api/queries';
 import { useApi, usePreferences } from '../state/app';
 import { useWorkspace } from '../hooks/useWorkspace';
-import { nokiaTheme } from '../dashboard/muiTheme';
+import { ChartTheme } from '../dashboard/ChartTheme';
 import { formatBytes, localeFor, perDay, storage, timeLabel } from '../dashboard/derive';
 import { useLinkedVolume } from '../dashboard/linkedVolume';
-import type { Device } from '../api/contracts';
+import { SERVICES, opState } from '../api/capabilities';
+import { measurementsSchema } from '../api/p1';
+import type { Device, PhoneModel } from '../api/contracts';
+import {
+  ActionToolbar,
+  DeviceIdentity,
+  EmptyState,
+  ErrorState,
+  GenericPhone,
+  Metric,
+  PageHeader,
+  SectionPanel,
+  Skeleton,
+  StatusIndicator,
+  type Tone,
+} from '../components/kit';
 
 const base = import.meta.env.BASE_URL;
+const asset = (path: string) => `${base}${path.replace(/^\//, '')}`;
+const operationLabel = new Map(
+  SERVICES.flatMap((s) => s.ops.map(([op, en, ru]) => [op, [en, ru]] as const)),
+);
 
-/** Landing page: only values the selected transport really reports; anything else says "no data". */
+/** Landing page: only values the selected transport really reports; everything else is listed as not reported. */
 export default function Dashboard() {
-  const { theme } = usePreferences();
-  const api = useApi();
-  const dark =
-    theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
-  const cache = useMemo(
-    () => createCache({ key: 'mui', nonce: api.styleNonce, prepend: true }),
-    [api.styleNonce],
-  );
-  const muiTheme = useMemo(() => nokiaTheme(dark ? 'dark' : 'light'), [dark]);
   return (
-    <CacheProvider value={cache}>
-      <ThemeProvider theme={muiTheme}>
-        <Overview />
-      </ThemeProvider>
-    </CacheProvider>
+    <ChartTheme>
+      <Overview />
+    </ChartTheme>
   );
 }
 
 function Overview() {
   const palette = useTheme().palette;
-  const usedColor = palette.primary.main;
-  const emptyColor = palette.mode === 'dark' ? '#3a4c60' : '#e2e7ed';
-  const freeColor = palette.mode === 'dark' ? '#547bb1' : '#a7bedd';
   const api = useApi();
   const { device, language, t } = usePreferences();
   const locale = localeFor(language);
   const devices = useDevices();
+  const models = useModels();
   const workspace = useWorkspace();
+  const list = devices.data?.devices ?? [];
   const selected: Device | undefined =
-    devices.data?.devices.find((d) => d.id === device) ??
-    devices.data?.devices.find((d) => d.connected && d.model) ??
-    devices.data?.devices.find((d) => d.connected) ??
-    devices.data?.devices[0];
+    list.find((d) => d.id === device) ??
+    list.find((d) => d.connected && d.model) ??
+    list.find((d) => d.connected) ??
+    list[0];
+  const connected = Boolean(selected?.connected);
   const journal = useQuery({
     queryKey: keys.history,
     queryFn: ({ signal }) => api.history(signal),
     refetchInterval: 30000,
   });
   const operations = journal.data?.operations ?? [];
-  // Same view for every model. Counters belong to the connection that reported them; a phone
-  // without its own counters shows a mounted volume only after the user links it explicitly.
-  const linked = useLinkedVolume(selected, devices.data?.devices ?? []);
+  // Counters belong to the connection that reported them; a linked volume is the user's explicit choice.
+  const linked = useLinkedVolume(selected, list);
   const space = storage(linked.volume);
+  const samples = useQuery({
+    queryKey: ['diagnostics', selected?.id],
+    queryFn: ({ signal }) =>
+      api.request(
+        '/api/diagnostics',
+        { action: 'history', device: selected?.id ?? '' },
+        measurementsSchema,
+        signal,
+      ),
+    enabled: connected && Boolean(selected?.id),
+    retry: false,
+  });
   const backups = (workspace.data?.backups ?? []).filter((b) => typeof b.created === 'string');
   const lastBackup = backups
     .map((b) => String(b.created))
     .sort()
     .at(-1);
-  const services = Object.entries(selected?.capability_status ?? {});
-  const available = services.filter(([, s]) => s.status === 'available').length;
-  const state = devices.isPending
-    ? 'checking'
-    : selected?.connected
-      ? 'connected'
-      : selected
-        ? 'disconnected'
-        : 'none';
-  const profile = selected?.model_profile;
-  // The connection did not identify the model: show the project's artwork, labelled as an illustration only.
-  const [artwork, setArtwork] = useState('nokia-e52');
-  const illustration = profileById(artwork) ?? defaultDeviceProfile;
-  const picture = profile
-    ? { src: profile.image, alt: profile.name }
-    : { src: illustration.image, alt: illustration.name };
-  const candidates = [
-    {
-      key: 'battery',
-      icon: Battery,
-      label: t('Battery', 'Заряд батареи'),
-      value: selected?.battery != null ? `${selected.battery}%` : null,
-      progress: selected?.battery ?? null,
-      note: null,
-    },
-    {
-      key: 'signal',
-      icon: Signal,
-      label: t('Signal', 'Уровень сигнала'),
-      value: selected?.signal != null ? `${selected.signal}%` : null,
-      progress: selected?.signal ?? null,
-      note: null,
-    },
-    {
-      key: 'free',
-      icon: HardDrive,
-      label: t('Free space', 'Свободно на накопителе'),
-      value: space ? formatBytes(space.free) : null,
-      progress: space ? 100 - space.usedPercent : null,
-      note: space ? `${t('of', 'из')} ${formatBytes(space.total)}` : null,
-    },
-    {
-      key: 'life',
-      icon: Clock3,
-      label: t('Life timer', 'Счётчик часов'),
-      value:
-        selected?.life_timer_hours != null
-          ? `${selected.life_timer_hours.toFixed(1)} ${t('h', 'ч')}`
-          : null,
-      progress: null,
-      note: null,
-    },
-    {
-      key: 'services',
-      icon: ActivityIcon,
-      label: t('Connection services', 'Сервисы подключения'),
-      value: services.length ? `${available} / ${services.length}` : null,
-      progress: services.length ? (100 * available) / services.length : null,
-      note: services.length ? t('available', 'доступно') : null,
-    },
-    {
-      key: 'backup',
-      icon: DatabaseBackup,
-      label: t('Last server backup', 'Последняя копия'),
-      value: lastBackup ? new Date(lastBackup).toLocaleDateString(locale) : null,
-      progress: null,
-      note: lastBackup
-        ? `${backups.length} ${t('stored on the server', 'хранится на сервере')}`
-        : t('No full backup yet', 'Полной копии ещё нет'),
-    },
-  ];
-  const metrics = candidates;
+  const matrix = selected?.capability_matrix;
+  const verified = matrix ? Object.entries(matrix).filter(([, s]) => s.status === 'available') : [];
   const updated = devices.dataUpdatedAt
     ? new Date(devices.dataUpdatedAt).toLocaleTimeString(locale, {
         hour: '2-digit',
         minute: '2-digit',
       })
     : null;
-  return (
-    <Stack spacing={2} className="mui-dashboard">
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        flexWrap="wrap"
-        gap={1}
-      >
-        <Typography variant="h1" component="h1" sx={{ fontSize: 26, fontWeight: 600, m: 0 }}>
-          {t('Device overview', 'Обзор устройства')}
-        </Typography>
-        <Stack direction="row" alignItems="center" spacing={1}>
+
+  const header = (
+    <PageHeader
+      title={t('Device overview', 'Обзор устройства')}
+      actions={
+        <>
           {updated && (
-            <Typography variant="body2" color="text.secondary">
+            <span className="k-meta">
               {t('Checked', 'Проверено')}: {updated}
-            </Typography>
+            </span>
           )}
-          <Button
-            size="small"
-            variant="outlined"
-            startIcon={<RefreshCw size={14} aria-hidden="true" />}
+          <button
+            type="button"
+            className="k-btn"
             disabled={devices.isFetching}
             onClick={() => {
               void devices.refetch();
             }}
           >
+            <RefreshCw size={14} aria-hidden="true" />
             {t('Refresh', 'Обновить')}
-          </Button>
-        </Stack>
-      </Stack>
-      {devices.error && (
-        <Typography role="alert" color="error">
+          </button>
+        </>
+      }
+    />
+  );
+
+  if (devices.isPending)
+    return (
+      <div className="k-stack mui-dashboard">
+        {header}
+        <SectionPanel>
+          <Skeleton lines={5} />
+        </SectionPanel>
+      </div>
+    );
+  if (devices.isError && !devices.data)
+    return (
+      <div className="k-stack mui-dashboard">
+        {header}
+        <ErrorState title={t('Devices could not be read', 'Не удалось получить список устройств')}>
           {devices.error.message}
-        </Typography>
+        </ErrorState>
+      </div>
+    );
+  if (!connected)
+    return (
+      <div className="k-stack mui-dashboard">
+        {header}
+        <NoPhone
+          models={models}
+          selected={selected}
+          onRetry={() => void devices.refetch()}
+          busy={devices.isFetching}
+        />
+      </div>
+    );
+
+  const profile = selected?.model_profile;
+  type MetricRow = {
+    key: string;
+    icon: typeof Battery;
+    label: string;
+    value: string;
+    progress?: number;
+    note?: string;
+  };
+  const metrics = [
+    selected?.battery != null && {
+      key: 'battery',
+      icon: Battery,
+      label: t('Battery', 'Заряд батареи'),
+      value: `${selected.battery}%`,
+      progress: selected.battery,
+    },
+    selected?.signal != null && {
+      key: 'signal',
+      icon: Signal,
+      label: t('Signal', 'Уровень сигнала'),
+      value: `${selected.signal}%`,
+      progress: selected.signal,
+    },
+    space && {
+      key: 'free',
+      icon: HardDrive,
+      label: t('Free space', 'Свободно на накопителе'),
+      value: formatBytes(space.free),
+      progress: 100 - space.usedPercent,
+      note: `${t('of', 'из')} ${formatBytes(space.total)}`,
+    },
+    selected?.life_timer_hours != null && {
+      key: 'life',
+      icon: Clock3,
+      label: t('Life timer', 'Счётчик часов'),
+      value: `${selected.life_timer_hours.toFixed(1)} ${t('h', 'ч')}`,
+    },
+    matrix && {
+      key: 'verified',
+      icon: ActivityIcon,
+      label: t('Verified operations', 'Подтверждено операций'),
+      value: `${verified.length} / ${Object.keys(matrix).length}`,
+      note: t('by read-only probes', 'безопасными проверками'),
+    },
+    lastBackup && {
+      key: 'backup',
+      icon: DatabaseBackup,
+      label: t('Last server backup', 'Последняя копия'),
+      value: new Date(lastBackup).toLocaleDateString(locale),
+      note: `${backups.length} ${t('stored on the server', 'хранится на сервере')}`,
+    },
+  ].filter((m): m is MetricRow => m !== null && typeof m === 'object');
+  const missing = [
+    selected?.battery == null && t('battery', 'батарея'),
+    selected?.signal == null && t('signal', 'сигнал'),
+    !space && t('storage counters', 'счётчики накопителя'),
+    selected?.life_timer_hours == null && t('life timer', 'счётчик часов'),
+  ].filter(Boolean);
+
+  const sampleRows = (samples.data?.measurements ?? []).filter(
+    (m) => m.battery != null || m.signal != null,
+  );
+  const showHistory = sampleRows.length >= 3;
+
+  return (
+    <div className="k-stack mui-dashboard">
+      {header}
+      <SectionPanel className="k-hero">
+        <DeviceIdentity
+          name={
+            (profile ? t(profile.name, profile.name_ru ?? profile.name) : undefined) ??
+            selected?.model ??
+            selected?.name ??
+            t('Symbian phone', 'Телефон Symbian')
+          }
+          subtitle={
+            profile
+              ? [
+                  profile.symbian && `Symbian ${profile.symbian}`,
+                  `S60 ${profile.s60}`,
+                  profile.screen &&
+                    `${profile.screen.width}×${profile.screen.height} (${profile.screen.orientation === 'landscape' ? t('landscape', 'альбомная') : t('portrait', 'книжная')})`,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+              : t(
+                  'The connection did not report a phone model.',
+                  'Подключение не сообщило модель телефона.',
+                )
+          }
+          status={
+            <>
+              <StatusIndicator tone="ok">{t('Connected', 'Подключено')}</StatusIndicator>
+              {selected?.evidence && <span className="k-meta">{selected.evidence}</span>}
+            </>
+          }
+          facts={[
+            {
+              label: t('Firmware', 'Прошивка'),
+              value: selected?.firmware || t('No data', 'Нет данных'),
+              note: selected?.rm ? `RM ${selected.rm}` : null,
+            },
+            ...(space
+              ? [
+                  {
+                    label: t('Storage', 'Накопитель'),
+                    value: formatBytes(space.total),
+                    note: `${t('free', 'свободно')} ${formatBytes(space.free)}`,
+                  },
+                ]
+              : []),
+            {
+              label: t('Transport', 'Транспорт'),
+              value: selected?.transport ?? '—',
+              note: selected?.usb_mode ? `USB: ${selected.usb_mode}` : null,
+            },
+          ]}
+          {...artwork(profile, models, t)}
+          actions={<HeroActions device={selected} volume={linked.volume} />}
+        />
+      </SectionPanel>
+
+      {metrics.length > 0 && (
+        <div className="k-metrics">
+          {metrics.map(({ key, ...m }) => (
+            <Metric key={key} {...m} />
+          ))}
+        </div>
+      )}
+      {missing.length > 0 && (
+        <p className="k-note-line">
+          {t('Not reported by this transport', 'Не сообщается этим транспортом')}:{' '}
+          {missing.join(', ')}.
+        </p>
       )}
 
-      <Card
-        sx={{
-          background: (th) =>
-            `linear-gradient(120deg, ${th.palette.mode === 'dark' ? '#1d3150' : '#e9f0fb'} 0%, ${th.palette.background.paper} 70%)`,
-        }}
-      >
-        <CardContent sx={{ p: { xs: 2, md: 3 } }}>
-          <Box
-            sx={{
-              display: 'grid',
-              gap: 3,
-              alignItems: 'center',
-              gridTemplateColumns: {
-                xs: '1fr',
-                md: '170px minmax(0,1fr) 200px',
-              },
-            }}
-          >
-            <Stack alignItems="center" spacing={0.75}>
-              <Box
-                component="img"
-                src={`${base}${picture.src.replace(/^\//, '')}`}
-                alt={
-                  profile
-                    ? picture.alt
-                    : t('Illustration (model not identified)', 'Иллюстрация (модель не определена)')
-                }
-                sx={{
-                  height: 200,
-                  maxWidth: '100%',
-                  objectFit: 'contain',
-                  opacity: profile ? 1 : 0.85,
-                }}
-              />
-              {!profile && (
-                <Stack alignItems="center" spacing={0.5}>
-                  <Typography variant="caption" color="text.secondary" align="center">
-                    {t(
-                      'Illustration only — the connection did not report a model',
-                      'Только иллюстрация — подключение не сообщило модель',
-                    )}
-                  </Typography>
-                  <Stack direction="row" spacing={0.5}>
-                    {deviceProfiles.map(({ id, name }) => (
-                      <Chip
-                        key={id}
-                        size="small"
-                        label={name.replace(/^Nokia /, '')}
-                        clickable
-                        color={artwork === id ? 'primary' : 'default'}
-                        variant={artwork === id ? 'filled' : 'outlined'}
-                        onClick={() => setArtwork(id)}
-                        aria-pressed={artwork === id}
-                      />
-                    ))}
-                  </Stack>
-                </Stack>
-              )}
-            </Stack>
-            <Stack spacing={1.5} sx={{ minWidth: 0 }}>
-              <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                <StateChip state={state} />
-                {selected?.evidence && (
-                  <Typography variant="caption" color="text.secondary">
-                    {selected.evidence}
-                  </Typography>
-                )}
-              </Stack>
-              <Typography variant="h2" component="h2" sx={{ fontSize: 30, fontWeight: 700, m: 0 }}>
-                {(profile ? t(profile.name, profile.name_ru ?? profile.name) : undefined) ??
-                  selected?.model ??
-                  selected?.name ??
-                  t('Symbian phone', 'Телефон Symbian')}
-              </Typography>
-              <Typography color="text.secondary">
-                {profile
-                  ? `Symbian ${profile.symbian} · S60 ${profile.s60} · ${profile.screen.width}×${profile.screen.height} (${profile.screen.orientation === 'landscape' ? t('landscape', 'альбомная') : t('portrait', 'книжная')})`
-                  : t(
-                      'Model profile is not available for this connection.',
-                      'Профиль модели для этого подключения недоступен.',
-                    )}
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: 2,
-                  gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))',
-                }}
-              >
-                <Fact
-                  icon={Cpu}
-                  label={t('Firmware', 'Прошивка')}
-                  value={selected?.firmware}
-                  extra={selected?.rm ? `RM ${selected.rm}` : null}
-                />
-                <Fact
-                  icon={HardDrive}
-                  label={t('Storage', 'Накопитель')}
-                  value={space ? formatBytes(space.total) : null}
-                  extra={space ? `${t('free', 'свободно')} ${formatBytes(space.free)}` : null}
-                />
-                <Fact
-                  icon={Usb}
-                  label={t('Transport', 'Транспорт')}
-                  value={selected?.transport}
-                  extra={selected?.usb_mode ? `USB: ${selected.usb_mode}` : null}
-                />
-              </Box>
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                <Button
-                  variant="contained"
-                  startIcon={<FolderOpen size={16} aria-hidden="true" />}
-                  href="#phone/files"
-                >
-                  {t('Files', 'Файлы')}
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Users size={16} aria-hidden="true" />}
-                  href="#phone/contacts"
-                >
-                  {t('Contacts', 'Контакты')}
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<DatabaseBackup size={16} aria-hidden="true" />}
-                  href="#phone/backups"
-                >
-                  {t('Backup', 'Резервная копия')}
-                </Button>
-              </Stack>
-            </Stack>
-            <Box
-              sx={{
-                display: { xs: 'none', md: 'grid' },
-                placeItems: 'center',
-                borderLeft: 1,
-                borderColor: 'divider',
-                pl: 3,
-                height: '100%',
-              }}
-            >
-              <Box
-                component="img"
-                src={`${base}brand/${useTheme().palette.mode === 'dark' ? 'nokia-white' : 'nokia-blue'}.svg`}
-                alt="Nokia"
-                sx={{ width: 150 }}
-              />
-              <Typography
-                variant="h3"
-                sx={{ fontSize: 28, fontWeight: 700, color: 'primary.main' }}
-              >
-                {profile?.name.replace(/^Nokia\s*/i, '') ??
-                  selected?.model?.replace(/^Nokia\s*/i, '') ??
-                  ''}
-              </Typography>
-            </Box>
-          </Box>
-        </CardContent>
-      </Card>
-
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 2,
-          gridTemplateColumns: {
-            xs: 'repeat(2,minmax(0,1fr))',
-            md: 'repeat(3,minmax(0,1fr))',
-            xl: 'repeat(6,minmax(0,1fr))',
-          },
-        }}
-      >
-        {metrics.map((m) => (
-          <Metric {...m} key={m.key} />
-        ))}
-      </Box>
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 2,
-          gridTemplateColumns: { xs: '1fr', lg: 'minmax(0,1fr) minmax(0,1.4fr)' },
-        }}
-      >
-        <Panel
+      <div className={`k-grid ${showHistory ? 'k-grid--3' : 'k-grid--2'}`}>
+        <SectionPanel
           title={t('Storage', 'Хранилище')}
-          subtitle={space ? `${t('Total', 'Всего')}: ${formatBytes(space.total)}` : undefined}
+          meta={space ? `${t('Total', 'Всего')}: ${formatBytes(space.total)}` : undefined}
         >
-          <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" spacing={2}>
-            <PieChart
-              width={190}
-              height={190}
-              hideLegend
-              margin={{ top: 4, bottom: 4, left: 4, right: 4 }}
-              series={[
-                {
-                  innerRadius: 62,
-                  outerRadius: 90,
-                  paddingAngle: space ? 2 : 0,
-                  cornerRadius: 3,
-                  data: space
-                    ? [
-                        {
-                          id: 'used',
-                          value: space.used,
-                          label: t('Used', 'Занято'),
-                          color: usedColor,
-                        },
-                        {
-                          id: 'free',
-                          value: space.free,
-                          label: t('Free', 'Свободно'),
-                          color: freeColor,
-                        },
-                      ]
-                    : [
-                        {
-                          id: 'none',
-                          value: 1,
-                          label: t('No data', 'Нет данных'),
-                          color: emptyColor,
-                        },
-                      ],
-                  valueFormatter: (item) => (space ? formatBytes(item.value) : '—'),
-                },
-              ]}
-            />
-            <Stack spacing={1.5}>
-              <Legend
-                color={usedColor}
-                label={t('Used', 'Занято')}
-                value={space ? `${formatBytes(space.used)} (${space.usedPercent}%)` : '—'}
-              />
-              <Legend
-                color={freeColor}
-                label={t('Free', 'Свободно')}
-                value={space ? `${formatBytes(space.free)} (${100 - space.usedPercent}%)` : '—'}
-              />
-              <Typography variant="caption" color="text.secondary">
-                {space
-                  ? `${linked.volume?.name ?? linked.volume?.id ?? ''} · ` +
-                    (linked.isLinked
-                      ? t(
-                          'Volume linked by you to this phone; it says nothing about phone memory or other cards.',
-                          'Том, который вы связали с этим телефоном; о памяти телефона и других картах он ничего не говорит.',
-                        )
-                      : t(
-                          'Counters reported by this connection.',
-                          'Счётчики, сообщённые этим подключением.',
-                        ))
-                  : t(
-                      'This connection reports no storage counters.',
-                      'Это подключение не сообщает счётчики накопителя.',
-                    )}
-              </Typography>
-              {linked.candidates.length > 0 && selected && (
-                <label>
-                  <Typography variant="caption" color="text.secondary" component="span">
-                    {t('Link a memory card volume', 'Связать с томом карты памяти')}{' '}
-                  </Typography>
-                  <select
-                    value={linked.isLinked ? (linked.volume?.id ?? '') : ''}
-                    onChange={(event) => linked.link(event.target.value || null)}
-                  >
-                    <option value="">{t('Not linked', 'Не связан')}</option>
-                    {linked.candidates.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name ?? d.id}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
-            </Stack>
-          </Stack>
-        </Panel>
-        <Panel
-          title={t('SymPort operations, 7 days', 'Операции SymPort за 7 дней')}
-          subtitle={`${operations.length} ${t('in the log', 'в журнале')}`}
-        >
-          <DayChart operations={operations} />
-          {!operations.length && (
-            <Typography variant="caption" color="text.secondary">
-              {t('No operations recorded yet.', 'Операций пока не записано.')}
-            </Typography>
-          )}
-        </Panel>
-      </Box>
-
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 2,
-          gridTemplateColumns: { xs: '1fr', lg: 'repeat(3,minmax(0,1fr))' },
-        }}
-      >
-        <Panel title={t('Quick actions', 'Быстрые действия')}>
-          <Box
-            sx={{
-              display: 'grid',
-              gap: 1,
-              gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))',
-            }}
-          >
-            {(
-              [
-                [
-                  FolderOpen,
-                  t('Open files', 'Открыть файлы'),
-                  t('Browse the storage', 'Просмотр накопителя'),
-                  '#phone/files',
-                ],
-                [
-                  DatabaseBackup,
-                  t('Create backup', 'Создать копию'),
-                  t('Full card backup', 'Полная копия карты'),
-                  '#phone/backups',
-                ],
-                [
-                  AppWindow,
-                  t('Install app', 'Установить приложение'),
-                  t('SIS / SISX transfer', 'Передача SIS / SISX'),
-                  '#apps/installed',
-                ],
-                [
-                  PackageSearch,
-                  t('Check package', 'Проверить пакет'),
-                  t('Certificates, dependencies', 'Сертификаты, зависимости'),
-                  '#tools/certificates',
-                ],
-              ] as [LucideIcon, string, string, string][]
-            ).map(([Icon, title, hint, href]) => (
-              <ButtonBase
-                key={href}
-                href={href}
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  gap: 1.25,
-                  p: 1.25,
-                  textAlign: 'left',
-                  border: 1,
-                  borderColor: 'divider',
-                  borderRadius: 1,
-                  '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
-                }}
-              >
-                <Box sx={{ color: 'primary.main', display: 'grid' }}>
-                  <Icon size={22} aria-hidden="true" />
-                </Box>
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={600}>
-                    {title}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" component="div">
-                    {hint}
-                  </Typography>
-                </Box>
-              </ButtonBase>
-            ))}
-          </Box>
-        </Panel>
-        <Panel title={t('Device state', 'Состояние устройства')}>
-          <StateList
-            rows={[
-              [
-                t('Connection', 'Подключение'),
-                state === 'connected' ? 'ok' : state === 'checking' ? 'unknown' : 'warn',
-                state === 'connected'
-                  ? t('Connected', 'Подключено')
-                  : state === 'checking'
-                    ? t('Checking…', 'Проверка…')
-                    : t('No device', 'Нет устройства'),
-              ],
-              [
-                t('File access', 'Доступ к файлам'),
-                selected?.capability_matrix?.['files.list']?.status === 'available'
-                  ? 'ok'
-                  : 'unknown',
-                selected?.capability_matrix?.['files.list']?.status === 'available'
-                  ? t('Verified', 'Проверено')
-                  : selected?.capability_matrix?.['files.list']?.status === 'unsupported'
-                    ? t('Not supported by this connection', 'Это подключение не поддерживает')
-                    : t('Not verified', 'Не проверено'),
-              ],
-              [
-                t('Firmware vs reference', 'Прошивка и справочник'),
-                selected?.firmware_update?.status === 'older'
-                  ? 'warn'
-                  : selected?.firmware_update?.status === 'current-in-reference'
-                    ? 'ok'
-                    : 'unknown',
-                selected?.firmware_update?.status === 'older'
-                  ? `${t('newer listed', 'есть новее')}: ${selected.firmware_update.latest_known ?? ''}`
-                  : selected?.firmware_update?.status === 'current-in-reference'
-                    ? t('matches reference', 'по справочнику')
-                    : t('No data', 'Нет данных'),
-              ],
-              [
-                t('USB mode', 'USB-режим'),
-                selected?.usb_mode ? 'ok' : 'unknown',
-                selected?.usb_mode ?? t('No data', 'Нет данных'),
-              ],
-              [
-                t('Full backup', 'Полная копия'),
-                lastBackup ? 'ok' : 'warn',
-                lastBackup ? new Date(lastBackup).toLocaleString(locale) : t('None yet', 'Ещё нет'),
-              ],
-            ]}
+          <StoragePanel
+            space={space}
+            linked={linked}
+            usedColor={palette.primary.main}
+            freeColor="#a7bedd"
+            emptyColor="#e2e7ed"
           />
-        </Panel>
-        <Panel
+        </SectionPanel>
+        <SectionPanel
+          title={t('SymPort operations, 7 days', 'Операции SymPort за 7 дней')}
+          meta={`${operations.length} ${t('in the log', 'в журнале')}`}
+        >
+          <DayChart operations={operations} color={palette.primary.main} />
+          {!operations.length && (
+            <p className="k-note-line">
+              {t('No operations recorded yet.', 'Операций пока не записано.')}
+            </p>
+          )}
+        </SectionPanel>
+        {showHistory && (
+          <SectionPanel
+            title={t('Battery and signal', 'Батарея и сигнал')}
+            meta={`${sampleRows.length} ${t('measurements', 'измерений')}`}
+          >
+            <HistoryChart rows={sampleRows} locale={locale} />
+          </SectionPanel>
+        )}
+      </div>
+
+      <div className="k-grid k-grid--2">
+        <SectionPanel title={t('Device state', 'Состояние устройства')}>
+          <StateList device={selected} hasBackup={Boolean(lastBackup)} />
+        </SectionPanel>
+        <SectionPanel
           title={t('Device log', 'Журнал устройства')}
-          action={
-            <Button size="small" href="#tools/activity">
+          actions={
+            <a className="k-link" href="#tools/activity">
               {t('Show all', 'Показать все')}
-            </Button>
+            </a>
           }
         >
           {operations.length ? (
-            <Stack spacing={1.25}>
+            <ul className="k-list">
               {operations
-                .slice(-6)
+                .slice(-5)
                 .reverse()
-                .map((op, index) => (
-                  <Stack
-                    direction="row"
-                    spacing={1.25}
-                    alignItems="center"
-                    key={`${op.time}-${index}`}
-                  >
-                    <Box
-                      sx={{
-                        color: op.status === 'success' ? 'success.main' : 'warning.main',
-                        display: 'grid',
-                      }}
-                    >
-                      <History size={18} aria-hidden="true" />
-                    </Box>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="body2" fontWeight={600} noWrap>
-                        {op.action}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                .map((op, i) => (
+                  <li key={`${op.time}-${i}`}>
+                    <span className="k-log">
+                      <History size={16} aria-hidden="true" />
+                      <strong>{op.action}</strong>
+                      <StatusIndicator tone={op.status === 'success' ? 'ok' : 'warn'}>
                         {op.status}
-                      </Typography>
-                    </Box>
-                    <Typography variant="caption" color="text.secondary">
-                      {timeLabel(op.time, locale)}
-                    </Typography>
-                  </Stack>
+                      </StatusIndicator>
+                    </span>
+                    <span className="k-meta">{timeLabel(op.time, locale)}</span>
+                  </li>
                 ))}
-            </Stack>
+            </ul>
           ) : (
-            <NoData text={t('Nothing recorded yet.', 'Пока ничего не записано.')} />
+            <p className="k-note-line">{t('Nothing recorded yet.', 'Пока ничего не записано.')}</p>
           )}
-        </Panel>
-      </Box>
+        </SectionPanel>
+      </div>
 
-      {selected?.capability_matrix ? (
-        <Stack spacing={0.75}>
-          <Typography variant="caption" color="text.secondary">
-            {t(
-              'Verified by a read-only probe of this connection (details: Connection):',
-              'Подтверждено безопасной проверкой чтения этого подключения (подробнее: «Подключение»):',
-            )}
-          </Typography>
-          <Stack
-            direction="row"
-            spacing={0.75}
-            flexWrap="wrap"
-            useFlexGap
-            aria-label={t('Verified capabilities', 'Подтверждённые возможности')}
-          >
-            {Object.entries(selected.capability_matrix)
-              .filter(([, s]) => s.status === 'available')
-              .map(([op]) => (
-                <Chip key={op} size="small" variant="outlined" label={op} />
-              ))}
-            {!Object.values(selected.capability_matrix).some((s) => s.status === 'available') && (
-              <Chip
-                size="small"
-                variant="outlined"
-                label={t('Nothing verified yet', 'Пока ничего не подтверждено')}
-              />
-            )}
-          </Stack>
-        </Stack>
-      ) : null}
-    </Stack>
+      {verified.length > 0 && (
+        <p className="k-note-line">
+          {t(
+            'Verified by a read-only probe (details: Connection):',
+            'Подтверждено безопасной проверкой чтения (подробнее: «Подключение»):',
+          )}{' '}
+          {verified
+            .map(([op]) => {
+              const label = operationLabel.get(op);
+              return label ? t(label[0], label[1]) : op;
+            })
+            .join(' · ')}
+        </p>
+      )}
+    </div>
   );
 }
 
-function StateChip({ state }: { state: 'checking' | 'connected' | 'disconnected' | 'none' }) {
-  const { t } = usePreferences();
-  const text = {
-    checking: t('Checking…', 'Проверка…'),
-    connected: t('Connected', 'Подключено'),
-    disconnected: t('Disconnected', 'Отключено'),
-    none: t('No device', 'Нет устройства'),
-  }[state];
-  return (
-    <Chip
-      size="small"
-      label={text}
-      color={state === 'connected' ? 'success' : state === 'checking' ? 'default' : 'warning'}
-      variant={state === 'connected' ? 'filled' : 'outlined'}
-    />
-  );
+/** Product picture: registry artwork, else a labelled generic outline; never a made-up photo. */
+function artwork(
+  profile: Device['model_profile'],
+  models: PhoneModel[],
+  t: (en: string, ru: string) => string,
+): { image: React.ReactNode; illustration: boolean; caption?: React.ReactNode } {
+  if (profile?.image)
+    return {
+      image: <img src={asset(profile.image)} alt={profile.name} />,
+      illustration: false,
+    };
+  if (profile)
+    return {
+      image: (
+        <GenericPhone label={t('Generic phone illustration', 'Обобщённая иллюстрация телефона')} />
+      ),
+      illustration: true,
+      caption: t(
+        'Generic illustration: no artwork for this model yet',
+        'Обобщённая иллюстрация: для этой модели пока нет изображения',
+      ),
+    };
+  return { image: <Chooser models={models} t={t} />, illustration: true };
 }
 
-function Fact({
-  icon: Icon,
-  label,
-  value,
-  extra,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: string | null | undefined;
-  extra?: string | null | undefined;
-}) {
-  const { t } = usePreferences();
+/** Unidentified model: choose among *registered* phones' artwork, clearly an illustration. */
+function Chooser({ models, t }: { models: PhoneModel[]; t: (en: string, ru: string) => string }) {
+  const withImage = models.filter((m) => m.image);
+  const [chosen, setChosen] = useState('');
+  const current = withImage.find((m) => m.id === chosen) ?? withImage[0];
   return (
-    <Stack direction="row" spacing={1.25} alignItems="flex-start" sx={{ minWidth: 0 }}>
-      <Box sx={{ color: 'primary.main', mt: 0.5 }}>
-        <Icon size={22} aria-hidden="true" />
-      </Box>
-      <Box sx={{ minWidth: 0 }}>
-        <Typography variant="caption" color="text.secondary">
-          {label}
-        </Typography>
-        <Typography fontWeight={600} noWrap>
-          {value || <span className="value-state--unknown">ⓘ {t('No data', 'Нет данных')}</span>}
-        </Typography>
-        {extra && (
-          <Typography variant="caption" color="text.secondary" noWrap component="div">
-            {extra}
-          </Typography>
+    <div className="k-chooser">
+      {current?.image ? (
+        <img
+          src={asset(current.image)}
+          alt={t('Illustration (model not identified)', 'Иллюстрация (модель не определена)')}
+        />
+      ) : (
+        <GenericPhone label={t('Generic phone illustration', 'Обобщённая иллюстрация телефона')} />
+      )}
+      <span className="k-meta">
+        {t(
+          'Illustration only — the connection did not report a model',
+          'Только иллюстрация — подключение не сообщило модель',
         )}
-      </Box>
-    </Stack>
-  );
-}
-
-function Metric({
-  icon: Icon,
-  label,
-  value,
-  progress,
-  note,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: string | null;
-  progress?: number | null;
-  note?: string | null;
-}) {
-  const { t } = usePreferences();
-  return (
-    <Card>
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Stack direction="row" spacing={1.5} alignItems="center">
-          <Box
-            sx={{
-              display: 'grid',
-              placeItems: 'center',
-              width: 40,
-              height: 40,
-              borderRadius: 1,
-              bgcolor: 'action.hover',
-              color: 'primary.main',
-              flex: 'none',
-            }}
-          >
-            <Icon size={20} aria-hidden="true" />
-          </Box>
-          <Box sx={{ minWidth: 0 }}>
-            <Typography variant="caption" color="text.secondary" noWrap component="div">
-              {label}
-            </Typography>
-            <Typography variant="h6" component="div" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-              {value ?? <span aria-label={t('No data', 'Нет данных')}>—</span>}
-            </Typography>
-          </Box>
-        </Stack>
-        {progress != null && progress >= 0 && progress <= 100 && (
-          <LinearProgress
-            variant="determinate"
-            value={progress}
-            sx={{ mt: 1.5, height: 6, borderRadius: 3 }}
-            aria-label={label}
-          />
-        )}
-        {(note ??
-          (value === null
-            ? t('Not reported by this transport', 'Не сообщается транспортом')
-            : null)) && (
-          <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 0.75 }}>
-            {note ?? t('Not reported by this transport', 'Не сообщается транспортом')}
-          </Typography>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function Panel({
-  title,
-  subtitle,
-  action,
-  children,
-}: {
-  title: string;
-  subtitle?: string | undefined;
-  action?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <Card component="section" sx={{ minWidth: 0 }}>
-      <CardContent sx={{ p: 2.5 }}>
-        <Stack
-          direction="row"
-          alignItems="baseline"
-          justifyContent="space-between"
-          sx={{ mb: 1.5 }}
+      </span>
+      {withImage.length > 1 && (
+        <div
+          className="k-toolbar"
+          role="group"
+          aria-label={t('Illustration model', 'Модель иллюстрации')}
         >
-          <Typography variant="h3" component="h3" sx={{ fontSize: 16, fontWeight: 600, m: 0 }}>
-            {title}
-          </Typography>
-          {action ??
-            (subtitle && (
-              <Typography variant="caption" color="text.secondary">
-                {subtitle}
-              </Typography>
-            ))}
-        </Stack>
-        {children}
-      </CardContent>
-    </Card>
+          {withImage.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              className={`k-btn k-btn--small ${current?.id === m.id ? 'k-btn--primary' : ''}`}
+              aria-pressed={current?.id === m.id}
+              onClick={() => setChosen(m.id)}
+            >
+              {m.model}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
-function Legend({ color, label, value }: { color: string; label: string; value: string }) {
-  return (
-    <Stack direction="row" spacing={1} alignItems="center">
-      <Box sx={{ width: 12, height: 12, borderRadius: 0.5, bgcolor: color }} />
-      <Box>
-        <Typography variant="body2" fontWeight={600}>
-          {label}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          {value}
-        </Typography>
-      </Box>
-    </Stack>
-  );
+function allowed(device: Device | undefined, ...ops: string[]) {
+  if (!device?.capability_matrix) return true; // a component without probes: the page itself explains limits
+  return ops.some((op) => {
+    const s = opState(device, op);
+    return s !== undefined && s.attempt !== 'blocked';
+  });
 }
 
-function NoData({ text }: { text: string }) {
-  return (
-    <Typography color="text.secondary" sx={{ py: 3 }}>
-      {text}
-    </Typography>
+/** Only actions this connection can really attempt; the rest are named once, not shown as dead buttons. */
+function HeroActions({
+  device,
+  volume,
+}: {
+  device: Device | undefined;
+  volume: Device | undefined;
+}) {
+  const { t } = usePreferences();
+  const actions = [
+    {
+      icon: FolderOpen,
+      label: t('Files', 'Файлы'),
+      href: '#phone/files',
+      ops: ['files.list'],
+      primary: true,
+    },
+    {
+      icon: Users,
+      label: t('Contacts', 'Контакты'),
+      href: '#phone/contacts',
+      ops: ['contacts.read', 'contacts.stage'],
+    },
+    {
+      icon: DatabaseBackup,
+      label: t('Backup', 'Резервная копия'),
+      href: '#phone/backups',
+      ops: ['files.list'],
+    },
+    {
+      icon: AppWindow,
+      label: t('Install app', 'Установить приложение'),
+      href: '#apps/catalog',
+      ops: ['packages.transfer', 'packages.opp-push'],
+    },
+    {
+      icon: PackageSearch,
+      label: t('Check package', 'Проверить пакет'),
+      href: '#apps/packages',
+      ops: [],
+    },
+  ];
+  // A linked memory-card volume serves the file actions; the phone itself serves personal data.
+  const usable = actions.filter(
+    (a) =>
+      a.ops.length === 0 ||
+      allowed(device, ...a.ops) ||
+      (volume !== device && allowed(volume, ...a.ops)),
   );
-}
-
-function StateList({ rows }: { rows: [string, 'ok' | 'warn' | 'unknown', string][] }) {
+  const hidden = actions.filter((a) => !usable.includes(a));
   return (
-    <Stack divider={<Box sx={{ borderTop: 1, borderColor: 'divider' }} />} spacing={1}>
-      {rows.map(([label, tone, text]) => (
-        <Stack
-          key={label}
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          spacing={1}
-          sx={{ pt: 1 }}
-        >
-          <Typography variant="body2" fontWeight={600}>
+    <>
+      <ActionToolbar label={t('Actions', 'Действия')}>
+        {usable.map(({ icon: Icon, label, href, primary }) => (
+          <a key={href} className={`k-btn ${primary ? 'k-btn--primary' : ''}`} href={href}>
+            <Icon size={16} aria-hidden="true" />
             {label}
-          </Typography>
-          <Chip
-            size="small"
-            variant="outlined"
-            color={tone === 'ok' ? 'success' : tone === 'warn' ? 'warning' : 'default'}
-            label={text}
-            sx={{ maxWidth: '60%' }}
+          </a>
+        ))}
+      </ActionToolbar>
+      {hidden.length > 0 && (
+        <p className="k-note-line">
+          {t('Not available on this connection', 'Недоступно на этом подключении')}:{' '}
+          {hidden.map((a) => a.label).join(', ')}.{' '}
+          <a href="#phone/connection">{t('Why?', 'Почему?')}</a>
+        </p>
+      )}
+    </>
+  );
+}
+
+function NoPhone({
+  models,
+  selected,
+  onRetry,
+  busy,
+}: {
+  models: PhoneModel[];
+  selected: Device | undefined;
+  onRetry: () => void;
+  busy: boolean;
+}) {
+  const { t } = usePreferences();
+  const first = models.find((m) => m.image);
+  return (
+    <EmptyState
+      title={t('No phone connected', 'Телефон не подключён')}
+      media={
+        first?.image ? (
+          <img
+            className="k-empty-art"
+            src={asset(first.image)}
+            alt={t('Illustration', 'Иллюстрация')}
           />
-        </Stack>
+        ) : (
+          <PlugZap size={40} aria-hidden="true" className="k-empty-icon" />
+        )
+      }
+      actions={
+        <>
+          <a className="k-btn k-btn--primary" href="#phone/connection">
+            {t('Open the connection wizard', 'Открыть мастер подключения')}
+          </a>
+          <button type="button" className="k-btn" disabled={busy} onClick={onRetry}>
+            <RefreshCw size={14} aria-hidden="true" />
+            {t('Find phone', 'Найти телефон')}
+          </button>
+        </>
+      }
+    >
+      <ol>
+        <li>
+          {t(
+            'Connect the phone with a data cable and choose PC Suite.',
+            'Подключите телефон кабелем передачи данных и выберите PC Suite.',
+          )}
+        </li>
+        <li>
+          {t(
+            'Start Windows Bridge on that PC, or use a local transport.',
+            'Запустите Windows Bridge на этом ПК или используйте локальный транспорт.',
+          )}
+        </li>
+        <li>
+          {t(
+            'Follow the wizard: it shows what is really answering at each step.',
+            'Пройдите мастер: он показывает, что реально отвечает на каждом шаге.',
+          )}
+        </li>
+      </ol>
+      {selected && !selected.connected && (
+        <p className="k-note-line">
+          {selected.name ?? selected.id}: {selected.evidence ?? t('does not answer', 'не отвечает')}
+        </p>
+      )}
+    </EmptyState>
+  );
+}
+
+function StoragePanel({
+  space,
+  linked,
+  usedColor,
+  freeColor,
+  emptyColor,
+}: {
+  space: ReturnType<typeof storage>;
+  linked: ReturnType<typeof useLinkedVolume>;
+  usedColor: string;
+  freeColor: string;
+  emptyColor: string;
+}) {
+  const { t } = usePreferences();
+  return (
+    <div className="k-storage">
+      <PieChart
+        width={180}
+        height={180}
+        hideLegend
+        margin={{ top: 4, bottom: 4, left: 4, right: 4 }}
+        series={[
+          {
+            innerRadius: 58,
+            outerRadius: 86,
+            paddingAngle: space ? 2 : 0,
+            cornerRadius: 3,
+            data: space
+              ? [
+                  { id: 'used', value: space.used, label: t('Used', 'Занято'), color: usedColor },
+                  { id: 'free', value: space.free, label: t('Free', 'Свободно'), color: freeColor },
+                ]
+              : [{ id: 'none', value: 1, label: t('No data', 'Нет данных'), color: emptyColor }],
+            valueFormatter: (item) => (space ? formatBytes(item.value) : '—'),
+          },
+        ]}
+      />
+      <div className="k-storage-legend">
+        <p className="k-legend">
+          <span className="k-swatch k-swatch--used" aria-hidden="true" />
+          <strong>{t('Used', 'Занято')}</strong>{' '}
+          {space ? `${formatBytes(space.used)} (${space.usedPercent}%)` : '—'}
+        </p>
+        <p className="k-legend">
+          <span className="k-swatch k-swatch--free" aria-hidden="true" />
+          <strong>{t('Free', 'Свободно')}</strong>{' '}
+          {space ? `${formatBytes(space.free)} (${100 - space.usedPercent}%)` : '—'}
+        </p>
+        <p className="k-note-line">
+          {space
+            ? `${linked.volume?.name ?? linked.volume?.id ?? ''} · ` +
+              (linked.isLinked
+                ? t(
+                    'Volume linked by you to this phone; it says nothing about phone memory or other cards.',
+                    'Том, который вы связали с этим телефоном; о памяти телефона и других картах он ничего не говорит.',
+                  )
+                : t(
+                    'Counters reported by this connection.',
+                    'Счётчики, сообщённые этим подключением.',
+                  ))
+            : t(
+                'This connection reports no storage counters.',
+                'Это подключение не сообщает счётчики накопителя.',
+              )}
+        </p>
+        {linked.candidates.length > 0 && (
+          <label className="k-field">
+            <span className="k-meta">
+              {t('Link a memory card volume', 'Связать с томом карты памяти')}
+            </span>
+            <select
+              value={linked.isLinked ? (linked.volume?.id ?? '') : ''}
+              onChange={(event) => linked.link(event.target.value || null)}
+            >
+              <option value="">{t('Not linked', 'Не связан')}</option>
+              {linked.candidates.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name ?? d.id}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StateList({ device, hasBackup }: { device: Device | undefined; hasBackup: boolean }) {
+  const { t } = usePreferences();
+  const files = opState(device, 'files.list');
+  const firmware = device?.firmware_update?.status;
+  const rows: [string, Tone, string][] = [
+    [t('Connection', 'Подключение'), 'ok', t('Connected', 'Подключено')],
+    [
+      t('File access', 'Доступ к файлам'),
+      files?.status === 'available' ? 'ok' : files?.status === 'unsupported' ? 'off' : 'unknown',
+      files?.status === 'available'
+        ? t('Verified', 'Проверено')
+        : files?.status === 'unsupported'
+          ? t('Not supported here', 'Не поддерживается')
+          : t('Not verified', 'Не проверено'),
+    ],
+    [
+      t('Firmware vs reference', 'Прошивка и справочник'),
+      firmware === 'older' ? 'warn' : firmware === 'current-in-reference' ? 'ok' : 'unknown',
+      firmware === 'older'
+        ? `${t('newer exists', 'есть новее')}: ${device?.firmware_update?.latest_known ?? '—'}`
+        : firmware === 'current-in-reference'
+          ? t('matches the reference', 'по справочнику')
+          : t('No data', 'Нет данных'),
+    ],
+    [
+      t('USB mode', 'USB-режим'),
+      device?.usb_mode ? 'ok' : 'unknown',
+      device?.usb_mode ?? t('Not reported', 'Не сообщается'),
+    ],
+    [
+      t('Full backup', 'Полная копия'),
+      hasBackup ? 'ok' : 'warn',
+      hasBackup ? t('Exists on the server', 'Есть на сервере') : t('None yet', 'Ещё нет'),
+    ],
+  ];
+  return (
+    <ul className="k-list">
+      {rows.map(([label, tone, text]) => (
+        <li key={label}>
+          <strong>{label}</strong>
+          <StatusIndicator tone={tone}>{text}</StatusIndicator>
+        </li>
       ))}
-    </Stack>
+    </ul>
   );
 }
 
 function DayChart({
   operations,
+  color,
 }: {
   operations: { time: string; action: string; status: string }[];
+  color: string;
 }) {
   const { t } = usePreferences();
-  const usedColor = useTheme().palette.primary.main;
   const days = perDay(operations);
   return (
     <BarChart
-      height={220}
+      height={200}
       xAxis={[
         {
           scaleType: 'band',
@@ -929,12 +768,7 @@ function DayChart({
         },
       ]}
       series={[
-        {
-          data: days.map((d) => d.ok),
-          label: t('Succeeded', 'Успешно'),
-          stack: 'ops',
-          color: usedColor,
-        },
+        { data: days.map((d) => d.ok), label: t('Succeeded', 'Успешно'), stack: 'ops', color },
         {
           data: days.map((d) => d.other),
           label: t('Other outcome', 'Иной итог'),
@@ -943,6 +777,47 @@ function DayChart({
         },
       ]}
       margin={{ left: 36, right: 8, top: 24, bottom: 36 }}
+    />
+  );
+}
+
+/** Real diagnostic samples only; a missing reading is a gap, never a zero. */
+function HistoryChart({
+  rows,
+  locale,
+}: {
+  rows: { time: string; battery?: number | null | undefined; signal?: number | null | undefined }[];
+  locale: string;
+}) {
+  const { t } = usePreferences();
+  const points = rows.slice(-24);
+  return (
+    <LineChart
+      height={200}
+      xAxis={[
+        {
+          scaleType: 'point',
+          data: points.map((p) =>
+            new Date(p.time).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }),
+          ),
+        },
+      ]}
+      yAxis={[{ min: 0, max: 100 }]}
+      series={[
+        {
+          data: points.map((p) => p.battery ?? null),
+          label: t('Battery, %', 'Батарея, %'),
+          connectNulls: false,
+          color: '#124191',
+        },
+        {
+          data: points.map((p) => p.signal ?? null),
+          label: t('Signal, %', 'Сигнал, %'),
+          connectNulls: false,
+          color: '#c28a2e',
+        },
+      ]}
+      margin={{ left: 36, right: 8, top: 24, bottom: 28 }}
     />
   );
 }
