@@ -67,3 +67,21 @@ def test_dockerfile_installs_dependencies_before_copying_the_sources():
     assert text.index("requirements.py") < text.index("COPY . .")
     assert text.index("tools/s60/build.sh") < text.index("COPY . .")
     assert "HEALTHCHECK" in text and "USER 10001:10001" in text
+
+
+def test_ci_apt_helper_is_valid_and_used_after_checkout():
+    import yaml
+
+    helper = ROOT / "tools" / "ci" / "apt-install.sh"
+    assert subprocess.run([bash, "-n", str(helper)]).returncode == 0
+    assert subprocess.run([bash, str(helper)], capture_output=True).returncode == 2  # needs package names
+    for name in ("ci.yml", "frontend.yml"):
+        workflow = yaml.safe_load((ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8"))
+        for job_name, job in workflow["jobs"].items():
+            checked_out = False
+            for step in job["steps"]:
+                checked_out = checked_out or str(step.get("uses", "")).startswith("actions/checkout")
+                run = step.get("run", "")
+                assert "sudo apt-get" not in run, f"{name}:{job_name} installs packages without the helper"
+                if "tools/ci/apt-install.sh" in run:
+                    assert checked_out, f"{name}:{job_name} calls the helper before checkout"

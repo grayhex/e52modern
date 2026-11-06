@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "${{ matrix.python }}", cache: pip, cache-dependency-path: pyproject.toml }
-      - run: sudo apt-get update && sudo apt-get install -y g++ ffmpeg
+      - run: tools/ci/apt-install.sh g++ ffmpeg
       - run: pip install -e '.[dev]'
       - name: Unit, CLI and regression tests
         run: pytest -ra -n auto
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
-      - run: sudo apt-get update && sudo apt-get install -y g++ ffmpeg
+      - run: tools/ci/apt-install.sh g++ ffmpeg
       - run: pip install -e '.[dev]'
       - name: Build skc and bmconv from vendored sources
         run: tools/s60/build.sh
@@ -102,7 +102,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - name: Host toolchain required by the SDK (ARM-capable clang, lld, cmake)
-        run: sudo apt-get update && sudo apt-get install -y clang lld cmake
+        run: tools/ci/apt-install.sh clang lld cmake
       - run: pip install -e '.[dev]'
       - name: Install symbian-platform (CLI only, without the GUI console dependencies)
         run: |
@@ -264,9 +264,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - name: Audio processing dependency
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - uses: actions/checkout@v4
+      - name: Audio processing dependency
+        run: tools/ci/apt-install.sh ffmpeg
       - uses: actions/setup-python@v5
         with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - run: pip install -e '.[dev]'
