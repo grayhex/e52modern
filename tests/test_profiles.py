@@ -37,7 +37,7 @@ def test_invalid_profiles_rejected(tmp_path, body, msg):
 def test_additional_profiles_are_just_files(tmp_path):
     (tmp_path / "nokia-e71.toml").write_text('schema = 1\nid = "nokia-e71"\n[device]\nmodel = { value = "E71", status = "stated", source = "test" }\n')
     ids = [p.id for p in profiles.list_profiles([tmp_path, REPO / "profiles"])]
-    assert ids == ["nokia-e71", "nokia-e52", "nokia-e7", "nokia-e72", "nokia-n8", "nokia-n95-8gb", "nokia-n95", "nokia-n97-mini"]
+    assert ids == ["nokia-e71", "nokia-7610", "nokia-e52", "nokia-e7", "nokia-e72", "nokia-n8", "nokia-n95-8gb", "nokia-n95", "nokia-n97-mini"]
     with pytest.raises(profiles.ProfileError, match="unknown device profile"):
         profiles.get_profile("nokia-n8", [tmp_path])
 

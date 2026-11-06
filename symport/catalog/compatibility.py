@@ -8,6 +8,12 @@ import re
 from symport.phone.registry import selectable_profiles
 
 
+def _os_number(value):
+    """Leading numeric part of a Symbian release ("9.2" -> 9.2, "7.0s" -> 7.0, "^3" -> None)."""
+    found = re.match(r"\d+(?:\.\d+)?", str(value or ""))
+    return float(found.group()) if found else None
+
+
 def evidence(entry):
     result = {}
     for key, profile in selectable_profiles().items():
@@ -28,7 +34,9 @@ def evidence(entry):
         platforms = " ".join(entry["platforms"]).lower()
         minimum = entry.get("minimum_symbian")
         minimum_match = re.fullmatch(r"9\.([1-4])", minimum or "")
-        minimum_os_blocked = minimum_match and profile.get("symbian") and float(minimum) > float(profile["symbian"])
+        platform_number = _os_number(profile.get("symbian"))
+        minimum_os_blocked = minimum_match and platform_number and float(minimum) > platform_number
+        legacy_platform = profile.get("platform_family") == "s60v2"
         if minimum in ('^3', 'Anna', 'Belle', 'Belle Refresh'):
             minimum_os_blocked = profile.get('platform_family') != 'symbian3'
             if not minimum_os_blocked:
@@ -41,6 +49,13 @@ def evidence(entry):
             and "fp1" not in platforms
             and profile["symbian"] == "9.2"
         )
+        if legacy_platform and status != "unsupported":
+            # S60 2nd Edition: nothing here is verified for it, so never "compatible".
+            status, basis, reason = (
+                "not-tested",
+                "legacy-platform-not-assessed",
+                "S60 2nd Edition (Symbian 7.0s) is an older platform; SymPort has no verified rules for it",
+            )
         if (
             minimum_os_blocked
             or legacy_only
@@ -100,6 +115,7 @@ def platform_evidence(entry):
             "s60-3rd-fp1": ("nokia-n95", "nokia-n95-8gb"),
             "s60-3rd-fp2": ("nokia-e52", "nokia-e72"),
             "s60-5th": ("nokia-n97-mini",),
+            "s60-2nd": ("nokia-7610",),
             "symbian3": ("nokia-n8", "nokia-e7"),
         }.items()
     }

@@ -22,6 +22,7 @@ from symport.web import Workbench, make_handler
 from symport.phone.local import LocalTransports
 from tests.capfake import row
 root, model, rm, port = Path(sys.argv[1]), sys.argv[2], sys.argv[3], int(sys.argv[4])
+opts = json.loads(os.environ.get("SYMPORT_FIXTURE_OPTS") or "{}")
 v = root / "volume"
 for d in ("Images", "Music", "Documents", "Installs"):
     (v / d).mkdir(parents=True, exist_ok=True)
@@ -34,11 +35,14 @@ local = LocalTransports(root)
 def devices():
     card = local.files.devices()[0]
     card.update(name="E52 card (test volume)", free=int(3.1 * 1024**3), total=int(7.4 * 1024**3))
+    identity_only = opts.get("identity_only", False)  # the driver read the model name and probed nothing else
     phone = row(dict(id="gammu", name="Nokia " + model, transport="gammu", connection_kind="gammu-usb", connected=True,
-                     model="Nokia %s (%s)" % (model, rm), rm=rm, firmware="071.004" if model == "E52" else "091.004",
-                     battery=82, signal=74, usb_mode="PC Suite", evidence="Synthetic screenshot transport"),
-                available=["identity.read", "telemetry.read", "contacts.read", "calendar.read", "tasks.read"],
-                untested_writes=["contacts.write"])
+                     model=("Nokia %s (%s)" % (model, rm)) if rm else ("Nokia " + model), rm=rm or None,
+                     firmware=None if identity_only else ("071.004" if model == "E52" else "091.004"),
+                     battery=None if identity_only else 82, signal=None if identity_only else 74,
+                     usb_mode=None if identity_only else "PC Suite", evidence="Synthetic screenshot transport"),
+                available=["identity.read"] if identity_only else ["identity.read", "telemetry.read", "contacts.read", "calendar.read", "tasks.read"],
+                untested_writes=[] if identity_only else ["contacts.write"])
     return [card, phone]
 local.devices = devices
 w.devices.transport = local
@@ -50,11 +54,11 @@ function prepare(tmp) {
   if (made.status !== 0) throw Error(made.stderr.toString());
 }
 const children = [];
-function start(tmp, model, rm, port) {
+function start(tmp, model, rm, port, options = {}) {
   const root = path.join(tmp, model);
   fs.mkdirSync(root, { recursive: true });
   for (const name of ["theme", "tools", "profiles", "catalog"]) fs.cpSync(path.join(repo, name), path.join(root, name), { recursive: true });
-  children.push(spawn(python, ["-c", server, root, model, rm, String(port)], { cwd: repo, env: { ...process.env, PYTHONPATH: repo }, stdio: ["ignore", "ignore", "inherit"] }));
+  children.push(spawn(python, ["-c", server, root, model, rm, String(port)], { cwd: repo, env: { ...process.env, PYTHONPATH: repo, SYMPORT_FIXTURE_OPTS: JSON.stringify(options) }, stdio: ["ignore", "ignore", "inherit"] }));
 }
 const stop = () => children.forEach((child) => child.kill());
 module.exports = { prepare, start, stop, repo };

@@ -52,6 +52,9 @@ def identify(value: str, *, rm=None, product_code=None):
     observed_rm = set(re.findall(r"\bRM-\d+\b", upper + " " + str(rm or "").upper()))
     candidates, names, codes = set(), set(), set()
     for key, p in registry().items():
+        # A distinct product that shares the model number (7610 Supernova) never resolves to this entry.
+        if any(term.upper() in upper for term in p.get("not_aliases", [])):
+            continue
         for alias in p["aliases"]:
             if name_matches(upper, alias, exact=p.get("exact_aliases", False)):
                 candidates.add(key)

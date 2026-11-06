@@ -70,3 +70,13 @@ UID `0x2003A678` получает `unknown`; при явной Belle/Belle Refre
 Anna не принимается за Belle. S60v3/5th-only требования не одобряются автоматически. Qt и DLL
 требуют отдельного подтверждения, E52/N95 evidence не наследуется. ARMv6 остаётся непроверенным
 ABI вместо общего отказа S60v3. [Источники, ограничения и проверка](NOKIA_N8_E7.md).
+
+## Nokia 7610: S60 2nd Edition is assessed separately
+
+`nokia-7610` is a target of compatibility, Inspector and dependency analysis, but its platform (S60 2nd Edition,
+Symbian OS 7.0s, a legacy SIS format and probably EKA1) is **not assessed**: no S60 2nd Edition platform UID or
+binary rule is shipped, and the S60 3rd/5th and Symbian 9.x rules are not applied to it. Consequently the catalog
+reports `not-tested` (or `unsupported` where a declared minimum OS excludes it), package analysis reports at best
+`unresolved` (issue `legacy-platform-not-assessed`; packages that declare S60 3rd/5th remain a known mismatch), and
+the Inspector result stays `unknown`. EKA1 or ARMv6 binaries are neither accepted nor rejected on this target
+(`binary-abi-unknown`). A result is never `compatible` or `satisfied`. See [NOKIA_7610.md](NOKIA_7610.md).

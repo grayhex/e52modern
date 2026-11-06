@@ -1,0 +1,53 @@
+schema = 1
+id = "nokia-7610"
+
+# Original Nokia 7610 (2004, Symbian OS / Series 60 2nd Edition). NOT the Series 40 "Nokia 7610 Supernova".
+# Everything below is documentation about the model. Nothing is a measurement of a connected phone.
+
+[device]
+manufacturer = { value = "Nokia", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_7610" }
+model = { value = "7610", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_7610" }
+product_code = { value = "", status = "unknown", source = "Requires handset/adapter evidence; no value is inferred from the model" }
+rm = { value = "", status = "unknown", source = "Requires handset/adapter evidence; no value is inferred from the model" }
+
+[platform]
+symbian_version = { value = "7.0s", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_7610" }
+s60_version = { value = "2nd Edition (S60 v2.1 UI according to the source; the installed software version is not inferred)", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_7610" }
+kernel = { value = "eka1", status = "inferred", source = "Symbian OS 7.0s predates the EKA2 kernel (Symbian OS 8.1b/9.x); inferred from the OS release" }
+installer_format = { value = "sis-legacy", status = "inferred", source = "The Symbian 9.1 signed SIS format did not exist for Symbian 7.0s; inferred from the OS release" }
+
+[display]
+resolution = { value = [176, 208], status = "documented", source = "https://www.gsmarena.com/nokia_7610-703.php" }
+orientation = { value = "portrait", status = "documented", source = "https://www.gsmarena.com/nokia_7610-703.php" }
+rotation_state = { value = "", status = "unknown", source = "Requires handset/adapter evidence; no value is inferred from the model" }
+
+[input]
+method = { value = "keypad with an asymmetric (non-standard) key layout", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_7610" }
+touch = { value = false, status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_7610" }
+
+[cpu]
+target_abi = { value = "arm4t", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_7610" }
+
+[storage]
+layout = { value = "8 MB internal memory and a removable RS-MMC card; mounts and access must be observed independently", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_7610" }
+mounted_volume = { value = "", status = "unknown", source = "Requires handset/adapter evidence; no value is inferred from the model" }
+free_bytes = { value = "", status = "unknown", source = "Requires handset/adapter evidence; no value is inferred from the model" }
+
+[connectivity]
+bluetooth = { value = "Bluetooth 1.1", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_7610" }
+usb = { value = "USB through the Pop-Port connector; the USB mode a given cable/driver offers is not inferred", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_7610" }
+
+[firmware]
+version = { value = "", status = "unknown", source = "Requires handset/adapter evidence; no value is inferred from the model" }
+rom_dlls = { value = [], status = "unknown", source = "Requires handset/adapter evidence; no value is inferred from the model" }
+
+[packaging]
+platform_dependency = { value = "", status = "unknown", source = "No verified S60 2nd Edition product UID is shipped; never copied from the 3rd/5th Edition values" }
+signing_policy = { value = "", status = "unknown", source = "Requires handset/adapter evidence; no value is inferred from the model" }
+
+[connection]
+write_permissions = { value = "", status = "unknown", source = "Requires handset/adapter evidence; no value is inferred from the model" }
+services = { value = [], status = "unknown", source = "Requires handset/adapter evidence; no value is inferred from the model" }
+
+[features]
+themes = { value = "unsupported", status = "stated", source = "Out of scope: themes for S60 2nd Edition are a separate task" }

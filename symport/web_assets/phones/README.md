@@ -30,3 +30,9 @@ and a blank screen. [Reference, asset details and scope](N97-MINI-ARTWORK.md).
 
 `nokia-n8.svg` / `nokia-e7.svg` / `nokia-e7-open.svg`: separate N8 and closed/open E7 masters,
 with transparent PNG/lossless WebP exports. [References, geometry and export](N8-E7-ARTWORK.md).
+
+`nokia-7610.svg` / `.png` / `.webp`: original vector illustration of the Nokia 7610 (S60 2nd Edition), drawn for SymPort
+(2026-11-06) with no photographic reference shipped or embedded: metallic frame, black face, 176×208 portrait window and
+a staggered, asymmetric key field. The key layout is simplified; it is neither a manufacturer image nor a photograph.
+The LCD is blank and decorative. The SVG has no embedded raster or external resource. Re-export with
+`node tools/assets/render_phones.cjs nokia-7610`. See [NOKIA_7610.md](../../../docs/NOKIA_7610.md).

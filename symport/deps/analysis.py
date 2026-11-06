@@ -130,6 +130,11 @@ def analyze_package(raw: bytes, *, name: str = "package.sis", target=None, firmw
     if os_mismatch:
         issues.append('target-os-mismatch')
         platform_verdict = 'unsupported'
+    legacy_platform = spec.get('platform_family') == 's60v2'
+    if legacy_platform:
+        # S60 2nd Edition / Symbian 7.0s: no verified platform IDs or rules are shipped, so the result can
+        # never be better than "unresolved". Rules of S60 3rd/5th (Symbian 9.x) are not applied to it.
+        issues.append('legacy-platform-not-assessed')
 
     # --- declared package dependencies --------------------------------------------------------
     declared = []
@@ -235,6 +240,11 @@ def analyze_package(raw: bytes, *, name: str = "package.sis", target=None, firmw
                              "dlls": runtime_imports.get(family, []), "distribution": spec["distribution"]})
 
     for binary in binaries:
+        if legacy_platform:
+            # No S60 2nd Edition binary rules are verified: neither EKA2/ARMv5 nor EKA1 findings are
+            # judged against it (a 7610 is an EKA1-era phone, so EKA1 is not a defect there).
+            issues.append('binary-abi-unknown')
+            continue
         if profile and binary.get('cpu') in ('x86', 'mcore'):
             issues.append('binary-abi-unsupported')
         if profile and binary.get('cpu') == 'armv6':
@@ -245,7 +255,7 @@ def analyze_package(raw: bytes, *, name: str = "package.sis", target=None, firmw
             issues.append('binary-abi-unknown')
     issues = list(dict.fromkeys(issues))
     blocking = {"platform-unsupported", "target-os-mismatch", "binary-abi-unsupported", "binary-kernel-unsupported", "system-dll-missing", "dependency-version"}
-    unresolved = {"binary-abi-unknown", "platform-undeclared", "platform-target-unknown", "dependency-unverified", "runtime-required-unverified",
+    unresolved = {"legacy-platform-not-assessed", "binary-abi-unknown", "platform-undeclared", "platform-target-unknown", "dependency-unverified", "runtime-required-unverified",
                   "imports-undecoded", "system-dll-unverified", "payload-unreadable"}
     if blocking & set(issues):
         verdict = "blocked"
@@ -268,6 +278,8 @@ def analyze_package(raw: bytes, *, name: str = "package.sis", target=None, firmw
             "Compressed E32 images (bytepair/deflate) are not decoded, so their imported DLLs are unknown.",
             "A dependency present on a memory card does not prove it is installed on the phone.",
             "Unknown dependencies are never treated as installed or compatible.",
+            *(["S60 2nd Edition (Symbian 7.0s) is not assessed: SymPort has no verified rules for its packages, "
+               "binaries or platform IDs, so this result is never 'satisfied'."] if legacy_platform else []),
         ],
     }
     result["graph"] = build_graph(result)

@@ -210,7 +210,7 @@ class GammuAdapter:
             )
             if scope_blocked:
                 self.scope_error = (
-                    "This connection did not identify a supported Nokia S60 3rd/5th or Symbian^3 model"
+                    "This connection did not identify a supported Nokia S60 2nd/3rd/5th or Symbian^3 model"
                 )
                 device.update(
                     connected=False,

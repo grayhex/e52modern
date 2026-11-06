@@ -37,7 +37,7 @@ def test_doctor_json_schema_and_optional_tools_do_not_block():
     names = {t["name"] for t in d["data"]["tools"]}
     assert {"skc", "bmconv", "mifbuild", "s60inspect", "makesis", "signsis", "symbian", "eka2l1"} <= names
     assert d["data"]["readiness"]["theme package (native, experimental)"] is True
-    assert d["data"]["profiles"][0]["id"] == "nokia-e52"
+    assert "nokia-e52" in [p["id"] for p in d["data"]["profiles"]]
 
 
 def test_doctor_detects_fake_tools(tmp_path):
@@ -49,7 +49,7 @@ def test_doctor_detects_fake_tools(tmp_path):
 
 def test_profile_commands():
     d = js(sp("profile", "list", "--json", check=0))
-    assert d["data"]["profiles"][0]["id"] == "nokia-e52"
+    assert "nokia-e52" in [p["id"] for p in d["data"]["profiles"]]
     d = js(sp("profile", "show", "nokia-e52", "--json", check=0))
     assert d["data"]["profile"]["facts"]["firmware.version"]["status"] == "unknown"
     r = sp("profile", "show", "nokia-unregistered", "--json")
