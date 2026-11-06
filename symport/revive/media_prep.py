@@ -27,7 +27,7 @@ import time
 from pathlib import Path
 
 from symport.catalog.service import now
-from symport.phone.registry import registry
+from symport.phone.registry import registry, selectable_profiles
 
 MAX_INPUT = 48 * 1024**2
 MAX_OUTPUT = 48 * 1024**2
@@ -38,7 +38,7 @@ MAX_JOBS = 6
 QUEUE_LIMIT = 2
 VIDEO_TIMEOUT = 240
 FORMATS = 'mp3,wav,aac,mov,mp4,m4a,3gp,3g2,mj2,flac,ogg,matroska,webm,asf,aiff,avi,mpegts,flv'
-TARGETS = ('nokia-e52', 'nokia-e72', 'nokia-n95', 'nokia-n95-8gb', 'nokia-n97-mini')
+TARGETS = tuple(selectable_profiles())
 OUTCOMES = ('exported', 'transferred', 'played-on-device')
 THEORETICAL = {'hardware': 'not-tested', 'basis': 'theoretical: generic S60 capability and the model screen, not measured on this model'}
 
@@ -271,13 +271,13 @@ class MediaPrep:
         if kind == 'image':
             self._convert_image(src, out, preset, job)
         else:
-            base = ['-hide_banner', '-loglevel', 'error', '-nostdin', '-n', '-max_alloc', '67108864', '-threads', '2', '-protocol_whitelist', 'file',
+            base = ['-hide_banner', '-loglevel', 'error', '-nostdin', '-n', '-max_alloc', '67108864', '-threads', '2', '-filter_threads', '2', '-filter_complex_threads', '2', '-protocol_whitelist', 'file',
                     '-format_whitelist', FORMATS, '-i', str(src), '-map_metadata', '-1', '-sn', '-dn']
             if kind == 'video':
                 rot = {90: 'transpose=1', 180: 'hflip,vflip', 270: 'transpose=2', 0: ''}[job['rotate']]
                 w, h = preset['w'], preset['h']
                 scale = f'scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={preset["fps"]}'
-                args = [*base, '-map', '0:v:0', '-map', '0:a:0?', '-vf', ','.join(x for x in (rot, scale) if x), *preset['v'], *preset['a'], '-f', preset['fmt'], str(out)]
+                args = [*base, '-map', '0:v:0', '-map', '0:a:0?', '-vf', ','.join(x for x in (rot, scale) if x), *preset['v'], *preset['a'], '-threads', '2', '-f', preset['fmt'], str(out)]
             else:
                 args = [*base, '-map', '0:a:0', '-vn', *preset['a'], '-f', preset['fmt'], str(out)]
             self.run('ffmpeg', args, self.timeout)
@@ -318,8 +318,8 @@ class MediaPrep:
                     buf = io.BytesIO()
                     image.convert('RGB').save(buf, 'JPEG', quality=70)
                     return base64.b64encode(buf.getvalue()).decode()
-            frame = self.run('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-nostdin', '-protocol_whitelist', 'file', '-i', str(src), '-frames:v', '1',
-                                        '-vf', 'scale=160:-2', '-f', 'mjpeg', '-'], 30)
+            frame = self.run('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-nostdin', '-threads', '2', '-filter_threads', '2', '-protocol_whitelist', 'file', '-i', str(src), '-frames:v', '1',
+                                        '-vf', 'scale=160:-2', '-threads', '2', '-f', 'mjpeg', '-'], 30)
             return base64.b64encode(frame).decode()
         except ValueError:
             return None

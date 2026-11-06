@@ -117,6 +117,13 @@ def evaluate(facts: dict, profile_id: str) -> dict:
     if not prof:
         out['platform'] = check('platform', 'unknown', 'Platform follows from the model, which is not identified.',
                                 'Платформа определяется по модели, которая не определена.')
+    elif prof.get('platform_family') == 'symbian3':
+        from symport.phone.platforms import release
+        current = release(row.get('os_release')) if row.get('os_source') else None
+        out['platform'] = check('platform', 'ready' if current else 'unknown',
+            f'Symbian^3 family; reported release: {current or "unknown"}. Model/firmware number alone does not prove Belle.',
+            f'Семейство Symbian^3; версия ОС: {current or "не сообщена"}. Модель/номер прошивки не подтверждают Belle.',
+            'observed' if current else 'documented', str(row.get('os_source') or 'registry'))
     elif profile_id == 'reborn-n95' and prof['s60'] != '3rd FP1':
         out['platform'] = check('platform', 'unsupported', 'Reborn for N95 needs S60 3rd Edition FP1.',
                                 'Reborn для N95 требует S60 3rd Edition FP1.', 'documented', 'registry')

@@ -15,6 +15,7 @@ import {
   scanSchema,
 } from '../api/cfw';
 import { st } from './statements';
+import CfwPreparation from './CfwPreparation';
 
 const VERDICT: Record<string, [string, string, Tone]> = {
   'vulnerable-version': ['Vulnerable version (declared)', 'Уязвимая версия (заявлена вами)', 'bad'],
@@ -31,6 +32,7 @@ const APPLIES: Record<string, [string, string]> = {
   wizard: ['Revive wizard', 'Мастер Revive'],
   'not-applicable': ['Not applicable', 'Не применимо'],
   'blocked-without-evidence': ['Blocked without evidence', 'Заблокировано без доказательств'],
+  'research-only': ['Read-only preparation', 'Подготовка только для чтения'],
 };
 
 /** Firmwares and modifications: author metadata, read-only inventory, advisory scanner, experimental EKA1 → RPKG. */
@@ -92,6 +94,7 @@ export default function Cfw() {
         )}
       />
       {error && <ErrorMessage error={error} />}
+      <CfwPreparation sources={s?.sources ?? []} images={ready} />
       <SectionPanel
         title={t('Sources (author metadata only)', 'Источники (только данные авторов)')}
         id="cfw-sources"

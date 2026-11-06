@@ -9,6 +9,7 @@ const PROFILE_PAGE: Record<string, string> = {
 };
 /** Route of the page that hosts a wizard profile. */
 export function profileRoute(profile: string) {
+  if (profile === 'belle-cfw') return 'tools/cfw';
   return `revive/${PROFILE_PAGE[profile] ?? 'home'}`;
 }
 export function goRevive(profile: string) {

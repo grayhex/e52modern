@@ -127,7 +127,7 @@ class ReviveService:
             'rm': fact(obs['rm'], 'observed'),
             'product_code': fact(obs['product_code'], 'observed'),
             'firmware': fact(obs['firmware'], 'observed'),
-            'platform': fact(f"S60 {prof['s60']} / Symbian {prof.get('symbian')}" if prof else None, 'documented',
+            'platform': fact((prof['s60'] if prof.get('platform_family') == 'symbian3' else f"S60 {prof['s60']} / Symbian {prof.get('symbian')}") if prof else None, 'documented',
                              'Model profile, not a measured firmware version'),
             'profile': fact(prof['id'] if prof else None, 'documented'),
             'connection': fact(f"{obs['transport']} / {obs['connection_kind']}" if obs['transport'] else None, 'observed'),
@@ -264,6 +264,11 @@ class ReviveService:
         ev = C.evaluate(facts, 'network-certs')
         prof = facts['identity']['profile']
         recs = list(self.services.recommendations(facts))
+        if prof and prof.get('platform_family') == 'symbian3':
+            recs.append({'id': 'belle-cfw-research', 'area': 'cfw', 'title': {
+                'en': 'N8/E7 Reborn / Delight: read-only preparation',
+                'ru': 'N8/E7 Reborn / Delight: подготовка только для чтения'},
+                'basis': 'author metadata; no flashing or installation', 'action': 'belle-cfw'})
         tls = saved.get('tls', {})
         if ev['identity']['status'] == 'ready' and not any(str(v.get('state', '')).startswith('installed') for k, v in tls.items() if k in ('mbedtls-lib', 'ssl-patch')):
             recs.append({'id': 'current-tls-stack', 'area': 'network', 'title': {

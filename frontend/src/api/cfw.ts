@@ -18,6 +18,19 @@ export const cfwSourcesSchema = z.object({
       distribution: z.string(),
       symport: z.record(z.string(), z.string()),
       advisories: z.array(z.string()),
+      variants: z
+        .array(
+          z.object({
+            profile: z.string(),
+            version: z.string(),
+            firmware: z.string().nullable(),
+            languages: z.array(z.string()),
+            keyboards: z.array(z.string()),
+            download: z.string(),
+            source: z.string(),
+          }),
+        )
+        .optional(),
     }),
   ),
   advisories: z.record(
@@ -40,6 +53,20 @@ export const cfwSourcesSchema = z.object({
   containers: z.record(z.string(), z.string()),
   note: z.string(),
 });
+export const cfwPlanSchema = z
+  .object({
+    schema: z.literal('symport.cfw-preparation/1'),
+    profile: z.string(),
+    source: z.string(),
+    package: z.record(z.string(), z.string().nullable()),
+    metadata_basis: z.string(),
+    checks: z.array(z.object({ code: z.string(), status: z.string(), text: bilingual })),
+    status: z.string(),
+    statement: z.string(),
+    flashing: z.literal('unsupported'),
+    physical_device: z.literal('not-tested'),
+  })
+  .passthrough();
 export const inventorySchema = z.object({
   id: z.string(),
   baseline: z.boolean(),

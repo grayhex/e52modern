@@ -1,51 +1,207 @@
 {
   "schema": 1,
-  "reviewed": "2026-11-05",
+  "reviewed": "2026-11-06",
   "note": "Only the author's published metadata. SymPort ships, downloads and redistributes none of these files; import what you obtained from the author yourself. Fields the source does not state say so.",
   "sources": [
     {
       "id": "reborn-hybrid-n95",
       "family": "reborn",
-      "title": {"en": "Reborn Hybrid CFW (alpha) for Nokia N95", "ru": "Reborn Hybrid CFW (alpha) для Nokia N95"},
+      "title": {
+        "en": "Reborn Hybrid CFW (alpha) for Nokia N95",
+        "ru": "Reborn Hybrid CFW (alpha) для Nokia N95"
+      },
       "kind": "hybrid mod kit installed on the phone (SIS); not a flash",
       "platform": "S60v3 FP1 (Symbian 9.2)",
-      "models": [{"name": "Nokia N95", "rm": "not stated by the author"}],
-      "release": {"version": "v1.00 alpha", "date": "not stated"},
-      "links": {"author": "https://avalibeyaz.com/s60", "index": "https://avalibeyaz.com/symbian/", "services_bridge": "https://github.com/symbuzzer/reborncfw"},
-      "limitations": ["Alpha, one author, hobby project.", "Needs the installserver.exe patch beforehand.", "No uninstall procedure; formatting the phone erases data."],
+      "models": [
+        {
+          "name": "Nokia N95",
+          "rm": "not stated by the author"
+        }
+      ],
+      "release": {
+        "version": "v1.00 alpha",
+        "date": "not stated"
+      },
+      "links": {
+        "author": "https://avalibeyaz.com/s60",
+        "index": "https://avalibeyaz.com/symbian/",
+        "services_bridge": "https://github.com/symbuzzer/reborncfw"
+      },
+      "limitations": [
+        "Alpha, one author, hobby project.",
+        "Needs the installserver.exe patch beforehand.",
+        "No uninstall procedure; formatting the phone erases data."
+      ],
       "distribution": "unconfirmed (no redistribution permission on the author's pages)",
-      "symport": {"nokia-n95": "wizard", "nokia-n95-8gb": "blocked-without-evidence", "nokia-e52": "not-applicable", "nokia-e72": "not-applicable", "nokia-n97-mini": "not-applicable"},
+      "symport": {
+        "nokia-n95": "wizard",
+        "nokia-n95-8gb": "blocked-without-evidence",
+        "nokia-e52": "not-applicable",
+        "nokia-e72": "not-applicable",
+        "nokia-n97-mini": "not-applicable",
+        "nokia-n8": "not-applicable",
+        "nokia-e7": "not-applicable"
+      },
       "advisories": []
     },
     {
       "id": "reborn-n8-e7",
       "family": "reborn",
-      "title": {"en": "Reborn CFW for Nokia N8 / E7 (Belle)", "ru": "Reborn CFW для Nokia N8 / E7 (Belle)"},
+      "title": {
+        "en": "Reborn CFW for Nokia N8 / E7 (Belle)",
+        "ru": "Reborn CFW для Nokia N8 / E7 (Belle)"
+      },
       "kind": "custom firmware for Symbian Belle devices",
-      "platform": "Symbian Belle",
-      "models": [{"name": "Nokia N8-00", "rm": "not stated"}, {"name": "Nokia E7-00", "rm": "not stated"}],
-      "release": {"version": "not stated", "date": "not stated"},
-      "links": {"author": "https://www.avalibeyaz.com/s3", "services_bridge": "https://github.com/symbuzzer/reborncfw"},
-      "limitations": ["Belle only: not applicable to S60 3rd/5th Edition phones.",
-                      "The Online Services Bridge repository is a set of controlled URL redirects (web configuration), not the source of the firmware."],
+      "platform": "Symbian Belle Refresh (author claim)",
+      "models": [
+        {
+          "name": "Nokia N8-00",
+          "rm": "not stated"
+        },
+        {
+          "name": "Nokia E7-00",
+          "rm": "not stated"
+        }
+      ],
+      "release": {
+        "version": "N8 v20260912; E7 v20260308 (author)",
+        "date": "release labels, not a stock firmware version"
+      },
+      "links": {
+        "author": "https://avalibeyaz.com/s3/reborn.htm",
+        "services_bridge": "https://github.com/symbuzzer/reborncfw"
+      },
+      "limitations": [
+        "Belle only: not applicable to S60 3rd/5th Edition phones.",
+        "The Online Services Bridge repository is a set of controlled URL redirects (web configuration), not the source of the firmware.",
+        "N8 release label v20260912 and E7 v20260308 were read on the author page on 2026-11-06; exact stock firmware/RM/product code is not stated.",
+        "E7 has three separate hardware keyboard choices: Euro1GenericWorld, Turkish, Russian. UI languages vary by build; inspect the selected download manually.",
+        "Author claims do not establish a safe update, complete rollback or compatibility with the connected device."
+      ],
       "distribution": "not stated",
-      "symport": {"nokia-n95": "not-applicable", "nokia-n95-8gb": "not-applicable", "nokia-e52": "not-applicable", "nokia-e72": "not-applicable", "nokia-n97-mini": "not-applicable"},
-      "advisories": []
+      "symport": {
+        "nokia-n95": "not-applicable",
+        "nokia-n95-8gb": "not-applicable",
+        "nokia-e52": "not-applicable",
+        "nokia-e72": "not-applicable",
+        "nokia-n97-mini": "not-applicable",
+        "nokia-n8": "research-only",
+        "nokia-e7": "research-only"
+      },
+      "advisories": [],
+      "variants": [
+        {
+          "profile": "nokia-n8",
+          "version": "v20260912",
+          "firmware": null,
+          "languages": [
+            "English",
+            "Turkish",
+            "German",
+            "French",
+            "Italian",
+            "Dutch",
+            "Russian",
+            "Ukrainian",
+            "Bulgarian",
+            "Hungarian",
+            "Kazakh",
+            "Romanian",
+            "Spanish",
+            "Portuguese",
+            "Catalan",
+            "Basque",
+            "Brazilian Portuguese"
+          ],
+          "keyboards": [],
+          "download": "https://disk.yandex.com.tr/d/8uVaRQJi-TuhCw",
+          "source": "https://avalibeyaz.com/s3/reborn.htm"
+        },
+        {
+          "profile": "nokia-e7",
+          "version": "v20260308",
+          "firmware": null,
+          "languages": [
+            "English",
+            "Turkish",
+            "German",
+            "French",
+            "Italian",
+            "Russian",
+            "Ukrainian",
+            "Romanian"
+          ],
+          "keyboards": [
+            "Euro1GenericWorld",
+            "Turkish",
+            "Russian"
+          ],
+          "download": "https://disk.yandex.com.tr/d/wDb5kbbfCDsVxw",
+          "source": "https://avalibeyaz.com/s3/reborn.htm"
+        }
+      ]
     },
     {
       "id": "delight-belle",
       "family": "delight",
-      "title": {"en": "Delight CFW (Symbian Belle)", "ru": "Delight CFW (Symbian Belle)"},
+      "title": {
+        "en": "Delight CFW (Symbian Belle)",
+        "ru": "Delight CFW (Symbian Belle)"
+      },
       "kind": "custom firmware for Symbian Belle devices",
       "platform": "Symbian Belle",
-      "models": [{"name": "Nokia 808", "rm": "not stated"}, {"name": "Nokia N8", "rm": "not stated"}, {"name": "Nokia E7", "rm": "not stated"}, {"name": "Nokia C7", "rm": "not stated"},
-                 {"name": "Nokia 700 / 701 / 603 / 500 / E6 / Oro", "rm": "not stated"}, {"name": "Vertu Constellation T", "rm": "not stated"}],
-      "release": {"version": "per model (see the advisory)", "date": "not stated"},
-      "links": {"author": "https://www.symwld.com/delight/ (could not be read: bot verification)", "advisory": "https://cveawg.mitre.org/api/cve/CVE-2025-65885"},
-      "limitations": ["Belle only: not applicable to S60 3rd/5th Edition phones.", "A published advisory describes a startup-script mechanism: see CVE-2025-65885."],
+      "models": [
+        {
+          "name": "Nokia 808",
+          "rm": "not stated"
+        },
+        {
+          "name": "Nokia N8",
+          "rm": "not stated"
+        },
+        {
+          "name": "Nokia E7",
+          "rm": "not stated"
+        },
+        {
+          "name": "Nokia C7",
+          "rm": "not stated"
+        },
+        {
+          "name": "Nokia 700 / 701 / 603 / 500 / E6 / Oro",
+          "rm": "not stated"
+        },
+        {
+          "name": "Vertu Constellation T",
+          "rm": "not stated"
+        }
+      ],
+      "release": {
+        "version": "per model (see the advisory)",
+        "date": "not stated"
+      },
+      "links": {
+        "author": "https://www.symwld.com/delight/",
+        "advisory": "https://cveawg.mitre.org/api/cve/CVE-2025-65885"
+      },
+      "limitations": [
+        "Belle only: not applicable to S60 3rd/5th Edition phones.",
+        "A published advisory describes a startup-script mechanism: see CVE-2025-65885.",
+        "Author page requires browser verification; exact release, RM, languages and keyboard variant are unknown. Obtain a package and author evidence manually."
+      ],
       "distribution": "not stated",
-      "symport": {"nokia-n95": "not-applicable", "nokia-n95-8gb": "not-applicable", "nokia-e52": "not-applicable", "nokia-e72": "not-applicable", "nokia-n97-mini": "not-applicable"},
-      "advisories": ["CVE-2025-65885"]
+      "symport": {
+        "nokia-n95": "not-applicable",
+        "nokia-n95-8gb": "not-applicable",
+        "nokia-e52": "not-applicable",
+        "nokia-e72": "not-applicable",
+        "nokia-n97-mini": "not-applicable",
+        "nokia-n8": "research-only",
+        "nokia-e7": "research-only"
+      },
+      "advisories": [
+        "CVE-2025-65885"
+      ]
     }
   ]
 }

@@ -191,7 +191,7 @@ class Workbench:
         self.theme_studio = ThemeStudio(repo)
         self.lab = EmulatorLab(repo, self.resolve_lab_package, self.devices)
         from symport.firmware import FirmwareExplorer
-        self.firmware = FirmwareExplorer(repo / 'build/symport/firmware')
+        self.firmware = FirmwareExplorer(repo / 'build/symport/firmware', self.devices)
         self.inspector = Inspector(repo, self.resolve_lab_package, self.devices, self.lab, self.firmware)
         self.jailbreak = JailbreakManager(repo, self.devices)
         self.revive = ReviveService(repo, self.devices)

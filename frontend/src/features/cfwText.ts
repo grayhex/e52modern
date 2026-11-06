@@ -1,5 +1,16 @@
 /** Russian wording for the English metadata published with the firmware sources and advisories. */
 const RU: Record<string, string> = {
+  'Symbian Belle Refresh (author claim)': 'Symbian Belle Refresh (заявлено автором)',
+  'N8 v20260912; E7 v20260308 (author)': 'N8 v20260912; E7 v20260308 (автор)',
+  'release labels, not a stock firmware version': 'метки релизов, не номер штатной прошивки',
+  'N8 release label v20260912 and E7 v20260308 were read on the author page on 2026-11-06; exact stock firmware/RM/product code is not stated.':
+    'На странице автора 06.11.2026 указаны релизы N8 v20260912 и E7 v20260308; точная штатная прошивка, RM и код продукта не указаны.',
+  'E7 has three separate hardware keyboard choices: Euro1GenericWorld, Turkish, Russian. UI languages vary by build; inspect the selected download manually.':
+    'У E7 три отдельных варианта аппаратной клавиатуры: Euro1GenericWorld, турецкая и русская. Языки интерфейса зависят от сборки; проверьте выбранный пакет вручную.',
+  'Author claims do not establish a safe update, complete rollback or compatibility with the connected device.':
+    'Заявления автора не подтверждают безопасное обновление, полный откат или совместимость с подключённым устройством.',
+  'Author page requires browser verification; exact release, RM, languages and keyboard variant are unknown. Obtain a package and author evidence manually.':
+    'Страница автора требует проверки браузера; точные релиз, RM, языки и раскладка не подтверждены. Получите пакет и сведения автора вручную.',
   'hybrid mod kit installed on the phone (SIS); not a flash':
     'гибридный набор модификаций, устанавливается на телефон (SIS); не прошивка',
   'custom firmware for Symbian Belle devices': 'кастомная прошивка для устройств Symbian Belle',
