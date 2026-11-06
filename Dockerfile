@@ -2,7 +2,7 @@
 # Layers are ordered from the least to the most frequently changed one, so a code change rebuilds only the
 # last layers: system packages → Python dependencies → native Symbian tools → frontend → application.
 
-FROM node:24-bookworm-slim AS frontend
+FROM node:26-trixie-slim AS frontend
 WORKDIR /src/frontend
 COPY frontend/package*.json ./
 RUN --mount=type=cache,target=/root/.npm \
@@ -14,7 +14,7 @@ COPY symport/web_assets/ /src/symport/web_assets/
 COPY symport/phone/device_models.json /src/symport/phone/device_models.json
 RUN npm run build
 
-FROM python:3.12-slim-trixie AS runtime
+FROM python:3.14-slim-trixie AS runtime
 
 ARG VERSION=dev
 ARG REVISION=unknown

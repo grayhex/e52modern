@@ -60,7 +60,7 @@ Browser checks (Playwright + Chromium, run against the real Python server on syn
 
 | Workflow | Jobs |
 |---|---|
-| `ci.yml` | `lint`, `tests` (Python 3.11–3.13, xdist), `theme`, `real-sdk` (main and manual runs only, non-gating), `workbench` and `device-manager-container` (Docker image with a shared layer cache), `phone-workspace-browser` |
+| `ci.yml` | `lint`, `tests` (Python 3.11–3.14, xdist), `theme`, `real-sdk` (main and manual runs only, non-gating), `workbench` and `device-manager-container` (Docker image with a shared layer cache), `phone-workspace-browser` |
 | `frontend.yml` | `frontend` (lint, format, vitest, production build, build artifact) then `e2e` in three parallel groups (`core`, `devices`, `revive`) that reuse the build |
 | `windows-bridge.yml` | portable EXE and installer on Windows; release on `bridge-v*` tags |
 | `publish-image.yml` | multi-architecture image to GHCR on `main` and `vX.Y.Z` tags, after a smoke test of the running container |
@@ -75,7 +75,7 @@ fixtures are temporary and deliberately identified as mock transports; they are 
 sample devices. Screenshot artifacts from the media check use real JPEG/WAV files on a local
 enrolled directory. Unknown phone identity is not filled in to make a screenshot.
 
-CI checks Python 3.11–3.13, lint, JavaScript syntax, Compose configuration, Docker startup,
+CI checks Python 3.11–3.14, lint, JavaScript syntax, Compose configuration, Docker startup,
 python-gammu API availability, phone/media browser workflows, theme toolchain/reproducibility,
 real SDK packages and the existing MGO/EKA2L1 integration without proprietary ROM. What the automatic checks
 do and do not prove about a physical phone is described once, in [STATUS.md](STATUS.md).

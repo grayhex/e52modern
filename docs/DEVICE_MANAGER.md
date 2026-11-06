@@ -106,7 +106,7 @@ ruff check .
 node --check symport/web_assets/manager.js
 ```
 
-CI runs device-manager tests in the existing Python 3.11–3.13 job, without a phone.
+CI runs device-manager tests in the existing Python 3.11–3.14 job, without a phone.
 Hardware validation must cover mount/unplug/reconnect, destination paths, interrupted
 transfers, available services, permissions and actual handset installation. Preserve
 unknown and unsupported outcomes in the existing device test report.

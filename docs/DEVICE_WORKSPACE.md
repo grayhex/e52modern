@@ -24,7 +24,7 @@ window blur. Discovery and ordinary operation logs never contain the full identi
 
 ## Windows PC Bridge
 
-Use 64-bit Python 3.11–3.13 and install the existing project with its optional adapters:
+Use 64-bit Python 3.11–3.14 and install the existing project with its optional adapters:
 
 ```powershell
 py -3.12 -m venv .venv

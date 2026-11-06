@@ -15,8 +15,8 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
           architecture: x64
@@ -35,7 +35,7 @@ jobs:
         run: python tools/windows/build_bridge.py
       - name: Assemble source and license notices
         run: python tools/windows/package_bridge.py
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: SymPortBridge-Windows-x64
           path: |
@@ -56,7 +56,7 @@ jobs:
         run: |
           $version = python -c "from symport.bridge import VERSION; print(VERSION)"
           ./tools/windows/test_installer.ps1 -Old "build/windows/installer-old/SymPortBridge-Setup-0.0.1.exe" -New "build/windows/installer/SymPortBridge-Setup-$version.exe" -NewVersion $version
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: SymPortBridge-Installer
           path: |
@@ -72,16 +72,16 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - run: pip install cryptography
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: SymPortBridge-Installer
           path: release
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: SymPortBridge-Windows-x64
           path: portable
