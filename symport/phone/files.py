@@ -108,9 +108,17 @@ class MountedVolumes:
                 raise ValueError("Symlinks are forbidden")
         return path
 
+    @staticmethod
+    def _public_write(value: str):
+        parts = PurePosixPath(value).parts
+        if parts and parts[0].casefold() in {'sys', 'private', 'resource', 'system'}:
+            raise ValueError('Writes to Symbian system/private folders are blocked; choose a public user folder')
+
     def execute(self, data: dict) -> dict:
         action = data.get('action')
         path = self._path(data.get('device'), data.get('path', ''))
+        if action in ('delete', 'upload', 'mkdir', 'transfer', 'media-upload', 'software-transfer', 'contacts-stage', 'restore', 'restore-preview'):
+            self._public_write(data.get('path', ''))
         if action == 'contacts-stage':
             from .contacts import vcards
             if data.get('confirm') is not True:

@@ -53,7 +53,9 @@ RUN tools/s60/build.sh
 
 COPY . .
 COPY --from=frontend /src/symport/react_assets/ ./symport/react_assets/
-RUN pip install --no-deps -e . \
+RUN --mount=type=secret,id=proxy_ca \
+    if [ -f /run/secrets/proxy_ca ]; then export PIP_CERT=/run/secrets/proxy_ca; fi \
+    && pip install --no-deps -e . \
     && mkdir -p build workspace /symbian-auth \
     && chown 10001:10001 /symbian-auth \
     && chown -R 10001:10001 /srv/e52modern

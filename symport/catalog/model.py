@@ -37,7 +37,7 @@ def validate_entry(entry: dict) -> None:
             raise ValueError('Catalog list required: ' + key)
     if entry['compatibility'] == 'verified-on-e52' and not entry['e52_evidence']:
         raise ValueError('E52 verification requires evidence')
-    if entry.get('minimum_symbian') is not None and not re.fullmatch(r'9\.[1-4]', str(entry['minimum_symbian'])):
+    if entry.get('minimum_symbian') is not None and not re.fullmatch(r'9\.[1-4]|\^3|Anna|Belle(?: Refresh)?', str(entry['minimum_symbian'])):
         raise ValueError('Invalid minimum Symbian version')
     if not isinstance(entry.get('model_evidence', {}), dict):
         raise ValueError('Model evidence must be a mapping')

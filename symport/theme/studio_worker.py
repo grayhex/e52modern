@@ -18,7 +18,7 @@ def main():
     from symport.phone.registry import theme_profiles
     allowed = theme_profiles()
     if spec.get('profile') not in allowed:
-        raise ValueError('S60 5th theme processing is not supported')
+        raise ValueError('S60 5th theme processing is not supported; Symbian^3 / Anna / Belle are also unavailable')
     sys.path[:0] = [str(repo / "tools"), str(repo / "tools/s60")]
     import build_assets as ba
     import gen_skin

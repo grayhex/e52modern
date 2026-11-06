@@ -73,11 +73,15 @@ def _importers(index: dict) -> dict:
 
 
 class FirmwareExplorer:
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, devices=None):
         self.store = FirmwareStore(Path(root))
+        self.devices = devices
 
     def execute(self, data: dict) -> dict:
         action = data.get("action")
+        if action == 'cfw-plan':
+            from .preparation import plan
+            return plan(self.store, self.devices, data)
         if action == "list":
             return {"images": self.store.list(), "limits": {"max_images": 6}}
         if action == "delete":

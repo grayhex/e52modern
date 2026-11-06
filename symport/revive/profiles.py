@@ -13,6 +13,7 @@ PLANNING_MARGIN = 64 * 1024 * 1024  # SymPort planning margin for kit transfers,
 S60V3_TARGETS = ("nokia-e52", "nokia-e72", "nokia-n95", "nokia-n95-8gb")
 # 5th Edition: supported only after the user explicitly confirms the exact variant.
 CONFIRM_TARGETS = ("nokia-n97-mini",)
+COMMON_TARGETS = S60V3_TARGETS + CONFIRM_TARGETS + ("nokia-n8", "nokia-e7")
 
 PROFILES: dict[str, dict] = {
     'network-certs': {
@@ -21,7 +22,7 @@ PROFILES: dict[str, dict] = {
             'en': 'Read-only look at identity, clock and certificate readiness before HTTPS or TLS work.',
             'ru': 'Только чтение: идентификация, часы и готовность сертификатов перед работой с HTTPS и TLS.',
         },
-        'targets': S60V3_TARGETS + CONFIRM_TARGETS,
+        'targets': COMMON_TARGETS,
         'operations': ['identify-device', 'clock-check', 'certificate-review'],
     },
     'app-kit': {
@@ -30,7 +31,7 @@ PROFILES: dict[str, dict] = {
             'en': 'Check free space and transport, copy a verified kit to the phone, install it on the phone.',
             'ru': 'Проверка места и транспорта, копирование проверенного набора на телефон, установка на телефоне.',
         },
-        'targets': S60V3_TARGETS + CONFIRM_TARGETS,
+        'targets': COMMON_TARGETS,
         'operations': ['identify-device', 'space-check', 'kit-transfer', 'kit-install-manual'],
     },
     'reborn-n95': {
@@ -66,7 +67,7 @@ PROFILES: dict[str, dict] = {
             'en': 'Re-read the connection and compare it with the baseline taken before; record what you saw on the phone.',
             'ru': 'Повторное чтение подключения и сравнение с исходным состоянием; запись того, что вы увидели на телефоне.',
         },
-        'targets': S60V3_TARGETS + CONFIRM_TARGETS,
+        'targets': COMMON_TARGETS,
         'operations': ['reread-device', 'compare-baseline', 'manual-observations'],
     },
 }

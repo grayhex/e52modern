@@ -60,7 +60,7 @@ class ThemeStudio:
     @staticmethod
     def require_profile(profile):
         if not isinstance(profile,str) or profile not in PROFILES:
-            raise ValueError("Themes for this model/platform are not supported. S60 5th creation, import, preview and build are unavailable.")
+            raise ValueError("Themes for this model/platform are not supported. S60 5th / Symbian^3 / Anna / Belle creation, import, preview and build are unavailable.")
 
     def store(self, project):
         project["updated"] = datetime.now(UTC).isoformat()

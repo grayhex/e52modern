@@ -1,0 +1,48 @@
+schema = 1
+id = "nokia-e7"
+
+[device]
+manufacturer = { value = "Nokia", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+model = { value = "E7-00", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+rm = { value = "RM-626", status = "stated", source = "https://github.com/grayhex/s60modern/issues/68" }
+product_code = { value = "", status = "unknown", source = "Requires handset/adapter evidence; never inferred from the model" }
+
+[platform]
+family = { value = "Symbian^3", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+available_releases = { value = ["Symbian^3", "Anna", "Belle", "Belle Refresh"], status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+symbian_version = { value = "", status = "unknown", source = "Requires handset/adapter evidence; never inferred from the model" }
+kernel = { value = "eka2", status = "inferred", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+installer_format = { value = "sis9", status = "inferred", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+
+[display]
+resolution = { value = [360, 640], status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+open_resolution = { value = [640, 360], status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+orientation = { value = "portrait", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+rotation_state = { value = "", status = "unknown", source = "Requires handset/adapter evidence; never inferred from the model" }
+
+[input]
+method = { value = "touch-qwerty-slider", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+touch = { value = true, status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+
+[cpu]
+target_abi = { value = "armv5", status = "inferred", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+
+[storage]
+layout = { value = "internal-16gb-unmounted", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+mounted_volume = { value = "", status = "unknown", source = "Requires handset/adapter evidence; never inferred from the model" }
+free_bytes = { value = "", status = "unknown", source = "Requires handset/adapter evidence; never inferred from the model" }
+
+[firmware]
+version = { value = "", status = "unknown", source = "Requires handset/adapter evidence; never inferred from the model" }
+rom_dlls = { value = [], status = "unknown", source = "Requires handset/adapter evidence; never inferred from the model" }
+
+[packaging]
+platform_dependency = { value = "0x20022e6d", status = "documented", source = "https://en.wikipedia.org/wiki/Nokia_E7" }
+belle_dependency = { value = "0x2003a678 (requires separately known Belle release)", status = "stated", source = "https://github.com/grayhex/s60modern/issues/68" }
+
+[connection]
+write_permissions = { value = "", status = "unknown", source = "Requires handset/adapter evidence; never inferred from the model" }
+services = { value = [], status = "unknown", source = "Requires handset/adapter evidence; never inferred from the model" }
+
+[features]
+themes = { value = "unsupported", status = "stated", source = "https://github.com/grayhex/s60modern/issues/68" }

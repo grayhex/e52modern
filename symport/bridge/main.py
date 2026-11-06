@@ -77,7 +77,7 @@ class Agent:
             )
         ):
             raise ValueError(
-                "The Nokia memory card identity changed. Reconnect and discover the phone before writing."
+                "The Nokia USB storage volume identity changed. Reconnect and discover the phone before writing."
             )
 
     def revoke(self):
@@ -242,6 +242,9 @@ def self_test(report: Path | None):
     assert identify("N95")["variant_known"] is False
     assert identify("Nokia N97mini")["id"] == "nokia-n97-mini"
     assert identify("N97") is None
+    assert identify('N8-00', rm='RM-596')['id'] == 'nokia-n8'
+    assert identify('E7-00', rm='RM-626')['id'] == 'nokia-e7'
+    assert identify('E7')['symbian'] is None
 
     with tempfile.TemporaryDirectory(prefix="symport-bridge-check-") as tmp:
         root = Path(tmp)

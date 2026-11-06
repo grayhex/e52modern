@@ -194,7 +194,9 @@ def test_sources_hold_only_published_metadata_and_never_mark_belle_firmware_appl
     ids = {s["id"]: s for s in result["sources"]}
     assert set(ids) == {"reborn-hybrid-n95", "reborn-n8-e7", "delight-belle"}
     for sid in ("reborn-n8-e7", "delight-belle"):
-        assert set(ids[sid]["symport"].values()) == {"not-applicable"} and ids[sid]["platform"] == "Symbian Belle"
+        assert all(ids[sid]['symport'][m] == 'not-applicable' for m in ('nokia-e52','nokia-e72','nokia-n95','nokia-n95-8gb','nokia-n97-mini'))
+        assert ids[sid]['symport']['nokia-n8'] == ids[sid]['symport']['nokia-e7'] == 'research-only'
+        assert 'Belle' in ids[sid]['platform']
     assert ids["reborn-hybrid-n95"]["symport"]["nokia-n95"] == "wizard" and ids["reborn-hybrid-n95"]["symport"]["nokia-n95-8gb"] == "blocked-without-evidence"
     assert "unconfirmed" in ids["reborn-hybrid-n95"]["distribution"] and ids["delight-belle"]["advisories"] == ["CVE-2025-65885"]
     assert "not the source of the firmware" in " ".join(ids["reborn-n8-e7"]["limitations"])

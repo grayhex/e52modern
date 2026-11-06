@@ -28,7 +28,14 @@ def evidence(entry):
         platforms = " ".join(entry["platforms"]).lower()
         minimum = entry.get("minimum_symbian")
         minimum_match = re.fullmatch(r"9\.([1-4])", minimum or "")
-        minimum_os_blocked = minimum_match and float(minimum) > float(profile["symbian"])
+        minimum_os_blocked = minimum_match and profile.get("symbian") and float(minimum) > float(profile["symbian"])
+        if minimum in ('^3', 'Anna', 'Belle', 'Belle Refresh'):
+            minimum_os_blocked = profile.get('platform_family') != 'symbian3'
+            if not minimum_os_blocked:
+                status, basis, reason = 'not-tested', 'release-unverified', 'The installed OS release/runtime must be checked separately'
+        legacy_only = (profile.get("platform_family") == "symbian3" and entry.get("format") in ("sis", "sisx")
+                       and re.search(r's60\s*(?:3rd|5th)|fp[12]', platforms)
+                       and not re.search(r'symbian\s*\^?3|anna|belle', platforms))
         fp2_only = (
             ("fp2" in platforms or "feature pack 2" in platforms)
             and "fp1" not in platforms
@@ -36,6 +43,7 @@ def evidence(entry):
         )
         if (
             minimum_os_blocked
+            or legacy_only
             or fp2_only
             or entry.get("target_profiles")
             and key not in entry["target_profiles"]
@@ -92,5 +100,6 @@ def platform_evidence(entry):
             "s60-3rd-fp1": ("nokia-n95", "nokia-n95-8gb"),
             "s60-3rd-fp2": ("nokia-e52", "nokia-e72"),
             "s60-5th": ("nokia-n97-mini",),
+            "symbian3": ("nokia-n8", "nokia-e7"),
         }.items()
     }

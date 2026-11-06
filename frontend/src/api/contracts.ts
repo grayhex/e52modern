@@ -60,6 +60,14 @@ export const deviceSchema = z.object({
       input: maybeText,
       screen_modes: screenModesSchema.optional(),
       theme_studio: themeSupportSchema.optional(),
+      platform_family: z.string().optional(),
+      os_releases: z.array(z.string()).optional(),
+      image_views: z
+        .array(z.object({ image: z.string(), en: z.string(), ru: z.string() }))
+        .optional(),
+      release_evidence: z
+        .object({ value: z.string().nullable(), status: z.string(), source: z.string() })
+        .optional(),
     })
     .nullish(),
   firmware_update: z
@@ -84,6 +92,8 @@ export const modelSchema = z.object({
   input: maybeText,
   s60: z.string(),
   symbian: maybeText,
+  os_releases: z.array(z.string()).optional(),
+  image_views: z.array(z.object({ image: z.string(), en: z.string(), ru: z.string() })).optional(),
   toolchain_profile: maybeText,
   screen_modes: screenModesSchema.optional(),
   theme_studio: themeSupportSchema.optional(),

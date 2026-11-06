@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 
 S60_MODELS = {
+    "N8": "Symbian^3",
+    "E7": "Symbian^3",
     "E51": "3rd FP1",
     "E52": "3rd FP2",
     "E55": "3rd FP2",
@@ -59,7 +61,7 @@ def documented_model(value: str) -> dict | None:
         "manufacturer": "Nokia",
         "model": model,
         "s60": edition,
-        "edition": "5th" if edition == "5th" else "3rd",
+        "edition": "symbian3" if edition == "Symbian^3" else "5th" if edition == "5th" else "3rd",
         "source": "documented-model-profile",
         "measured": False,
     }
@@ -96,6 +98,10 @@ _FIELDS = {
     "screen_modes",
     "exact_aliases",
     "theme_studio",
+    "platform_family",
+    "os_releases",
+    "strict_rms",
+    "image_views",
 }
 
 
@@ -190,8 +196,13 @@ def presentation(value: str, *, rm=None, product_code=None) -> dict | None:
     resolved = identify(value, rm=rm, product_code=product_code)
     if resolved:
         return resolved
+    if rm and identify(value):
+        return None  # Conflicting registered model/RM must not become a generic fallback.
     model = documented_model(value)
     if not model:
+        return None
+    by_rm = identify('', rm=rm) if rm else None
+    if by_rm and by_rm['model'] != model['model']:
         return None
     edition = S60_MODELS[model["model"]]
     return {

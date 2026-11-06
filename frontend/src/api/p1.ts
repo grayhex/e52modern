@@ -22,7 +22,7 @@ export const collectionsSchema = z.object({
     z.string(),
     z.object({
       model: z.string(),
-      symbian: z.string(),
+      symbian: z.string().nullable(),
       s60: z.string(),
       screen: z.array(z.number()),
     }),

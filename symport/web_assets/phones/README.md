@@ -27,3 +27,6 @@ It depicts a silver/black QWERTY E72. Display dimensions in application profiles
 
 `nokia-n97-mini.png`: separate photorealistic bronze/dark-brown Mini, with its slider closed
 and a blank screen. [Reference, asset details and scope](N97-MINI-ARTWORK.md).
+
+`nokia-n8.svg` / `nokia-e7.svg` / `nokia-e7-open.svg`: separate N8 and closed/open E7 masters,
+with transparent PNG/lossless WebP exports. [References, geometry and export](N8-E7-ARTWORK.md).
