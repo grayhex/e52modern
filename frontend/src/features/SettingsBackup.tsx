@@ -12,6 +12,7 @@ import {
   settingsStateSchema,
   simpleSchema,
 } from '../api/revive';
+import { st } from './statements';
 
 const LEVEL: Record<string, [string, string, Tone]> = {
   exportable: ['Can be exported (read verified)', 'Можно экспортировать (чтение проверено)', 'ok'],
@@ -34,7 +35,7 @@ const NAME: Record<string, [string, string]> = {
 export default function SettingsBackup({ device }: { device: string }) {
   const api = useApi();
   const cache = useQueryClient();
-  const { t } = usePreferences();
+  const { t, language } = usePreferences();
   const [picked, setPicked] = useState<string[]>([]);
   const [consent, setConsent] = useState(false);
   const [preview, setPreview] = useState<ReturnType<typeof restorePreviewSchema.parse> | null>(
@@ -103,7 +104,7 @@ export default function SettingsBackup({ device }: { device: string }) {
   return (
     <SectionPanel title={t('Settings and databases', 'Настройки и базы')} id="settings-backup">
       <p className="k-note-line" data-testid="settings-statement">
-        {s.statement}
+        {st(language, s.statement)}
       </p>
       <ul className="k-list" data-testid="settings-categories">
         {s.categories.map((c) => (
@@ -218,7 +219,7 @@ export default function SettingsBackup({ device }: { device: string }) {
             {preview.blocking.length > 0 &&
               ` · ${t('blocked', 'заблокировано')}: ${preview.blocking.join(', ')}`}
           </p>
-          <p className="k-note-line">{preview.statement}</p>
+          <p className="k-note-line">{st(language, preview.statement)}</p>
           {preview.other_phone && (
             <label className="rv-check">
               <input
@@ -256,7 +257,7 @@ export default function SettingsBackup({ device }: { device: string }) {
       )}
       {apply.data && (
         <p role="status" data-testid="restore-result" data-level={apply.data.level}>
-          {apply.data.level}: {apply.data.statement}
+          {apply.data.level}: {st(language, apply.data.statement)}
         </p>
       )}
     </SectionPanel>

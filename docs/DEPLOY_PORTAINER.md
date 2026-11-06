@@ -17,10 +17,9 @@ Workflow [`publish-image.yml`](../.github/workflows/publish-image.yml) соби�
 (`ubuntu-24.04-arm`) публикуется, только если сборка и тот же тест прошли. Манифест перечисляет ровно то, что прошло; проверить:
 `docker buildx imagetools inspect ghcr.io/grayhex/s60modern:latest`. Эмулятор (профиль `emulator`) — только amd64.
 
-> Статус: workflow и compose-файл проверены статически (`docker compose config`, тесты структуры). Реальный прогон публикации
-> в GHCR на момент написания **ещё не выполнялся**: образ появится после первого push в `main` с этим workflow. Если пакет
-> в GHCR получился приватным, откройте *Packages → s60modern → Package settings → Change visibility → Public*, иначе
-> Portainer/UGREEN потребуют реквизиты реестра (логин GitHub и PAT с `read:packages`).
+> Публикация идёт при каждом push в `main`. Если пакет в GHCR оказался приватным, откройте *Packages → s60modern →
+> Package settings → Change visibility → Public*, иначе Portainer/UGREEN потребуют реквизиты реестра (логин GitHub
+> и PAT с `read:packages`). Установка на Proxmox: [DEPLOY_PROXMOX.md](DEPLOY_PROXMOX.md).
 
 ## 2. Установка
 

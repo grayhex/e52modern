@@ -16,6 +16,7 @@ import {
   safetyPlanSchema,
   simpleSchema,
 } from '../api/revive';
+import { st } from './statements';
 
 const MAX = 48 * 1024 * 1024;
 const OUT: [string, string, string][] = [
@@ -28,7 +29,7 @@ const OUT: [string, string, string][] = [
 export default function MediaPrep({ device }: { device: string }) {
   const api = useApi();
   const cache = useQueryClient();
-  const { t } = usePreferences();
+  const { t, language } = usePreferences();
   const models = useModels().filter((m) => m.id !== 'nokia-n95-family');
   const [model, setModel] = useState('nokia-e52');
   const [preset, setPreset] = useState('');
@@ -96,7 +97,7 @@ export default function MediaPrep({ device }: { device: string }) {
   return (
     <SectionPanel title={t('Prepare for Nokia', 'Подготовить для Nokia')} id="media-prep">
       <p className="k-note-line" data-testid="media-statement">
-        {presets.data?.statement}
+        {st(language, presets.data?.statement)}
       </p>
       <div className="rv-form">
         <label>
@@ -140,8 +141,7 @@ export default function MediaPrep({ device }: { device: string }) {
               <select value={chosen} onChange={(e) => setPreset(e.target.value)}>
                 {choices.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {t(p.title.en, p.title.ru)} —{' '}
-                    {t('not tested on hardware', 'на железе не проверено')}
+                    {t(p.title.en, p.title.ru)}
                   </option>
                 ))}
               </select>
@@ -196,9 +196,6 @@ export default function MediaPrep({ device }: { device: string }) {
               <span className="rv-hash">{j.output.sha256}</span>
             </p>
           )}
-          <p className="k-note-line">
-            {t('Hardware', 'Железо')}: {j.hardware} — {j.basis}
-          </p>
           <ul className="rv-levels" data-testid="media-outcomes">
             {OUT.map(([k, en, ru]) => {
               const v = j.outcomes[k as keyof typeof j.outcomes];

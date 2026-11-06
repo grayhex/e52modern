@@ -70,7 +70,7 @@ def probe(path_bytes, tmp_path, name):
 def test_presets_are_theoretical_for_every_model_and_never_hardware_verified(svc):
     for model in media_prep.TARGETS:
         result = svc.execute({"action": "media-presets", "model": model})
-        assert result["screen"] and "theoretical" in result["statement"]
+        assert result["screen"] and "check the result on the phone" in result["statement"]
         for kind in ("video", "audio", "image"):
             assert result["presets"][kind]
             assert all(p["hardware"] == "not-tested" and p["basis"].startswith("theoretical") for p in result["presets"][kind])

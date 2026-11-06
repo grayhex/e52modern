@@ -1,3 +1,4 @@
+import { Loader2 } from 'lucide-react';
 import { Activity, lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { usePreferences } from './state/app';
 import Sidebar from './nav/Sidebar';
@@ -95,7 +96,13 @@ export default function App() {
         <div className="content">
           {Object.entries(visited).map(([name, intent]) => (
             <Activity key={name} mode={name === route ? 'visible' : 'hidden'}>
-              <Suspense fallback={<p role="status">{t('Loading…', 'Загрузка…')}</p>}>
+              <Suspense
+                fallback={
+                  <p role="status" className="k-loading">
+                    <Loader2 size={18} aria-hidden="true" /> {t('Loading…', 'Загрузка…')}
+                  </p>
+                }
+              >
                 <section
                   className="react-page"
                   id={`page-${name.replace('/', '-')}`}
@@ -155,8 +162,20 @@ function RouteView({ route }: { route: string }) {
       return <Firmware />;
     case 'tools/cfw':
       return <Cfw />;
-    case 'tools/revive':
-      return <Revive />;
+    case 'revive/home':
+      return <Revive section="home" />;
+    case 'revive/network':
+      return <Revive section="network" />;
+    case 'revive/kit':
+      return <Revive section="kit" />;
+    case 'revive/services':
+      return <Revive section="services" />;
+    case 'revive/reborn':
+      return <Revive section="reborn" />;
+    case 'revive/addons':
+      return <Revive section="addons" />;
+    case 'revive/post-check':
+      return <Revive section="post-check" />;
     case 'tools/jailbreak':
       return <Jailbreak />;
     case 'tools/activity':

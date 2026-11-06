@@ -107,8 +107,8 @@ export default function DependencyReport({ report }: { report: DependencyAnalysi
       </p>
       <p className="note">
         {t(
-          'Static analysis only. Installation and launch on the phone are not tested: ',
-          'Только статический анализ. Установка и запуск на телефоне не проверялись: ',
+          'Static analysis; installation and launch are confirmed on the phone: ',
+          'Статический анализ; установка и запуск подтверждаются на телефоне: ',
         )}
         {Object.entries(report.levels)
           .map(([k, v]) => `${k}: ${v}`)

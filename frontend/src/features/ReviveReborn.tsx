@@ -14,6 +14,7 @@ import {
   simpleSchema,
   type ReviveStatus,
 } from '../api/revive';
+import { st } from './statements';
 
 const TONE: Record<ReviveStatus, Tone> = {
   ready: 'ok',
@@ -69,7 +70,7 @@ export default function ReviveReborn({
 }) {
   const api = useApi();
   const cache = useQueryClient();
-  const { t } = usePreferences();
+  const { t, language } = usePreferences();
   const file = useRef<HTMLInputElement>(null);
   const [planId, setPlanId] = useState('');
   const [sourceSure, setSourceSure] = useState(false);
@@ -316,7 +317,7 @@ export default function ReviveReborn({
               ))}
             </ul>
           </details>
-          <p className="k-note-line">{imported.statement}</p>
+          <p className="k-note-line">{st(language, imported.statement)}</p>
           {imported.differs_from_pin && (
             <p role="alert">
               {t(
@@ -467,7 +468,7 @@ export default function ReviveReborn({
           {t(...(OUTCOME[outcomeKey] ?? [outcomeKey, outcomeKey]))}
         </StatusIndicator>
       </p>
-      <p className="k-note-line">{s.statement}</p>
+      <p className="k-note-line">{st(language, s.statement)}</p>
     </SectionPanel>
   );
 }

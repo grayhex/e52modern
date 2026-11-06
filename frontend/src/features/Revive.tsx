@@ -1,6 +1,17 @@
 import { useEffect, useId, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { LifeBuoy, PlugZap } from 'lucide-react';
+import {
+  Boxes,
+  ClipboardCheck,
+  Cloud,
+  Globe,
+  LifeBuoy,
+  PackagePlus,
+  PlugZap,
+  Smartphone,
+  Usb,
+  type LucideIcon,
+} from 'lucide-react';
 import { useApi, usePreferences } from '../state/app';
 import { DeviceSelect, ErrorMessage } from '../components/ui';
 import {
@@ -16,11 +27,12 @@ import ReviveHome from './ReviveHome';
 import ReviveReborn from './ReviveReborn';
 import ReviveServices from './ReviveServices';
 import ReviveTls from './ReviveTls';
+import { goRevive } from './reviveNav';
+import { st } from './statements';
 import {
   inspectSchema,
   planSchema,
   simpleSchema,
-  stateSchema,
   verifySchema,
   type Check,
   type Fact,
@@ -106,7 +118,7 @@ function formatFact(id: string, fact: Fact, t: (en: string, ru: string) => strin
 }
 
 function Facts({ facts }: { facts: Record<string, Fact> }) {
-  const { t } = usePreferences();
+  const { t, language } = usePreferences();
   return (
     <dl className="rv-facts">
       {FACT_ORDER.map(([id, en, ru]) => {
@@ -119,7 +131,7 @@ function Facts({ facts }: { facts: Record<string, Fact> }) {
             <dd>
               <span className="rv-fact-value">{formatFact(id, fact, t)}</span>
               <StatusIndicator tone={tone}>{t(sEn, sRu)}</StatusIndicator>
-              {fact.note && <small>{fact.note}</small>}
+              {fact.note && <small>{st(language, fact.note)}</small>}
             </dd>
           </div>
         );
@@ -276,13 +288,101 @@ function OperationItem({
   );
 }
 
-export default function Revive() {
+export type ReviveSection =
+  'home' | 'network' | 'kit' | 'services' | 'reborn' | 'addons' | 'post-check';
+const SECTION_PROFILE: Record<Exclude<ReviveSection, 'home'>, string> = {
+  network: 'network-certs',
+  kit: 'app-kit',
+  services: 'legacy-services',
+  reborn: 'reborn-n95',
+  addons: 'addons',
+  'post-check': 'post-check',
+};
+const SECTION_TITLE: Record<ReviveSection, [string, string, string, string]> = {
+  home: [
+    'Recovery centre',
+    'Центр восстановления',
+    'Inspect the phone, see what can be improved and prepare it step by step. Nothing here installs software.',
+    'Проверьте телефон, посмотрите, что можно улучшить, и подготовьте его по шагам. Здесь ничего не устанавливается.',
+  ],
+  network: [
+    'Network & TLS',
+    'Сеть и TLS',
+    'Modern TLS components, trusted certificates and a connection check for old Symbian applications.',
+    'Современные TLS-компоненты, доверенные сертификаты и проверка соединения для старых приложений Symbian.',
+  ],
+  kit: [
+    'Application kit',
+    'Набор приложений',
+    'Check space and transport, copy a verified kit to the phone and install it there.',
+    'Проверка места и транспорта, копирование проверенного набора и установка на телефоне.',
+  ],
+  services: [
+    'Online services',
+    'Онлайн-сервисы',
+    'Old system endpoints, their working replacements and what has been confirmed.',
+    'Старые системные адреса, их рабочие замены и что подтверждено.',
+  ],
+  reborn: [
+    'Reborn for N95',
+    'Reborn для N95',
+    'Step-by-step preparation for the Reborn Hybrid CFW alpha on the Nokia N95.',
+    'Пошаговая подготовка к Reborn Hybrid CFW alpha на Nokia N95.',
+  ],
+  addons: [
+    'Add-ons & patches',
+    'Дополнения и патчи',
+    'Optional add-ons checked against your model, and the Patch Manager inventory.',
+    'Необязательные дополнения, проверенные под вашу модель, и инвентарь Patch Manager.',
+  ],
+  'post-check': [
+    'After installation',
+    'После установки',
+    'Compare the phone with its saved state and record what you saw on the screen.',
+    'Сравните телефон с сохранённым состоянием и запишите, что вы увидели на экране.',
+  ],
+};
+const SECTION_ICON: Record<Exclude<ReviveSection, 'home'>, LucideIcon> = {
+  network: Globe,
+  kit: Boxes,
+  services: Cloud,
+  reborn: Usb,
+  addons: PackagePlus,
+  'post-check': ClipboardCheck,
+};
+
+type Manual = { model: string; rm: string; firmware: string };
+const EMPTY_MANUAL: Manual = { model: '', rm: '', firmware: '' };
+/** What the user typed survives moving between Revive pages, never the page reload. */
+function useManual() {
+  const [manual, setManualState] = useState<Manual>(() => {
+    try {
+      return {
+        ...EMPTY_MANUAL,
+        ...JSON.parse(sessionStorage.getItem('symport-revive-manual') ?? '{}'),
+      };
+    } catch {
+      return EMPTY_MANUAL;
+    }
+  });
+  const setManual = (value: Manual) => {
+    setManualState(value);
+    try {
+      sessionStorage.setItem('symport-revive-manual', JSON.stringify(value));
+    } catch {
+      /* storage is optional */
+    }
+  };
+  return [manual, setManual] as const;
+}
+
+export default function Revive({ section = 'home' }: { section?: ReviveSection }) {
   const api = useApi();
   const cache = useQueryClient();
   const { t, device, setDevice } = usePreferences();
-  const [profile, setProfile] = useState('network-certs');
-  const [draft, setDraft] = useState({ model: '', rm: '', firmware: '' });
-  const [manual, setManual] = useState({ model: '', rm: '', firmware: '' });
+  const profile = section === 'home' ? 'network-certs' : SECTION_PROFILE[section];
+  const [manual, setManual] = useManual();
+  const [draft, setDraft] = useState(manual);
   const [scope, setScope] = useState('memory-card');
   const [patches, setPatches] = useState('');
   const [rightsSure, setRightsSure] = useState(false);
@@ -292,10 +392,6 @@ export default function Revive() {
     api.request('/api/revive', body as never, schema);
   const root = ['revive', device] as const;
 
-  const state = useQuery({
-    queryKey: ['revive', '', 'state'],
-    queryFn: () => call({ action: 'state' }, stateSchema),
-  });
   const inspect = useQuery({
     queryKey: [...root, 'inspect', manual],
     queryFn: () => call({ action: 'inspect', device, manual }, inspectSchema),
@@ -305,6 +401,7 @@ export default function Revive() {
   const plan = useQuery({
     queryKey: [...root, 'plan', profile, manual],
     queryFn: () => call({ action: 'plan', device, profile, manual }, planSchema),
+    enabled: section !== 'home',
     staleTime: 0,
     retry: false,
   });
@@ -322,27 +419,19 @@ export default function Revive() {
   useEffect(() => {
     if (!device && only) setDevice(only.id);
   }, [device, only, setDevice]);
-  const profiles = Object.values(state.data?.profiles ?? {});
   const noConnection = inspect.data?.reason === 'no-connection';
   const selected = inspect.data?.facts['profile']?.value;
   const needsVariant = selected === 'nokia-n97-mini';
+  const [titleEn, titleRu, subEn, subRu] = SECTION_TITLE[section];
+  const facts = inspect.data?.facts ?? {};
 
   return (
     <>
       <PageHeader
-        title={t('SymPort Revive', 'SymPort Revive')}
-        subtitle={t(
-          'Inspect the phone, see a plan, prepare safely, verify the result. Nothing here installs software.',
-          'Проверьте телефон, посмотрите план, безопасно подготовьтесь и проверьте результат. Здесь ничего не устанавливается.',
-        )}
+        title={t(titleEn, titleRu)}
+        subtitle={t(subEn, subRu)}
         actions={<DeviceSelect value={device} onChange={setDevice} />}
       />
-      <p className="disclaimer">
-        {t(
-          'Copying a file to the phone is not installation. Anything you type is shown separately from what the device reported. No protection is bypassed and no system partition is written.',
-          'Копирование файла на телефон — не установка. Всё, что вы вводите, показывается отдельно от ответа устройства. Защита не обходится, системные разделы не пишутся.',
-        )}
-      </p>
       {inspect.error && <ErrorMessage error={inspect.error} />}
       {noConnection ? (
         <EmptyState icon={PlugZap} title={t('No phone connection', 'Нет подключения к телефону')}>
@@ -368,7 +457,48 @@ export default function Revive() {
           </ol>
         </EmptyState>
       ) : (
-        inspect.data && (
+        inspect.data &&
+        section !== 'home' && (
+          <p className="rv-strip" data-testid="revive-strip">
+            <Smartphone size={15} aria-hidden="true" />
+            {(['model', 'rm', 'firmware'] as const).map((id) => (
+              <span key={id} className="rv-strip-item">
+                <small>
+                  {
+                    { model: t('Model', 'Модель'), rm: 'RM', firmware: t('Firmware', 'Прошивка') }[
+                      id
+                    ]
+                  }
+                </small>
+                {facts[id] ? formatFact(id, facts[id], t) : t('not reported', 'не сообщено')}
+              </span>
+            ))}
+            <a className="k-link" href="#revive/home">
+              {t('Details', 'Подробнее')}
+            </a>
+          </p>
+        )
+      )}
+
+      {section === 'home' && !noConnection && inspect.data && (
+        <>
+          <SectionPanel title={t('Preparation wizards', 'Мастера подготовки')}>
+            <div className="rv-profiles" role="group" aria-label={t('Wizards', 'Мастера')}>
+              {(Object.keys(SECTION_PROFILE) as Exclude<ReviveSection, 'home'>[]).map((id) => {
+                const Icon = SECTION_ICON[id];
+                const [en, ru, descEn, descRu] = SECTION_TITLE[id];
+                return (
+                  <a key={id} className="rv-profile" href={`#revive/${id}`} data-wizard={id}>
+                    <strong>
+                      <Icon size={16} aria-hidden="true" /> {t(en, ru)}
+                    </strong>
+                    <span>{t(descEn, descRu)}</span>
+                  </a>
+                );
+              })}
+            </div>
+          </SectionPanel>
+          <ReviveHome device={device} manual={manual} onOpen={goRevive} />
           <div className="k-grid k-grid--wide-left">
             <SectionPanel
               title={t('What was observed', 'Что удалось определить')}
@@ -422,218 +552,213 @@ export default function Revive() {
                   {t('Use for the checks', 'Использовать в проверках')}
                 </button>
               </form>
-              <hr />
-              <form
-                className="rv-form"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  act.mutate({
-                    action: 'observe',
-                    kind: 'rights',
-                    scope,
-                    patches: patches
-                      .split(',')
-                      .map((p) => p.trim())
-                      .filter(Boolean),
-                    confirm: rightsSure,
-                  });
-                  setRightsSure(false);
-                }}
-              >
-                <label>
-                  {t('Installation rights you observed', 'Права установки, которые вы наблюдали')}
-                  <select value={scope} onChange={(e) => setScope(e.target.value)}>
-                    <option value="none">{t('None / unknown', 'Нет / неизвестно')}</option>
-                    <option value="memory-card">
-                      {t('Memory card only', 'Только карта памяти')}
-                    </option>
-                    <option value="device">{t('Device level', 'Уровень устройства')}</option>
-                  </select>
-                </label>
-                <label>
-                  {t(
-                    'Patches seen in ROMPatcher+ (comma separated)',
-                    'Патчи в ROMPatcher+ (через запятую)',
-                  )}
-                  <input value={patches} onChange={(e) => setPatches(e.target.value)} />
-                </label>
-                <label className="rv-check">
-                  <input
-                    type="checkbox"
-                    checked={rightsSure}
-                    onChange={(e) => setRightsSure(e.target.checked)}
-                  />
-                  {t('This is my own observation', 'Это моё собственное наблюдение')}
-                </label>
-                <button
-                  type="submit"
-                  className="k-btn"
-                  disabled={!rightsSure || !inspect.data.device || act.isPending}
+              <details className="rv-more">
+                <summary>{t('Installation rights and patches', 'Права установки и патчи')}</summary>
+                <form
+                  className="rv-form"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    act.mutate({
+                      action: 'observe',
+                      kind: 'rights',
+                      scope,
+                      patches: patches
+                        .split(',')
+                        .map((p) => p.trim())
+                        .filter(Boolean),
+                      confirm: rightsSure,
+                    });
+                    setRightsSure(false);
+                  }}
                 >
-                  {t('Record rights', 'Записать права')}
-                </button>
-              </form>
-              {needsVariant && (
-                <>
-                  <hr />
-                  <form
-                    className="rv-form"
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      act.mutate({
-                        action: 'observe',
-                        kind: 'variant',
-                        confirmed: true,
-                        label: variant,
-                        confirm: variantSure,
-                      });
-                    }}
+                  <label>
+                    {t('Installation rights you observed', 'Права установки, которые вы наблюдали')}
+                    <select value={scope} onChange={(e) => setScope(e.target.value)}>
+                      <option value="none">{t('None / unknown', 'Нет / неизвестно')}</option>
+                      <option value="memory-card">
+                        {t('Memory card only', 'Только карта памяти')}
+                      </option>
+                      <option value="device">{t('Device level', 'Уровень устройства')}</option>
+                    </select>
+                  </label>
+                  <label>
+                    {t(
+                      'Patches seen in ROMPatcher+ (comma separated)',
+                      'Патчи в ROMPatcher+ (через запятую)',
+                    )}
+                    <input value={patches} onChange={(e) => setPatches(e.target.value)} />
+                  </label>
+                  <label className="rv-check">
+                    <input
+                      type="checkbox"
+                      checked={rightsSure}
+                      onChange={(e) => setRightsSure(e.target.checked)}
+                    />
+                    {t('This is my own observation', 'Это моё собственное наблюдение')}
+                  </label>
+                  <button
+                    type="submit"
+                    className="k-btn"
+                    disabled={!rightsSure || !inspect.data.device || act.isPending}
                   >
-                    <label>
-                      {t(
-                        'Exact N97 mini variant (RM) you checked on the label',
-                        'Точная модификация N97 mini (RM) с наклейки',
-                      )}
-                      <input
-                        value={variant}
-                        maxLength={60}
-                        onChange={(e) => setVariant(e.target.value)}
-                      />
-                    </label>
-                    <label className="rv-check">
-                      <input
-                        type="checkbox"
-                        checked={variantSure}
-                        onChange={(e) => setVariantSure(e.target.checked)}
-                      />
-                      {t('I confirm this variant', 'Подтверждаю эту модификацию')}
-                    </label>
-                    <button type="submit" className="k-btn" disabled={!variantSure || !variant}>
-                      {t('Confirm variant', 'Подтвердить модификацию')}
-                    </button>
-                  </form>
-                </>
+                    {t('Record rights', 'Записать права')}
+                  </button>
+                </form>
+              </details>
+              {needsVariant && (
+                <form
+                  className="rv-form"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    act.mutate({
+                      action: 'observe',
+                      kind: 'variant',
+                      confirmed: true,
+                      label: variant,
+                      confirm: variantSure,
+                    });
+                  }}
+                >
+                  <label>
+                    {t(
+                      'Exact N97 mini variant (RM) you checked on the label',
+                      'Точная модификация N97 mini (RM) с наклейки',
+                    )}
+                    <input
+                      value={variant}
+                      maxLength={60}
+                      onChange={(e) => setVariant(e.target.value)}
+                    />
+                  </label>
+                  <label className="rv-check">
+                    <input
+                      type="checkbox"
+                      checked={variantSure}
+                      onChange={(e) => setVariantSure(e.target.checked)}
+                    />
+                    {t('I confirm this variant', 'Подтверждаю эту модификацию')}
+                  </label>
+                  <button type="submit" className="k-btn" disabled={!variantSure || !variant}>
+                    {t('Confirm variant', 'Подтвердить модификацию')}
+                  </button>
+                </form>
               )}
               {act.error && <ErrorMessage error={act.error} />}
             </SectionPanel>
           </div>
-        )
+          <p className="disclaimer">
+            {t(
+              'Copying a file to the phone is not installation: finish it on the phone screen. What you type is always shown separately from the device report.',
+              'Копирование файла на телефон — не установка: завершите её на экране телефона. Введённое вами всегда показывается отдельно от ответа устройства.',
+            )}
+          </p>
+        </>
       )}
 
-      <ReviveHome device={device} manual={manual} onOpen={setProfile} />
-
-      <SectionPanel title={t('Preparation wizards', 'Мастера подготовки')}>
-        <div
-          className="rv-profiles"
-          role="group"
-          aria-label={t('Wizard profile', 'Профиль мастера')}
-        >
-          {profiles.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              className="rv-profile"
-              aria-pressed={profile === p.id}
-              onClick={() => setProfile(p.id)}
+      {section !== 'home' && !noConnection && (
+        <>
+          {plan.error && <ErrorMessage error={plan.error} />}
+          {plan.data && (
+            <SectionPanel
+              title={t('Readiness', 'Готовность')}
+              meta={<StatusBadge status={plan.data.status} />}
             >
-              <strong>{t(p.title.en, p.title.ru)}</strong>
-              <span>{t(p.summary.en, p.summary.ru)}</span>
-            </button>
-          ))}
-        </div>
-        {plan.error && <ErrorMessage error={plan.error} />}
-        {plan.data && (
-          <>
-            <p className="rv-overall">
-              {t('Overall', 'Итого')}: <StatusBadge status={plan.data.status} />
-            </p>
-            <Checks checks={plan.data.checks} />
-            <h3>{t('Operations', 'Операции')}</h3>
-            <ul className="rv-ops">
-              {plan.data.operations.map((op) => (
-                <OperationItem
-                  key={op.id}
-                  op={op}
-                  busy={act.isPending}
-                  onRecord={(operation, result, note) =>
-                    act.mutate({ action: 'record', operation, result, note, confirm: true })
-                  }
-                />
-              ))}
-            </ul>
-            <p className="k-note-line">{plan.data.statement}</p>
-          </>
-        )}
-        {profile === 'post-check' && (
-          <div className="rv-verify">
-            <div className="k-toolbar">
-              <button
-                type="button"
-                className="k-btn"
-                disabled={!inspect.data?.device || act.isPending}
-                onClick={() => act.mutate({ action: 'baseline' })}
-              >
-                <LifeBuoy size={14} aria-hidden="true" />{' '}
-                {t('Save baseline now', 'Сохранить исходное состояние')}
-              </button>
-              <button
-                type="button"
-                className="k-btn k-btn--primary"
-                disabled={!inspect.data?.device || verify.isPending}
-                onClick={() => verify.mutate()}
-              >
-                {t('Re-read and compare', 'Перечитать и сравнить')}
-              </button>
-            </div>
-            {inspect.data?.baseline && (
-              <p className="k-note-line">
-                {t('Baseline saved', 'Исходное состояние сохранено')}:{' '}
-                {inspect.data.baseline.slice(0, 16)}
-              </p>
-            )}
-            {verify.error && <ErrorMessage error={verify.error} />}
-            {verify.data && (
-              <div role="status" className="rv-diff">
-                {verify.data.phone_changed && (
-                  <p>
-                    {t(
-                      'The connection identity differs from the baseline (other phone, firmware or link).',
-                      'Идентичность подключения отличается от исходной (другой телефон, прошивка или канал).',
+              <details className="rv-more" open>
+                <summary>{t('Checks and operations', 'Проверки и операции')}</summary>
+                <Checks checks={plan.data.checks} />
+                <h3>{t('Operations', 'Операции')}</h3>
+                <ul className="rv-ops">
+                  {plan.data.operations.map((op) => (
+                    <OperationItem
+                      key={op.id}
+                      op={op}
+                      busy={act.isPending}
+                      onRecord={(operation, result, note) =>
+                        act.mutate({ action: 'record', operation, result, note, confirm: true })
+                      }
+                    />
+                  ))}
+                </ul>
+              </details>
+            </SectionPanel>
+          )}
+          {section === 'post-check' && (
+            <SectionPanel
+              title={t('Compare with the saved state', 'Сравнение с сохранённым состоянием')}
+            >
+              <div className="rv-verify">
+                <div className="k-toolbar">
+                  <button
+                    type="button"
+                    className="k-btn"
+                    disabled={!inspect.data?.device || act.isPending}
+                    onClick={() => act.mutate({ action: 'baseline' })}
+                  >
+                    <LifeBuoy size={14} aria-hidden="true" />{' '}
+                    {t('Save baseline now', 'Сохранить исходное состояние')}
+                  </button>
+                  <button
+                    type="button"
+                    className="k-btn k-btn--primary"
+                    disabled={!inspect.data?.device || verify.isPending}
+                    onClick={() => verify.mutate()}
+                  >
+                    {t('Re-read and compare', 'Перечитать и сравнить')}
+                  </button>
+                </div>
+                {inspect.data?.baseline && (
+                  <p className="k-note-line">
+                    {t('Baseline saved', 'Исходное состояние сохранено')}:{' '}
+                    {inspect.data.baseline.slice(0, 16)}
+                  </p>
+                )}
+                {verify.error && <ErrorMessage error={verify.error} />}
+                {verify.data && (
+                  <div role="status" className="rv-diff">
+                    {verify.data.phone_changed && (
+                      <p>
+                        {t(
+                          'The connection identity differs from the baseline (other phone, firmware or link).',
+                          'Идентичность подключения отличается от исходной (другой телефон, прошивка или канал).',
+                        )}
+                      </p>
                     )}
-                  </p>
+                    {verify.data.diff.length === 0 ? (
+                      <p>
+                        {verify.data.baseline
+                          ? t(
+                              'No observable difference from the baseline.',
+                              'Наблюдаемых отличий от исходного состояния нет.',
+                            )
+                          : t(
+                              'No baseline to compare with.',
+                              'Нет исходного состояния для сравнения.',
+                            )}
+                      </p>
+                    ) : (
+                      <ul className="k-list">
+                        {verify.data.diff.map((d) => (
+                          <li key={d.field}>
+                            <span>{d.field}</span>
+                            <span>
+                              {String(d.before ?? '—')} → {String(d.after ?? '—')}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 )}
-                {verify.data.diff.length === 0 ? (
-                  <p>
-                    {verify.data.baseline
-                      ? t(
-                          'No observable difference from the baseline.',
-                          'Наблюдаемых отличий от исходного состояния нет.',
-                        )
-                      : t('No baseline to compare with.', 'Нет исходного состояния для сравнения.')}
-                  </p>
-                ) : (
-                  <ul className="k-list">
-                    {verify.data.diff.map((d) => (
-                      <li key={d.field}>
-                        <span>{d.field}</span>
-                        <span>
-                          {String(d.before ?? '—')} → {String(d.after ?? '—')}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <p className="k-note-line">{verify.data.statement}</p>
               </div>
-            )}
-          </div>
-        )}
-      </SectionPanel>
-      {profile === 'network-certs' && <ReviveTls device={device} manual={manual} />}
-      {profile === 'reborn-n95' && <ReviveReborn device={device} manual={manual} />}
-      {profile === 'legacy-services' && <ReviveServices device={device} manual={manual} />}
-      {profile === 'post-check' && <ReviveAgent />}
-      {profile === 'addons' && <ReviveAddons device={device} manual={manual} />}
+            </SectionPanel>
+          )}
+          {section === 'network' && <ReviveTls device={device} manual={manual} />}
+          {section === 'reborn' && <ReviveReborn device={device} manual={manual} />}
+          {section === 'services' && <ReviveServices device={device} manual={manual} />}
+          {section === 'post-check' && <ReviveAgent />}
+          {section === 'addons' && <ReviveAddons device={device} manual={manual} />}
+        </>
+      )}
     </>
   );
 }

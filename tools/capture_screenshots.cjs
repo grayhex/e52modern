@@ -88,6 +88,12 @@ async function journal(page) {
     await deps.locator("button.primary").first().click();
     await deps.getByText(/Qt/).first().waitFor();
     await shot(page, "dependencies.png");
+    await go("revive/home");
+    await page.getByText("Прочитано с устройства").first().waitFor();
+    await shot(page, "revive.png", { clip: { x: 0, y: 0, width: 1280, height: 1100 } });
+    await go("apps/kits");
+    await page.locator("#essentials").waitFor();
+    await shot(page, "kits.png", { clip: { x: 0, y: 0, width: 1280, height: 1000 } });
     await go("personalize/ringtones");
     await shot(page, "ringtone.png");
     await go("personalize/theme-editor");

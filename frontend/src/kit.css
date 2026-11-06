@@ -673,7 +673,7 @@ a.k-btn {
 }
 .rv-profiles {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: var(--k-3);
   margin-bottom: var(--k-4);
 }
@@ -689,6 +689,12 @@ a.k-btn {
   color: inherit;
   cursor: pointer;
   font: inherit;
+  text-decoration: none;
+}
+.rv-profile strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .rv-profile span {
   color: var(--nokia-muted);
@@ -842,4 +848,35 @@ a.k-btn {
   border: 1px solid var(--nokia-border);
   border-radius: 4px;
   margin: var(--k-2) 0;
+}
+
+.rv-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--k-2) var(--k-4);
+  margin: 0 0 var(--k-4);
+  padding: var(--k-2) var(--k-3);
+  border: 1px solid var(--nokia-border);
+  border-radius: 6px;
+  background: var(--nokia-surface);
+  font-size: 14px;
+}
+.rv-strip-item small {
+  margin-right: 6px;
+  color: var(--nokia-muted);
+}
+.rv-strip .k-link {
+  margin-left: auto;
+}
+.rv-more {
+  margin-top: var(--k-3);
+}
+.rv-more > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: var(--k-1) 0;
+}
+.rv-more[open] > summary {
+  margin-bottom: var(--k-3);
 }

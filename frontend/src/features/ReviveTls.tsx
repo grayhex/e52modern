@@ -14,6 +14,7 @@ import {
   tlsStateSchema,
   type ReviveStatus,
 } from '../api/revive';
+import { st } from './statements';
 
 const CELL_TONE: Record<string, Tone> = {
   documented: 'info',
@@ -21,7 +22,7 @@ const CELL_TONE: Record<string, Tone> = {
   unknown: 'unknown',
 };
 const CELL_TEXT: Record<string, [string, string]> = {
-  documented: ['Documented by author · not tested', 'Указано автором · не проверено'],
+  documented: ['Documented by the author', 'Указано автором'],
   'not-applicable': ['Not applicable', 'Не применимо'],
   unknown: ['Unknown', 'Неизвестно'],
 };
@@ -67,7 +68,7 @@ export default function ReviveTls({
 }) {
   const api = useApi();
   const cache = useQueryClient();
-  const { t } = usePreferences();
+  const { t, language } = usePreferences();
   const [appKind, setAppKind] = useState('native-system');
   const [host, setHost] = useState('example.com');
   const [phoneDate, setPhoneDate] = useState('');
@@ -133,7 +134,7 @@ export default function ReviveTls({
       id="revive-tls"
       className="rv-tls"
     >
-      <p className="k-note-line">{data.statement}</p>
+      <p className="k-note-line">{st(language, data.statement)}</p>
 
       <h3>{t('Applicability by model and stack', 'Применимость по моделям и стекам')}</h3>
       <div className="rv-table-wrap">

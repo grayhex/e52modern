@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Compass, Puzzle, Waypoints } from 'lucide-react';
+import { Compass } from 'lucide-react';
 import { useApi, usePreferences } from '../state/app';
 import { ErrorMessage } from '../components/ui';
 import { SectionPanel, StatusIndicator } from '../components/kit';
@@ -35,48 +35,8 @@ export default function ReviveHome({
   if (home.error) return <ErrorMessage error={home.error} />;
   if (!home.data) return null;
   const data = home.data;
-  const available = (id: string) => data.sections.find((s) => s.id === id)?.available ?? false;
   return (
-    <SectionPanel title={t('Revive home', 'Главная Revive')} id="revive-home">
-      <div className="rv-profiles" role="group" aria-label={t('Shortcuts', 'Быстрые переходы')}>
-        <button
-          type="button"
-          className="rv-profile"
-          data-shortcut="legacy-services"
-          disabled={!available('legacy-services')}
-          onClick={() => onOpen('legacy-services')}
-        >
-          <strong>
-            <Waypoints size={16} aria-hidden="true" />{' '}
-            {t('Restore services', 'Восстановить сервисы')}
-          </strong>
-          <span>
-            {t(
-              'Old system endpoints and what is proven',
-              'Старые системные адреса и что подтверждено',
-            )}
-          </span>
-        </button>
-        <button
-          type="button"
-          className="rv-profile"
-          data-shortcut="addons"
-          disabled={!available('addons')}
-          onClick={() => onOpen('addons')}
-        >
-          <strong>
-            <Puzzle size={16} aria-hidden="true" /> {t('Add-ons and patches', 'Дополнения и патчи')}
-          </strong>
-          <span>
-            {available('addons')
-              ? t(
-                  'Optional add-ons and the Patch Manager',
-                  'Необязательные дополнения и Patch Manager',
-                )
-              : t('Not available in this build', 'Недоступно в этой сборке')}
-          </span>
-        </button>
-      </div>
+    <SectionPanel title={t('Suggestions and history', 'Рекомендации и история')} id="revive-home">
       <h3>
         <Compass size={16} aria-hidden="true" />{' '}
         {t('What else can be improved on this Nokia', 'Что ещё можно улучшить на этой Nokia')}
@@ -124,7 +84,6 @@ export default function ReviveHome({
           ))}
         </ul>
       )}
-      <p className="k-note-line">{data.statement}</p>
     </SectionPanel>
   );
 }

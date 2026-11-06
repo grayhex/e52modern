@@ -4,6 +4,7 @@ import {
   Boxes,
   CalendarDays,
   Clapperboard,
+  Cloud,
   Cpu,
   DatabaseBackup,
   FileBadge,
@@ -29,6 +30,11 @@ import {
   Workflow,
   FlaskConical,
   Wrench,
+  Globe,
+  HeartPulse,
+  ClipboardCheck,
+  PackagePlus,
+  Usb,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -120,8 +126,8 @@ export const groups: NavGroup[] = [
       {
         id: 'apps/dependencies',
         icon: Workflow,
-        en: 'Dependencies & compatibility',
-        ru: 'Зависимости и совместимость',
+        en: 'Dependencies',
+        ru: 'Зависимости',
         status: 'ready',
       },
       {
@@ -170,6 +176,64 @@ export const groups: NavGroup[] = [
     ],
   },
   {
+    id: 'revive',
+    icon: LifeBuoy,
+    en: 'Revive',
+    ru: 'Восстановление',
+    items: [
+      {
+        id: 'revive/home',
+        icon: HeartPulse,
+        en: 'Recovery centre',
+        ru: 'Центр восстановления',
+        status: 'ready',
+      },
+      {
+        id: 'revive/network',
+        icon: Globe,
+        en: 'Network & TLS',
+        ru: 'Сеть и TLS',
+        status: 'ready',
+      },
+      {
+        id: 'revive/kit',
+        icon: Boxes,
+        en: 'Application kit',
+        ru: 'Набор приложений',
+        status: 'ready',
+      },
+      {
+        id: 'revive/services',
+        icon: Cloud,
+        en: 'Online services',
+        ru: 'Онлайн-сервисы',
+        status: 'ready',
+      },
+      {
+        id: 'revive/reborn',
+        icon: Usb,
+        en: 'Reborn for N95',
+        ru: 'Reborn для N95',
+        status: 'ready',
+        experimental: true,
+      },
+      {
+        id: 'revive/addons',
+        icon: PackagePlus,
+        en: 'Add-ons & patches',
+        ru: 'Дополнения и патчи',
+        status: 'ready',
+      },
+      {
+        id: 'revive/post-check',
+        icon: ClipboardCheck,
+        en: 'After installation',
+        ru: 'После установки',
+        status: 'ready',
+      },
+    ],
+  },
+  {
     id: 'tools',
     icon: Wrench,
     en: 'Tools',
@@ -180,13 +244,6 @@ export const groups: NavGroup[] = [
         icon: Stethoscope,
         en: 'Device diagnostics',
         ru: 'Диагностика устройства',
-        status: 'ready',
-      },
-      {
-        id: 'tools/revive',
-        icon: LifeBuoy,
-        en: 'SymPort Revive',
-        ru: 'SymPort Revive',
         status: 'ready',
       },
       {
@@ -206,15 +263,15 @@ export const groups: NavGroup[] = [
       {
         id: 'tools/cfw',
         icon: FileSearch,
-        en: 'Firmwares and modifications',
-        ru: 'Прошивки и модификации',
+        en: 'Custom firmware',
+        ru: 'Кастомные прошивки',
         status: 'ready',
       },
       {
         id: 'tools/jailbreak',
         icon: LockOpen,
-        en: 'Jailbreak Manager (experimental)',
-        ru: 'Jailbreak Manager (экспериментальный)',
+        en: 'Jailbreak Manager',
+        ru: 'Jailbreak Manager',
         status: 'ready',
         experimental: true,
       },
@@ -283,6 +340,7 @@ export const redirects: Record<string, string> = {
   lab: 'dev/lab',
   apps: 'dev/sdk',
   overview: 'dev/sdk?view=environment',
+  'tools/revive': 'revive/home',
 };
 
 export type Resolved = { route: string; query: string; hash: string; redirected: boolean };

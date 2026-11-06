@@ -54,38 +54,50 @@ export default function Kits() {
   const kit = build.data;
   return (
     <>
-      <PageHeader title={t('Application kits', 'Комплекты приложений')} />
+      <PageHeader
+        title={t('Application kits', 'Комплекты приложений')}
+        subtitle={t(
+          'Ready sets for your model, your own collections and a kit builder with runtimes.',
+          'Готовые наборы для вашей модели, собственные коллекции и сборка комплекта с runtime.',
+        )}
+      />
+      <Essentials />
+      <Collections />
       <Card>
-        <h2>{t('Kit with required runtimes', 'Комплект с необходимыми runtime')}</h2>
-        <p className="note">
-          {t(
-            'Puts an application and the runtime packages YOU supply into a ZIP in the correct install order. SymPort never downloads a runtime by itself and cannot prove that the phone accepts the packages.',
-            'Собирает приложение и предоставленные ВАМИ runtime-пакеты в ZIP в правильном порядке установки. SymPort сам не скачивает runtime и не может доказать, что телефон примет пакеты.',
-          )}
-        </p>
-        <PackagePicker value={choice} onChange={setChoice} />
-        <TargetFields
-          target={target}
-          onTarget={setTarget}
-          firmwareId={firmwareId}
-          onFirmware={setFirmwareId}
-        />
-        <RuntimeFiles files={runtimes} onFiles={setRuntimes} />
-        <label className="settings-switch">
-          <input
-            type="checkbox"
-            checked={incomplete}
-            onChange={(e) => setIncomplete(e.target.checked)}
+        <details className="rv-more" open={!!kit}>
+          <summary>
+            <strong>{t('Kit with required runtimes', 'Комплект с необходимыми runtime')}</strong>
+          </summary>
+          <p className="note">
+            {t(
+              'Puts an application and the runtime packages YOU supply into a ZIP in the correct install order. SymPort never downloads a runtime by itself and cannot prove that the phone accepts the packages.',
+              'Собирает приложение и предоставленные ВАМИ runtime-пакеты в ZIP в правильном порядке установки. SymPort сам не скачивает runtime и не может доказать, что телефон примет пакеты.',
+            )}
+          </p>
+          <PackagePicker value={choice} onChange={setChoice} />
+          <TargetFields
+            target={target}
+            onTarget={setTarget}
+            firmwareId={firmwareId}
+            onFirmware={setFirmwareId}
           />
-          {t(
-            'Also pack an INCOMPLETE kit (unresolved dependencies stay listed)',
-            'Собрать и НЕПОЛНЫЙ комплект (нерешённые зависимости останутся в списке)',
-          )}
-        </label>
-        <button className="btn primary" disabled={build.isPending} onClick={() => build.mutate()}>
-          {t('Build kit', 'Собрать комплект')}
-        </button>
-        <ErrorMessage error={build.error} />
+          <RuntimeFiles files={runtimes} onFiles={setRuntimes} />
+          <label className="settings-switch">
+            <input
+              type="checkbox"
+              checked={incomplete}
+              onChange={(e) => setIncomplete(e.target.checked)}
+            />
+            {t(
+              'Also pack an INCOMPLETE kit (unresolved dependencies stay listed)',
+              'Собрать и НЕПОЛНЫЙ комплект (нерешённые зависимости останутся в списке)',
+            )}
+          </label>
+          <button className="btn primary" disabled={build.isPending} onClick={() => build.mutate()}>
+            {t('Build kit', 'Собрать комплект')}
+          </button>
+          <ErrorMessage error={build.error} />
+        </details>
       </Card>
       {kit && (
         <Card>
@@ -151,8 +163,6 @@ export default function Kits() {
           </p>
         </Card>
       )}
-      <Essentials />
-      <Collections />
     </>
   );
 }

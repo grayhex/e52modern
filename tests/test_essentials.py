@@ -33,7 +33,7 @@ def test_fp2_profile_has_verifiable_static_items(catalog, model):
     result = evaluate(catalog, "tools", model)
     assert result["applicable"] and {"xplore", "ip-calculator", "passgen"} <= set(result["eligible_ids"])
     assert result["order"] and result["bytes"] > 0
-    assert "nothing here proves installation or hardware operation" in result["statement"]
+    assert "Copying is not installation" in result["statement"]
 
 
 @pytest.mark.parametrize("model", ("nokia-n95", "nokia-n95-8gb"))

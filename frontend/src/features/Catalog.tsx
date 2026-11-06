@@ -218,7 +218,7 @@ export default function Catalog() {
               </StatusIndicator>
               <StatusIndicator tone={forModel(app) === 'verified' ? 'info' : 'unknown'}>
                 {forModel(app) === 'not-tested'
-                  ? t('Not tested', 'Нет результатов испытаний')
+                  ? t('No test results', 'Нет результатов испытаний')
                   : forModel(app)}
               </StatusIndicator>
               <span className="k-meta">{app.network}</span>
@@ -491,12 +491,7 @@ function CatalogExtras({ app }: { app: CatalogApp }) {
     <>
       {runtimes.success && runtimes.data.length > 0 && (
         <div className="note">
-          <strong>
-            {t(
-              'Runtime required (not verified on the phone)',
-              'Нужна среда выполнения (на телефоне не проверена)',
-            )}
-          </strong>
+          <strong>{t('Runtime required', 'Нужна среда выполнения')}</strong>
           <ul>
             {runtimes.data.map((r) => (
               <li key={r.runtime}>

@@ -141,9 +141,8 @@ def test_job_reports_real_cli_result(repo, monkeypatch):
     monkeypatch.setattr("symport.web.subprocess.run", fake_run)
     launched = state.launch({"action": "doctor"})
     assert launched["status"] == "running"
-    for _ in range(100):
-        if state.snapshot()["jobs"][0]["status"] != "running":
-            break
+    deadline = time.monotonic() + 10
+    while state.snapshot()["jobs"][0]["status"] == "running" and time.monotonic() < deadline:
         time.sleep(0.01)
     job = state.snapshot()["jobs"][0]
     assert job["status"] == "unsupported"

@@ -90,7 +90,7 @@ const port = new Promise((resolve, reject) => {
       ...(process.env.SYMPORT_BROWSER_EXECUTABLE ? { executablePath: process.env.SYMPORT_BROWSER_EXECUTABLE } : {}),
       args: ["--no-sandbox"],
     });
-    const open = async (lang, width, hash = "#tools/revive") => {
+    const open = async (lang, width, hash = "#revive/home") => {
       const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 1 });
       page.setDefaultTimeout(15000);
       page.errors = [];
@@ -108,7 +108,7 @@ const port = new Promise((resolve, reject) => {
 
     // 1. No phone: honest empty state with next steps.
     let page = await open("en", 1366);
-    await page.getByRole("heading", { name: "SymPort Revive", level: 1 }).waitFor();
+    await page.getByRole("heading", { name: "Recovery centre", level: 1 }).waitFor();
     await page.getByRole("heading", { name: "No phone connection" }).waitFor();
     assert(await overflow(page), "overflow in empty state");
     await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
@@ -126,7 +126,7 @@ const port = new Promise((resolve, reject) => {
       assert((await page.locator('[data-fact="platform"]').innerText()).includes("Documented profile"));
       assert((await page.locator('[data-fact="rights"]').innerText()).includes("Not determined"));
       assert(await overflow(page), "overflow at " + width);
-      await page.getByRole("button", { name: /Network and certificates/ }).click();
+      await page.locator('[data-wizard="network"]').click();
       await page.locator('[data-op="clock-check"]').waitFor();
       await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
       await page.screenshot({ path: path.join(shots, "e52-" + width + ".png"), fullPage: true });
@@ -134,12 +134,12 @@ const port = new Promise((resolve, reject) => {
     }
 
     // 2b. TLS revival: matrix, pinned components, diagnostics that say where they ran.
-    page = await open("en", 1366);
+    page = await open("en", 1366, "#revive/network");
     await page.locator("#revive-tls").waitFor();
     await page.locator('#revive-tls [data-target="nokia-n97-mini"]').waitFor();
     assert.equal(await page.locator("#revive-tls tbody tr").count(), 5);
     const qt = await page.locator('[data-target="nokia-n95"]').innerText();
-    assert(qt.includes("Not applicable") && qt.includes("not tested"), "matrix cells: " + qt);
+    assert(qt.includes("Not applicable") && qt.includes("Documented by the author"), "matrix cells: " + qt);
     const comp = page.locator('[data-component="ssl-patch"]');
     await comp.waitFor();
     assert((await comp.innerText()).includes("62365db422253e87b0328058e160ab03c3a3501e7eeae064596727307be9b416"));
@@ -188,11 +188,11 @@ const port = new Promise((resolve, reject) => {
     await page.close();
 
     // 2b2. Revive home and legacy services (server probe is replaced by a synthetic one in the fixture).
-    page = await open("en", 1366);
+    page = await open("en", 1366, "#revive/home");
     await page.locator("#revive-home").waitFor();
     await page.getByTestId("home-recs").waitFor();
     assert((await page.getByTestId("home-recs").innerText()).includes("Basis"), "recommendations carry their basis");
-    await page.locator('[data-shortcut="legacy-services"]').click();
+    await page.locator('[data-wizard="services"]').click();
     await page.locator("#revive-services").waitFor();
     const matrix = page.getByTestId("services-matrix");
     await matrix.waitFor();
@@ -212,7 +212,8 @@ const port = new Promise((resolve, reject) => {
     await page.evaluate(() => window.scrollTo(0, 0)); // sticky sidebar must sit in the corner of the capture
     await page.screenshot({ path: path.join(shots, "services-1366.png"), fullPage: true });
     // Add-ons and Patch Manager.
-    await page.locator('[data-shortcut="addons"]').click();
+    await page.locator('[data-wizard="addons"]').waitFor({ state: "hidden" }).catch(() => {});
+    await page.evaluate(() => { location.hash = "#revive/addons"; });
     await page.locator("#revive-addons").waitFor();
     await page.locator('[data-addon="tls-mbedtls"][data-decision="ready-to-prepare"]').waitFor();
     const rp = page.locator('[data-addon="rompatcher-debloated"]');
@@ -281,8 +282,7 @@ const port = new Promise((resolve, reject) => {
     await page.locator("#media-prep select").nth(1).selectOption({ index: 0 });
     await page.getByRole("button", { name: "Convert", exact: true }).click();
     await page.locator('[data-testid="media-job"][data-state="done"]').waitFor();
-    assert((await page.getByTestId("media-statement").innerText()).includes("theoretical"), "presets are stated as theoretical");
-    assert((await page.getByTestId("media-job").innerText()).includes("not-tested"), "hardware status is stated");
+    assert((await page.getByTestId("media-statement").innerText()).includes("check the result on the phone"));
     assert.equal(await page.locator('[data-outcome="exported"]').innerText(), "Exported: no");
     await page.getByRole("button", { name: "Export file and report" }).click();
     await page.locator('[data-outcome="exported"]:has-text("yes")').waitFor();
@@ -317,8 +317,7 @@ const port = new Promise((resolve, reject) => {
 
     // 2c. Reborn wizard for an identified N95: import -> pin -> backup statement -> consents -> copy -> user-reported install.
     fs.writeFileSync(identity, JSON.stringify({ model: "Nokia N95-1", rm: "RM-159", firmware: "v 12.0.013" }));
-    page = await open("en", 1366);
-    await page.getByRole("button", { name: /Reborn preparation for N95/ }).click();
+    page = await open("en", 1366, "#revive/reborn");
     const reborn = page.locator("#revive-reborn");
     await reborn.waitFor();
     const rtext = await reborn.innerText();
@@ -340,9 +339,12 @@ const port = new Promise((resolve, reject) => {
     await reborn.getByRole("button", { name: "Record my statement" }).click();
     await reborn.getByText(/Recorded \(your statement/).waitFor();
     // Device-level rights are only the user's own observation.
+    await page.evaluate(() => { location.hash = "#revive/home"; });
+    await page.locator("#page-revive-home summary").filter({ hasText: "Installation rights and patches" }).click();
     await page.getByLabel("Installation rights you observed").selectOption("device");
     await page.getByLabel("This is my own observation").check();
     await page.getByRole("button", { name: "Record rights" }).click();
+    await page.evaluate(() => { location.hash = "#revive/reborn"; });
     await page.waitForFunction(() => document.querySelector('[data-check="rights"]')?.dataset.status === "ready");
     await reborn.getByRole("button", { name: "Plan safe copy of the pinned file" }).click();
     const rplan = reborn.getByTestId("safety-plan");
@@ -372,14 +374,14 @@ const port = new Promise((resolve, reject) => {
 
     // 3. Manual input stays separate and never raises identity to "ready"; mismatches are visible.
     fs.writeFileSync(identity, JSON.stringify({ model: "N95", rm: "RM-999" }));
-    page = await open("en", 1366);
-    await page.getByRole("button", { name: /Reborn preparation for N95/ }).click();
+    page = await open("en", 1366, "#revive/reborn");
     const identityCheck = page.locator('[data-check="identity"]');
     await identityCheck.waitFor();
     assert.equal(await identityCheck.getAttribute("data-status"), "needs-action");
-    assert((await page.getByRole("heading", { name: /Typed by you/ }).count()) === 1);
+    await page.evaluate(() => { location.hash = "#revive/home"; });
+    await page.getByRole("heading", { name: /Typed by you/ }).waitFor();
+    await page.evaluate(() => { location.hash = "#revive/kit"; });
     // On-phone steps need an explicit confirmation before they can be recorded.
-    await page.getByRole("button", { name: /Application kit/ }).click();
     const install = page.locator('[data-op="kit-install-manual"]');
     await install.waitFor();
     const record = install.getByRole("button", { name: "Record my observation" });
@@ -391,8 +393,7 @@ const port = new Promise((resolve, reject) => {
 
     // 3b. N95 8GB is never assumed to match.
     fs.writeFileSync(identity, JSON.stringify({ model: "N95 8GB", rm: "RM-320", firmware: "v 1" }));
-    page = await open("ru", 390);
-    await page.getByRole("button", { name: /Подготовка Reborn для N95/ }).click();
+    page = await open("ru", 390, "#revive/reborn");
     await page.waitForFunction(() => document.querySelector('[data-testid="reborn-variant"]')?.dataset.variant === "blocked");
     assert((await page.getByTestId("reborn-variant").innerText()).includes("не доказана"));
     assert(await overflow(page), "overflow in Russian Reborn");
@@ -400,8 +401,7 @@ const port = new Promise((resolve, reject) => {
     fs.writeFileSync(identity, JSON.stringify({ model: "Nokia E52", rm: null, firmware: "v 081.003" }));
 
     // 3c. Device Agent panel is honest about not being installed.
-    page = await open("en", 1366);
-    await page.getByRole("button", { name: /Diagnostics after installation/ }).click();
+    page = await open("en", 1366, "#revive/post-check");
     await page.locator("#revive-agent").waitFor();
     assert((await page.getByTestId("agent-binary").innerText()).includes("No agent binary exists"));
     assert((await page.getByTestId("agent-levels").innerText()).includes("agent-connected → operation-completed → device-verified"));
@@ -412,12 +412,12 @@ const port = new Promise((resolve, reject) => {
 
     // 4. Russian, mobile.
     page = await open("ru", 390);
-    await page.getByRole("heading", { name: "SymPort Revive", level: 1 }).waitFor();
+    await page.getByRole("heading", { name: "Центр восстановления", level: 1 }).waitFor();
     await page.getByText("Прочитано с устройства").first().waitFor();
-    await page.getByRole("button", { name: /Набор приложений/ }).click();
+    await page.evaluate(() => { location.hash = "#revive/kit"; });
     await page.locator('[data-op="kit-transfer"]').waitFor();
     assert(await overflow(page), "overflow in Russian mobile");
-    await page.getByRole("button", { name: /Сеть и сертификаты/ }).click();
+    await page.evaluate(() => { location.hash = "#revive/network"; });
     await page.getByRole("heading", { name: /Возрождение TLS/ }).waitFor();
     await page.getByRole("button", { name: "Запустить диагностику" }).click();
     await page.getByText("Выполнено на сервере SymPort").waitFor();

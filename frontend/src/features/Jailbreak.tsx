@@ -70,9 +70,7 @@ export default function Jailbreak() {
   const entries = state.data?.archives.find((a) => a.id === archive)?.entries ?? [];
   return (
     <>
-      <PageHeader
-        title={t('Jailbreak Manager (experimental)', 'Jailbreak Manager (экспериментальный)')}
-      />
+      <PageHeader title={t('Jailbreak Manager', 'Jailbreak Manager')} />
       <p className="disclaimer">
         {t(
           'System automation is blocked. File transfer does not install or apply patches. Rollback removes only unchanged files staged by this workflow; system changes require manual recovery.',

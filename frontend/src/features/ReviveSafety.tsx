@@ -13,6 +13,7 @@ import {
   safetyStateSchema,
   simpleSchema,
 } from '../api/revive';
+import { st } from './statements';
 
 const STATUS_TEXT: Record<string, [string, string, Tone]> = {
   planned: ['Planned (dry run)', 'План (пробный прогон)', 'info'],
@@ -66,7 +67,7 @@ export default function ReviveSafety({
 }) {
   const api = useApi();
   const cache = useQueryClient();
-  const { t } = usePreferences();
+  const { t, language } = usePreferences();
   const [sure, setSure] = useState(false);
   const [ackSure, setAckSure] = useState(false);
   const [saw, setSaw] = useState(false);
@@ -128,7 +129,7 @@ export default function ReviveSafety({
       id="revive-safety"
       className="rv-safety"
     >
-      <p className="k-note-line">{state.data?.statement}</p>
+      <p className="k-note-line">{st(language, state.data?.statement)}</p>
       {state.data && state.data.plans.length > 0 && (
         <ul className="k-list rv-plans" aria-label={t('Saved plans', 'Сохранённые планы')}>
           {state.data.plans.slice(0, 5).map((s) => (
@@ -248,7 +249,7 @@ export default function ReviveSafety({
                       </li>
                     ))}
                   </ul>
-                  <p className="k-note-line">{p.snapshot.statement}</p>
+                  <p className="k-note-line">{st(language, p.snapshot.statement)}</p>
                 </>
               )}
               <h3>{t('Manual steps on the phone', 'Ручные шаги на телефоне')}</h3>
@@ -362,7 +363,7 @@ export default function ReviveSafety({
                   </li>
                 ))}
               </ul>
-              <p className="k-note-line">{post.data.statement}</p>
+              <p className="k-note-line">{st(language, post.data.statement)}</p>
             </div>
           )}
           {report.data && (

@@ -41,15 +41,16 @@ function sidebar(props: Partial<React.ComponentProps<typeof Sidebar>> = {}) {
 }
 
 describe('route registry', () => {
-  it('has the five requested groups with the requested sub-items', () => {
+  it('has the six groups with the requested sub-items', () => {
     expect(groups.map((g) => g.ru)).toEqual([
       'Мой телефон',
       'Приложения',
       'Персонализация',
+      'Восстановление',
       'Инструменты',
       'Разработка и эмуляция',
     ]);
-    expect(groups.map((g) => g.items.length)).toEqual([7, 5, 4, 7, 4]);
+    expect(groups.map((g) => g.items.length)).toEqual([7, 5, 4, 7, 6, 4]);
     expect(new Set(allItems.map((i) => i.id)).size).toBe(allItems.length);
   });
   it('redirects every legacy URL to an existing page and keeps its query', () => {

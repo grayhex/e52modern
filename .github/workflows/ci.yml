@@ -2,18 +2,29 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch or PR supersedes the older run; runs on main are never cancelled.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
 
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
+        with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - run: pip install ruff
       - name: Ruff (symport, tests)
         run: ruff check .
@@ -22,6 +33,7 @@ jobs:
 
   tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -29,19 +41,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "${{ matrix.python }}" }
+        with: { python-version: "${{ matrix.python }}", cache: pip, cache-dependency-path: pyproject.toml }
       - run: sudo apt-get update && sudo apt-get install -y g++ ffmpeg
       - run: pip install -e '.[dev]'
       - name: Unit, CLI and regression tests
-        run: pytest -ra
+        run: pytest -ra -n auto
 
   theme:
     runs-on: ubuntu-latest
-    needs: [lint, tests]
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
+        with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - run: sudo apt-get update && sudo apt-get install -y g++ ffmpeg
       - run: pip install -e '.[dev]'
       - name: Build skc and bmconv from vendored sources
@@ -79,13 +91,16 @@ jobs:
 
   real-sdk:
     # Informational, non-gating: exercises SymPort against the real symbian-platform SDK (external download).
+    # Runs on main and on demand, not on every pull request.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     needs: [lint, tests]
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
+        with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - name: Host toolchain required by the SDK (ARM-capable clang, lld, cmake)
         run: sudo apt-get update && sudo apt-get install -y clang lld cmake
       - run: pip install -e '.[dev]'
@@ -104,7 +119,7 @@ jobs:
 
   workbench:
     runs-on: ubuntu-latest
-    needs: [lint, tests]
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Validate Docker Compose configuration
@@ -112,8 +127,18 @@ jobs:
           docker compose config -q
           docker compose -f compose.deploy.yaml config -q
           SYMPORT_HTTP_PORT=8778 docker compose -f compose.deploy.yaml config -q
-      - name: Build Docker workbench image
-        run: docker build -t e52modern-workbench:ci .
+      - uses: docker/setup-buildx-action@v3
+      - name: Build Docker workbench image (layer cache shared with the other image jobs)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: e52modern-workbench:ci
+          build-args: |
+            VERSION=ci
+            REVISION=${{ github.sha }}
+          cache-from: type=gha,scope=ci-image
+          cache-to: type=gha,mode=max,scope=ci-image
       - name: Launch workbench and check HTTP API
         run: |
           docker run -d --name e52modern-ui -p 127.0.0.1:8765:8765 e52modern-workbench:ci
@@ -162,12 +187,7 @@ jobs:
           docker exec e52modern-ui python -m symport theme package --variant light --backend native --json > /tmp/workbench-package.json
           python3 -c 'import json; assert json.load(open("/tmp/workbench-build.json"))["status"] == "ok"; assert json.load(open("/tmp/workbench-package.json"))["status"] == "ok"'
 
-      - uses: actions/setup-node@v4
-        with: { node-version: "22" }
-      - name: Install real-runtime browser checks outside the checkout
-        run: |
-          npm install --prefix "$RUNNER_TEMP/symport-browser" playwright@1.62.1
-          "$RUNNER_TEMP/symport-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - uses: ./.github/actions/browser-tools
       - name: Real MGO/EKA2L1 and browser smoke without proprietary ROM
         run: |
           docker tag e52modern-workbench:ci e52modern-workbench:local
@@ -190,6 +210,7 @@ jobs:
 
   device-manager-container:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - name: Validate browser script and Compose
@@ -208,8 +229,15 @@ jobs:
           SYMPORT_HTTP_PORT=8777 docker compose config --quiet
           SYMPORT_PHONE_DIRECTORY=/tmp docker compose -f compose.yaml -f compose.phone.yaml config --quiet
           docker compose --profile emulator config --quiet
-      - name: Build Device Manager image
-        run: docker build -t symport-device-manager:ci .
+      - uses: docker/setup-buildx-action@v3
+      - name: Build Device Manager image (layer cache shared with the other image jobs)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: symport-device-manager:ci
+          cache-from: type=gha,scope=ci-image
+          cache-to: type=gha,mode=max,scope=ci-image
       - name: Smoke test HTTP and transport dependencies
         run: |
           docker run -d --name device-manager -e 'SYMPORT_DEVICE_ROOTS={"smoke":"/srv/e52modern/workspace/media-smoke"}' -p 127.0.0.1:8765:8765 symport-device-manager:ci
@@ -234,19 +262,15 @@ jobs:
 
   phone-workspace-browser:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - name: Audio processing dependency
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
-      - uses: actions/setup-node@v4
-        with: { node-version: "22" }
+        with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - run: pip install -e '.[dev]'
-      - name: Install browser test tools outside the checkout
-        run: |
-          npm install --prefix "$RUNNER_TEMP/symport-browser" playwright@1.62.1
-          "$RUNNER_TEMP/symport-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - uses: ./.github/actions/browser-tools
       - name: Exercise contacts, files, media, packages and theme library
         run: |
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_web_ui.cjs

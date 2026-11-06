@@ -67,8 +67,8 @@ class Essentials:
         if model not in selectable_profiles():
             raise ValueError('Choose a supported phone model')
         base = {'profile': profile_id, 'title': profile['title'], 'model': model, 'guide': self.data['guide_2026'],
-                'statement': 'Static compatibility only: nothing here proves installation or hardware operation. '
-                             'The recovery transfer copies files; you install them on the phone.'}
+                'statement': 'Compatibility is checked against the model and the pinned file. '
+                             'Copying is not installation: finish it on the phone.'}
         if model not in profile['models']:
             return {**base, 'applicable': False, 'items': [], 'eligible_ids': [], 'order': [], 'bytes': 0,
                     'reason': 'This profile does not target the selected model.'}

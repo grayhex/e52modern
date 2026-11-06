@@ -6,6 +6,7 @@ import { ErrorMessage } from '../components/ui';
 import { Download } from '../components/workspace';
 import { PageHeader, SectionPanel, StatusIndicator, type Tone } from '../components/kit';
 import { encode } from '../utils/files';
+import { linkLabel, translate } from './cfwText';
 import {
   cfwSourcesSchema,
   eka1Schema,
@@ -13,6 +14,7 @@ import {
   inventorySchema,
   scanSchema,
 } from '../api/cfw';
+import { st } from './statements';
 
 const VERDICT: Record<string, [string, string, Tone]> = {
   'vulnerable-version': ['Vulnerable version (declared)', 'Уязвимая версия (заявлена вами)', 'bad'],
@@ -34,7 +36,8 @@ const APPLIES: Record<string, [string, string]> = {
 /** Firmwares and modifications: author metadata, read-only inventory, advisory scanner, experimental EKA1 → RPKG. */
 export default function Cfw() {
   const api = useApi();
-  const { t } = usePreferences();
+  const { t, language } = usePreferences();
+  const tr = (text: string) => translate(language, text);
   const [image, setImage] = useState('');
   const [baseline, setBaseline] = useState('');
   const [declared, setDeclared] = useState({ cfw: '', model: '', version: '' });
@@ -82,7 +85,7 @@ export default function Cfw() {
   return (
     <>
       <PageHeader
-        title={t('Firmwares and modifications', 'Прошивки и модификации')}
+        title={t('Custom firmware', 'Кастомные прошивки')}
         subtitle={t(
           'Read-only research. Nothing here flashes, writes or boots anything, and no file leaves this server.',
           'Только исследование. Здесь ничего не прошивается, не записывается и не загружается, файлы не покидают сервер.',
@@ -93,7 +96,7 @@ export default function Cfw() {
         title={t('Sources (author metadata only)', 'Источники (только данные авторов)')}
         id="cfw-sources"
       >
-        <p className="k-note-line">{s?.note}</p>
+        <p className="k-note-line">{tr(s?.note ?? '')}</p>
         <ul className="rv-ops">
           {s?.sources.map((src) => (
             <li key={src.id} className="rv-op" data-source={src.id}>
@@ -104,21 +107,21 @@ export default function Cfw() {
               <dl className="rv-op-meta">
                 <div>
                   <dt>{t('Kind', 'Тип')}</dt>
-                  <dd>{src.kind}</dd>
+                  <dd>{tr(src.kind)}</dd>
                 </div>
                 <div>
                   <dt>{t('Version / date', 'Версия / дата')}</dt>
                   <dd>
-                    {src.release.version} / {src.release.date}
+                    {tr(src.release.version)} / {tr(src.release.date)}
                   </dd>
                 </div>
                 <div>
                   <dt>{t('Models (RM)', 'Модели (RM)')}</dt>
-                  <dd>{src.models.map((m) => `${m.name} (${m.rm})`).join('; ')}</dd>
+                  <dd>{src.models.map((m) => `${m.name} (${tr(m.rm)})`).join('; ')}</dd>
                 </div>
                 <div>
                   <dt>{t('Distribution', 'Распространение')}</dt>
-                  <dd>{src.distribution}</dd>
+                  <dd>{tr(src.distribution)}</dd>
                 </div>
               </dl>
               <p className="k-note-line">
@@ -131,7 +134,7 @@ export default function Cfw() {
                       rel="noreferrer noopener"
                       target="_blank"
                     >
-                      {k}{' '}
+                      {linkLabel(language, k)}{' '}
                     </a>
                   ) : (
                     <span key={k}>
@@ -142,7 +145,7 @@ export default function Cfw() {
               </p>
               <ul>
                 {src.limitations.map((l) => (
-                  <li key={l}>{l}</li>
+                  <li key={l}>{tr(l)}</li>
                 ))}
               </ul>
               <ul className="rv-levels">
@@ -160,11 +163,11 @@ export default function Cfw() {
                       {t('Before you install: advisory', 'Перед установкой: уведомление')} {id}
                     </StatusIndicator>
                     <p>
-                      {adv.title}. {t('Published', 'Опубликовано')} {adv.published}; CVSS{' '}
+                      {tr(adv.title)}. {t('Published', 'Опубликовано')} {adv.published}; CVSS{' '}
                       {adv.severity.cvss_v3_1} {adv.severity.rating} ({adv.severity.scored_by}).{' '}
-                      {adv.platform}
+                      {tr(adv.platform)}
                     </p>
-                    <p className="k-note-line">{adv.severity.author_claim}</p>
+                    <p className="k-note-line">{tr(adv.severity.author_claim)}</p>
                     <ul>
                       {adv.sources.map((x) => (
                         <li key={x.url}>
@@ -174,7 +177,7 @@ export default function Cfw() {
                             rel="noreferrer noopener"
                             target="_blank"
                           >
-                            {x.label}
+                            {tr(x.label)}
                           </a>
                         </li>
                       ))}
@@ -190,7 +193,7 @@ export default function Cfw() {
           {Object.entries(s?.containers ?? {}).map(([k, v]) => (
             <li key={k}>
               <span>{k}</span>
-              <span>{v}</span>
+              <span>{tr(v)}</span>
             </li>
           ))}
         </ul>
@@ -202,8 +205,8 @@ export default function Cfw() {
       >
         <p className="k-note-line">
           {t(
-            'Upload images on the Firmware & ROM Explorer page (Tools). Only your own images appear here.',
-            'Образы загружаются на странице Firmware & ROM Explorer (Инструменты). Здесь только ваши образы.',
+            'Upload images in the Firmware & ROM Explorer (Tools). Only your own images appear here.',
+            'Образы загружаются в Firmware & ROM Explorer (Инструменты). Здесь только ваши образы.',
           )}
         </p>
         <div className="rv-form">
@@ -323,7 +326,7 @@ export default function Cfw() {
                 </li>
               ))}
             </ul>
-            <p className="k-note-line">{scan.data.statement}</p>
+            <p className="k-note-line">{st(language, scan.data.statement)}</p>
           </div>
         )}
       </SectionPanel>
