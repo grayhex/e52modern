@@ -661,3 +661,58 @@ export const essentialsSchema = z.object({
   bytes: z.number(),
   statement: z.string(),
 });
+
+// ---- Media to Nokia ----
+export const mediaPresetsSchema = z.object({
+  model: z.string(),
+  screen: z.object({ width: z.number(), height: z.number() }).passthrough(),
+  presets: z.record(
+    z.string(),
+    z.array(
+      z.object({
+        id: z.string(),
+        title: bilingual,
+        ext: z.string(),
+        hardware: z.string(),
+        basis: z.string(),
+      }),
+    ),
+  ),
+  statement: z.string(),
+});
+export const mediaSourceSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    size: z.number(),
+    sha256: z.string(),
+    kind: z.enum(['video', 'audio', 'image']),
+    duration: z.number().optional(),
+  })
+  .passthrough();
+export const mediaJobSchema = z.object({
+  id: z.string(),
+  state: z.enum(['queued', 'running', 'done', 'failed']),
+  stage: z.string(),
+  queue_position: z.number(),
+  kind: z.string(),
+  preset: z.string(),
+  model: z.string(),
+  estimate_bytes: z.number(),
+  error: z.string().nullish(),
+  output: z.object({ name: z.string(), size: z.number(), sha256: z.string() }).nullish(),
+  preview: z.string().nullish(),
+  outcomes: z.object({
+    exported: z.boolean(),
+    transferred: z.boolean(),
+    'played-on-device': z.string(),
+  }),
+  hardware: z.string(),
+  basis: z.string(),
+});
+export const mediaExportSchema = z.object({
+  name: z.string(),
+  content: z.string(),
+  report_name: z.string(),
+  report: z.string(),
+});

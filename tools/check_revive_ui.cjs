@@ -51,6 +51,8 @@ w=Workbench(root)
 w.devices.transport=Transport()
 from tests.helpers import make_e32
 from symport.sis import writer
+from PIL import Image
+Image.new('RGB',(640,480),(20,120,200)).save(root/'pic.png')
 (root/'reborn.sis').write_bytes(sis(0xE0009999,'Synthetic Reborn',platforms=(0x102032BE,),exe=make_e32(imports={'euser.dll':[1]}),extra=[writer.SisFile('!:\\\\resource\\\\apps\\\\reborn.rsc',b'rsc')]))
 blob=sis(0xE0001234,'Synthetic MBedTLS')
 spec=dict(w.revive.tls.components['mbedtls-lib'],size=len(blob),sha256=hashlib.sha256(blob).hexdigest(),package={'uid':'0xe0001234','signed':False,'targets':[]})
@@ -258,6 +260,29 @@ const port = new Promise((resolve, reject) => {
     await page.getByRole("button", { name: "Save as a collection" }).click();
     await page.getByTestId("essentials-saved").waitFor();
     assert(await overflow(page), "overflow in essentials");
+    await page.close();
+
+    // 2b5. Prepare for Nokia (Media page): convert a picture for the E52 screen, export, copy through the Safety Net.
+    page = await open("en", 1366, "#phone/media");
+    await page.locator("#media-prep").waitFor();
+    assert((await page.getByTestId("media-statement").innerText().catch(() => "")) !== undefined);
+    await page.locator("#media-prep").getByLabel("Media file").setInputFiles(path.join(tmp, "pic.png"));
+    await page.getByTestId("media-source").waitFor();
+    assert((await page.getByTestId("media-source").innerText()).includes("image"));
+    await page.locator("#media-prep select").nth(1).selectOption({ index: 0 });
+    await page.getByRole("button", { name: "Convert", exact: true }).click();
+    await page.locator('[data-testid="media-job"][data-state="done"]').waitFor();
+    assert((await page.getByTestId("media-statement").innerText()).includes("theoretical"), "presets are stated as theoretical");
+    assert((await page.getByTestId("media-job").innerText()).includes("not-tested"), "hardware status is stated");
+    assert.equal(await page.locator('[data-outcome="exported"]').innerText(), "Exported: no");
+    await page.getByRole("button", { name: "Export file and report" }).click();
+    await page.locator('[data-outcome="exported"]:has-text("yes")').waitFor();
+    assert((await page.locator('[data-outcome="transferred"]').innerText()).includes("no"), "export is not a transfer");
+    assert((await page.locator('[data-outcome="played-on-device"]').innerText()).includes("not-tested"));
+    await page.getByLabel("Connection", { exact: true }).first().selectOption({ index: 1 });
+    await page.getByRole("button", { name: "Plan safe copy to the phone" }).click();
+    await page.getByTestId("safety-plan").waitFor();
+    assert(await overflow(page), "overflow in media prep");
     await page.close();
 
     // 2c. Reborn wizard for an identified N95: import -> pin -> backup statement -> consents -> copy -> user-reported install.
