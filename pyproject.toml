@@ -9,7 +9,7 @@ description = "SymPort Phone Workspace: contacts, files, media, local themes and
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-dependencies = ["vobject>=0.9.9,<1", "cryptography>=46,<49"]
+dependencies = ["vobject>=0.9.9,<1", "cryptography>=46,<51"]
 
 [project.optional-dependencies]
 transport-discovery = ["pyserial>=3.5,<4"]
