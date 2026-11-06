@@ -13,7 +13,7 @@ dependencies = ["vobject>=0.9.9,<1", "cryptography>=46,<51"]
 
 [project.optional-dependencies]
 transport-discovery = ["pyserial>=3.5,<4"]
-bridge = ["pyserial>=3.5,<4", "websockets>=15,<17", "pystray>=0.19.5,<0.20", "pillow>=10"]
+bridge = ["pyserial>=3.5,<4", "websockets>=15,<18", "pystray>=0.19.5,<0.20", "pillow>=10"]
 bridge-build = ["pyinstaller>=6.13,<7"]
 phone = ["python-gammu>=3.2.6,<4"]
 media = ["pillow>=10"]
