@@ -2,7 +2,7 @@
 # Layers are ordered from the least to the most frequently changed one, so a code change rebuilds only the
 # last layers: system packages → Python dependencies → native Symbian tools → frontend → application.
 
-FROM node:24-bookworm-slim AS frontend
+FROM node:25-bookworm-slim AS frontend
 WORKDIR /src/frontend
 COPY frontend/package*.json ./
 RUN --mount=type=cache,target=/root/.npm \
