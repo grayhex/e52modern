@@ -28,6 +28,7 @@ const Inspector = lazy(() => import('./features/Inspector'));
 const Firmware = lazy(() => import('./features/Firmware'));
 const Jailbreak = lazy(() => import('./features/Jailbreak'));
 const Revive = lazy(() => import('./features/Revive'));
+const Cfw = lazy(() => import('./features/Cfw'));
 const Lab = lazy(() => import('./features/Lab'));
 
 /** Apply the canonical form of the current URL; legacy single-segment URLs are replaced, not stacked. */
@@ -152,6 +153,8 @@ function RouteView({ route }: { route: string }) {
       return <Inspector />;
     case 'tools/firmware':
       return <Firmware />;
+    case 'tools/cfw':
+      return <Cfw />;
     case 'tools/revive':
       return <Revive />;
     case 'tools/jailbreak':

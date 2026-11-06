@@ -53,11 +53,20 @@ from tests.helpers import make_e32
 from symport.sis import writer
 from PIL import Image
 Image.new('RGB',(640,480),(20,120,200)).save(root/'pic.png')
+from tests.test_firmware import build_rom, zip_bytes
+import io, time
+(root/'eka1.dmp').write_bytes(build_rom({'sys/bin/app.exe':make_e32(uid3=0x20001001),'resource/a.rsc':b'abc'},base=0x50000000))
+(root/'junk.dmp').write_bytes(b'not a rom')
+_zip=zip_bytes({'sys/bin/app.exe':make_e32(uid3=0x20001001),'private/aa/blob.dat':'Delight.txt'.encode('utf-16-le')})
 (root/'reborn.sis').write_bytes(sis(0xE0009999,'Synthetic Reborn',platforms=(0x102032BE,),exe=make_e32(imports={'euser.dll':[1]}),extra=[writer.SisFile('!:\\\\resource\\\\apps\\\\reborn.rsc',b'rsc')]))
 blob=sis(0xE0001234,'Synthetic MBedTLS')
 spec=dict(w.revive.tls.components['mbedtls-lib'],size=len(blob),sha256=hashlib.sha256(blob).hexdigest(),package={'uid':'0xe0001234','signed':False,'targets':[]})
 w.revive.tls.components=dict(w.revive.tls.components,**{'mbedtls-lib':spec})
 w.revive.execute({'action':'tls-import','name':'MBedTLS.sis','content':base64.b64encode(blob).decode()})
+_meta=w.firmware.store.create(io.BytesIO(_zip),len(_zip),'cfw-sample.zip')
+for _ in range(100):
+  if w.firmware.execute({'action':'status','id':_meta['id']})['status']!='indexing': break
+  time.sleep(0.05)
 w.revive.services.probe=lambda url,hosts:{'ok':True,'status':200,'location':None,'meta_refresh':'https://avalibeyaz.com/s3/connecttest.php' if 'conntest' in url else None}
 w.revive.tls.probe=lambda host:{'ok':True,'tls_version':'TLSv1.3','cipher':'TEST','leaf':{'subject':'CN='+host,'issuer':'CN=Synthetic CA','not_before':'Jan  1 00:00:00 2026 GMT','not_after':'Jan  1 00:00:00 2030 GMT'}}
 s=ThreadingHTTPServer(('127.0.0.1',0),make_handler(w))
@@ -283,6 +292,27 @@ const port = new Promise((resolve, reject) => {
     await page.getByRole("button", { name: "Plan safe copy to the phone" }).click();
     await page.getByTestId("safety-plan").waitFor();
     assert(await overflow(page), "overflow in media prep");
+    await page.close();
+
+    // 2b6. Firmwares and modifications (read-only research).
+    page = await open("en", 1366, "#tools/cfw");
+    await page.locator("#cfw-sources").waitFor();
+    await page.locator('[data-source="delight-belle"]').waitFor();
+    assert((await page.locator('[data-warning="CVE-2025-65885"]').innerText()).includes("CVSS 5.1"), "advisory card is shown before install");
+    assert((await page.locator('[data-applies="delight-belle:nokia-e52"]').innerText()).includes("Not applicable"));
+    assert((await page.getByTestId("cfw-containers").innerText()).includes("not decoded"));
+    await page.locator("#cfw-analyse select").first().selectOption({ index: 1 });
+    await page.getByRole("button", { name: "Scan for known patterns" }).click();
+    await page.locator('[data-testid="cfw-scan"][data-verdict="suspicious-pattern"]').waitFor();
+    assert((await page.getByTestId("cfw-scan").innerText()).includes("not proof") || (await page.getByTestId("cfw-scan").innerText()).includes("No match is not proof"));
+    await page.getByRole("button", { name: /Inventory of potential/ }).click();
+    await page.getByTestId("cfw-inventory").waitFor();
+    await page.locator("#cfw-eka1").getByLabel("EKA1 ROM dump").setInputFiles(path.join(tmp, "eka1.dmp"));
+    await page.locator('[data-testid="eka1-result"][data-status="converted"]').waitFor();
+    assert((await page.getByTestId("eka1-result").innerText()).includes("accepted-by-emulator: not-attempted"));
+    await page.locator("#cfw-eka1").getByLabel("EKA1 ROM dump").setInputFiles(path.join(tmp, "junk.dmp"));
+    await page.locator('[data-testid="eka1-result"][data-status="unsupported"]').waitFor();
+    assert(await overflow(page), "overflow in CFW research");
     await page.close();
 
     // 2c. Reborn wizard for an identified N95: import -> pin -> backup statement -> consents -> copy -> user-reported install.

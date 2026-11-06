@@ -7,6 +7,7 @@ import {
   Cpu,
   DatabaseBackup,
   FileBadge,
+  FileSearch,
   FolderOpen,
   Hammer,
   History,
@@ -200,6 +201,13 @@ export const groups: NavGroup[] = [
         icon: Cpu,
         en: 'Firmware & ROM Explorer',
         ru: 'Firmware & ROM Explorer',
+        status: 'ready',
+      },
+      {
+        id: 'tools/cfw',
+        icon: FileSearch,
+        en: 'Firmwares and modifications',
+        ru: 'Прошивки и модификации',
         status: 'ready',
       },
       {
