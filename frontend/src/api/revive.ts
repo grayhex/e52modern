@@ -494,6 +494,33 @@ export const servicesDiagnoseSchema = z.object({
   statement: z.string(),
 });
 
+// ---- Device Agent ----
+export const agentStateSchema = z.object({
+  protocol: z.string(),
+  status: z.enum(['not-installed', 'not-paired', 'pairing', 'paired']),
+  agent_binary: z.string(),
+  levels: z.array(z.string()),
+  agent: z
+    .object({
+      agent_version: z.string().nullish(),
+      model: z.string().nullish(),
+      synthetic: z.boolean().nullish(),
+    })
+    .passthrough()
+    .nullish(),
+  permissions: z.record(z.string(), z.number()),
+  operations: z.record(
+    z.string(),
+    z.object({
+      tier: z.enum(['read', 'confirmed']),
+      permission: z.string().nullish(),
+      consent: z.boolean(),
+      evidence: z.string(),
+    }),
+  ),
+  forbidden: z.array(z.string()),
+  statement: z.string(),
+});
 // ---- Add-ons and Patch Manager ----
 const decisionSchema = z.object({
   decision: z.enum(['blocked', 'manual-only', 'ready-to-prepare']),

@@ -10,6 +10,7 @@ import {
   StatusIndicator,
   type Tone,
 } from '../components/kit';
+import ReviveAgent from './ReviveAgent';
 import ReviveAddons from './ReviveAddons';
 import ReviveHome from './ReviveHome';
 import ReviveReborn from './ReviveReborn';
@@ -631,6 +632,7 @@ export default function Revive() {
       {profile === 'network-certs' && <ReviveTls device={device} manual={manual} />}
       {profile === 'reborn-n95' && <ReviveReborn device={device} manual={manual} />}
       {profile === 'legacy-services' && <ReviveServices device={device} manual={manual} />}
+      {profile === 'post-check' && <ReviveAgent />}
       {profile === 'addons' && <ReviveAddons device={device} manual={manual} />}
     </>
   );

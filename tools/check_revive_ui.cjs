@@ -399,6 +399,17 @@ const port = new Promise((resolve, reject) => {
     await page.close();
     fs.writeFileSync(identity, JSON.stringify({ model: "Nokia E52", rm: null, firmware: "v 081.003" }));
 
+    // 3c. Device Agent panel is honest about not being installed.
+    page = await open("en", 1366);
+    await page.getByRole("button", { name: /Diagnostics after installation/ }).click();
+    await page.locator("#revive-agent").waitFor();
+    assert((await page.getByTestId("agent-binary").innerText()).includes("No agent binary exists"));
+    assert((await page.getByTestId("agent-levels").innerText()).includes("agent-connected → operation-completed → device-verified"));
+    assert.equal(await page.getByTestId("agent-ops").locator("tbody tr").count(), 16);
+    assert((await page.getByTestId("agent-forbidden").innerText()).includes("jailbreak"));
+    assert(await overflow(page), "overflow in the agent panel");
+    await page.close();
+
     // 4. Russian, mobile.
     page = await open("ru", 390);
     await page.getByRole("heading", { name: "SymPort Revive", level: 1 }).waitFor();
