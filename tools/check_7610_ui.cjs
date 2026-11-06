@@ -46,6 +46,11 @@ const PORT = 8831;
     assert(/No data|Not reported/.test(text), "missing values say so");
     assert(await noOverflow(page), "overflow on overview");
     await page.screenshot({ path: path.join(shots, "nokia-7610-overview.png"), fullPage: true });
+    assert.equal(await page.locator(".k-identity-media img").evaluate((i) => getComputedStyle(i).objectFit), "contain");
+    await page.setViewportSize({ width: 768, height: 900 });
+    assert(await noOverflow(page), "overflow on the tablet layout");
+    await page.screenshot({ path: path.join(shots, "nokia-7610-overview-768.png"), fullPage: true });
+    await page.setViewportSize({ width: 1366, height: 900 });
 
     // 2. The device card in the sidebar uses the same artwork.
     assert((await page.locator(".phone-card img, .sidebar img[src*='nokia-7610']").first().getAttribute("src")).includes("nokia-7610"));
@@ -89,6 +94,7 @@ const PORT = 8831;
     const ru = await page.locator("main").innerText();
     assert(/Symbian 7\.0s/.test(ru) && /S60 2nd/.test(ru) && /Нет данных|Не сообщается/.test(ru), ru);
     assert(await noOverflow(page), "overflow on the phone layout");
+    await page.waitForFunction(() => { const i = document.querySelector(".k-identity-media img"); return i && i.complete && i.naturalWidth > 0; });
     assert.deepEqual(page.errors, []);
     await page.screenshot({ path: path.join(shots, "nokia-7610-overview-390.png"), fullPage: true });
     await page.close();

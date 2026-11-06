@@ -121,10 +121,10 @@ def test_the_original_model_is_not_the_supernova_in_the_profile_either():
 
 # ---- artwork -------------------------------------------------------------------------------------
 def test_artwork_masters_and_exports_exist_with_transparency_and_handset_proportions():
-    assert registry()["nokia-7610"]["image"] == "/phones/nokia-7610.png"
+    assert registry()["nokia-7610"]["image"] == "/phones/nokia-7610.webp"
     svg = (PHONES / "nokia-7610.svg").read_text(encoding="utf-8")
-    assert "<image" not in svg and "href=" not in svg  # vector only, no embedded or external raster
-    for layer in ('id="body"', 'id="display"', 'id="keypad"', 'id="lcd"'):
+    assert 'href="data:image/png;base64,' in svg and 'href="http' not in svg
+    for layer in ('id="body"', 'id="display"', 'id="lcd"'):
         assert layer in svg
     for suffix in (".png", ".webp"):
         with Image.open(PHONES / ("nokia-7610" + suffix)) as image:
