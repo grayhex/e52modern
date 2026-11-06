@@ -215,3 +215,25 @@ Updates is intentionally a placeholder: it shows the current/reference version a
 and its install button is disabled. A regional/product-code/RM-specific firmware match,
 verified recovery procedure and actual flasher are prerequisites for future installation.
 No firmware images, executable downloaders or ROM modifications are part of this feature.
+
+## Prepare for Nokia (#41)
+
+*Phone → Media → Prepare for Nokia* converts a video, a music file or a picture for a chosen model
+(E52, E72, N95, N95 8GB, N97 mini) and either exports it or copies it to the phone. It reuses the
+sandboxed FFmpeg worker of Ringtone Studio (resource limits, no network protocols) and Pillow; it
+does not duplicate the file manager or Ringtone Studio.
+
+* **Inputs and limits:** ≤ 48 MiB, ≤ 10 minutes, ≤ 40 megapixels; metadata (tags, GPS) is removed;
+  bad, truncated or unsupported files are refused; output ≤ 48 MiB; conversion time-out 240 s; a
+  one-worker queue (two waiting) with a visible position; temporary files live one hour and can be
+  discarded at once.
+* **Presets** (video MP4/H.264 baseline 320×240 and 3GP/MPEG-4 176×144, audio MP3 128 kbps / 64 kbps
+  mono and AAC, pictures cropped for a wallpaper or fitted inside the model's screen) are
+  **theoretical**: every one reports `hardware: not-tested` and its basis. Aspect ratio is kept
+  (letter-boxing). Nothing sets a wallpaper on the phone: it only copies the file.
+* **Preview and estimate:** a thumbnail (picture / first video frame) and a size estimate before
+  conversion; the real size and SHA-256 afterwards.
+* **Three separate outcomes:** `exported` (download file + JSON report), `transferred` (copied
+  through the Recovery Safety Net into `SymPort-Media/`: dry run, snapshot, read-back, no overwriting
+  of an existing file, blocked when there is not enough free space or the phone is another model,
+  rollback of the copied file only) and `played-on-device` (what you report after trying it).

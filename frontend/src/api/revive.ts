@@ -591,3 +591,155 @@ export const addonPlanSchema = decisionSchema.extend({
   action: z.string(),
   dry_run: z.boolean(),
 });
+
+// ---- Settings and databases ----
+export const settingsStateSchema = z.object({
+  device: z.string().nullish(),
+  reason: z.string().nullish(),
+  categories: z.array(
+    z.object({
+      id: z.string(),
+      level: z.enum(['exportable', 'unverified', 'unavailable', 'manual-only']),
+      reason: bilingual,
+      sensitive: z.boolean(),
+      restore: z.boolean(),
+    }),
+  ),
+  backups: z.array(
+    z.object({
+      id: z.string(),
+      created: z.string(),
+      categories: z.record(
+        z.string(),
+        z.object({ status: z.string(), count: z.number(), sensitive: z.boolean() }),
+      ),
+      device: z.object({ model: z.string().nullish(), rm: z.string().nullish() }).passthrough(),
+    }),
+  ),
+  levels: z.array(z.string()),
+  statement: z.string(),
+});
+export const restorePreviewSchema = z.object({
+  backup: z.string(),
+  category: z.string(),
+  other_phone: z.boolean(),
+  snapshot: z.string(),
+  plan: z.string().nullish(),
+  changes: z.array(z.object({ operation: z.string() }).passthrough()),
+  conflicts: z.array(z.unknown()),
+  blocked: z.boolean(),
+  blocking: z.array(z.string()),
+  statement: z.string(),
+});
+export const restoreResultSchema = z.object({
+  level: z.string(),
+  statement: z.string(),
+  checkpoint: z.string().nullish(),
+});
+export const settingsDownloadSchema = z.object({
+  name: z.string(),
+  mime: z.string(),
+  content: z.string(),
+  warning: z.string(),
+});
+
+// ---- Verified Essentials ----
+export const essentialsListSchema = z.object({
+  profiles: z.array(
+    z.object({
+      id: z.string(),
+      title: bilingual,
+      models: z.array(z.string()),
+      apps: z.array(z.string()),
+    }),
+  ),
+  guide: z.object({ en: z.array(z.string()), ru: z.array(z.string()) }),
+  note: z.string(),
+});
+export const essentialsSchema = z.object({
+  profile: z.string(),
+  title: bilingual,
+  model: z.string(),
+  applicable: z.boolean(),
+  reason: z.string().optional(),
+  items: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      version: z.string().optional(),
+      licence: z.string().nullish(),
+      eligible: z.boolean(),
+      reasons: z.array(z.string()),
+      size: z.number().optional(),
+      network: z.string().optional(),
+      evidence: z
+        .object({
+          declared: z.string(),
+          model: z.string(),
+          hardware: z.string(),
+          installation: z.string(),
+        })
+        .passthrough()
+        .optional(),
+    }),
+  ),
+  eligible_ids: z.array(z.string()),
+  order: z.array(z.string()),
+  bytes: z.number(),
+  statement: z.string(),
+});
+
+// ---- Media to Nokia ----
+export const mediaPresetsSchema = z.object({
+  model: z.string(),
+  screen: z.object({ width: z.number(), height: z.number() }).passthrough(),
+  presets: z.record(
+    z.string(),
+    z.array(
+      z.object({
+        id: z.string(),
+        title: bilingual,
+        ext: z.string(),
+        hardware: z.string(),
+        basis: z.string(),
+      }),
+    ),
+  ),
+  statement: z.string(),
+});
+export const mediaSourceSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    size: z.number(),
+    sha256: z.string(),
+    kind: z.enum(['video', 'audio', 'image']),
+    duration: z.number().optional(),
+  })
+  .passthrough();
+export const mediaJobSchema = z.object({
+  id: z.string(),
+  state: z.enum(['queued', 'running', 'done', 'failed']),
+  stage: z.string(),
+  queue_position: z.number(),
+  kind: z.string(),
+  preset: z.string(),
+  model: z.string(),
+  estimate_bytes: z.number(),
+  error: z.string().nullish(),
+  output: z.object({ name: z.string(), size: z.number(), sha256: z.string() }).nullish(),
+  preview: z.string().nullish(),
+  outcomes: z.object({
+    exported: z.boolean(),
+    transferred: z.boolean(),
+    'played-on-device': z.string(),
+  }),
+  hardware: z.string(),
+  basis: z.string(),
+});
+export const mediaExportSchema = z.object({
+  name: z.string(),
+  content: z.string(),
+  report_name: z.string(),
+  report: z.string(),
+});

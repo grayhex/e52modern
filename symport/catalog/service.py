@@ -35,6 +35,8 @@ class AppCatalog:
         self.active = None
         from .collections import Collections
         self.collections = Collections(self)
+        from .essentials import Essentials
+        self.essentials = Essentials(self)
         # A restored process cannot resume in-flight network/device operations safely.
         for path in (self.root / 'jobs').glob('*.json'):
             job = json.loads(path.read_text(encoding="utf-8"))
@@ -58,6 +60,13 @@ class AppCatalog:
         if action in ('collections', 'collection-save', 'collection-import', 'collection-export', 'collection-delete', 'recovery-plan', 'recovery-transfer'):
             with self.lock:
                 return self.collections.execute(data)
+        if action == 'essentials':
+            if data.get('profile') is None:
+                return {'profiles': self.essentials.profiles(), 'guide': self.essentials.data['guide_2026'], 'note': self.essentials.data['note']}
+            return self.essentials.evaluate(data.get('profile'), data.get('model'))
+        if action == 'essentials-collection':
+            with self.lock:
+                return self.essentials.to_collection(data.get('profile'), data.get('model'))
         if action == 'list':
             return self.state(data.get('filters'))
         if action == 'plan':

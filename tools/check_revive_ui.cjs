@@ -26,7 +26,7 @@ class Transport:
   observed=json.loads((root/'identity.json').read_text())
   if observed is None: return []
   base=dict(id='test-phone',name=observed.get('model'),transport='windows-bridge',connection_kind='usb',connected=True,free=800*1024*1024,total=2*1024**3,**observed)
-  return [row(base,available=['identity.read','storage.read','files.list','files.download'],untested_writes=['files.upload','packages.transfer'])]
+  return [row(base,available=['identity.read','storage.read','files.list','files.download','contacts.read'],untested_writes=['files.upload','packages.transfer'])]
  def execute(self,data):
   a,p=data['action'],data.get('path','')
   if a=='mkdir': return {}
@@ -42,11 +42,17 @@ class Transport:
    return {'content':base64.b64encode(self.files[p]).decode()}
   if a=='delete':
    del self.files[p]; return {}
+  if a=='personal-read': return {'snapshot':'s'*32,'domain':data['domain'],'rows':[]}
+  if a=='personal-export': return {'content':base64.b64encode(json.dumps({'domain':'contacts','rows':[{'name':'Synthetic Person'}]}).encode()).decode(),'name':'x.json','mime':'application/json'}
+  if a=='personal-preview': return {'plan':'p'*32,'dry_run':True,'changes':[{'operation':'add','before':None,'after':r} for r in data['rows']],'conflicts':[],'skipped':0,'deletions':0}
+  if a=='personal-apply': return {'status':'verified-by-readback','verified':1,'requested':1,'backup':'c'*32}
   raise ValueError('Synthetic transport: '+a)
 w=Workbench(root)
 w.devices.transport=Transport()
 from tests.helpers import make_e32
 from symport.sis import writer
+from PIL import Image
+Image.new('RGB',(640,480),(20,120,200)).save(root/'pic.png')
 (root/'reborn.sis').write_bytes(sis(0xE0009999,'Synthetic Reborn',platforms=(0x102032BE,),exe=make_e32(imports={'euser.dll':[1]}),extra=[writer.SisFile('!:\\\\resource\\\\apps\\\\reborn.rsc',b'rsc')]))
 blob=sis(0xE0001234,'Synthetic MBedTLS')
 spec=dict(w.revive.tls.components['mbedtls-lib'],size=len(blob),sha256=hashlib.sha256(blob).hexdigest(),package={'uid':'0xe0001234','signed':False,'targets':[]})
@@ -214,6 +220,69 @@ const port = new Promise((resolve, reject) => {
     assert((await page.getByTestId("patch-note").innerText()).includes("No agent reads patches"));
     await rp.getByRole("button", { name: "Dry run" }).click();
     await page.getByTestId("plan-rompatcher-debloated").getByText(/autostart-conflict/).waitFor();
+    await page.close();
+
+    // 2b3. Settings and databases (Backups page).
+    page = await open("en", 1366, "#phone/backups");
+    await page.locator("#settings-backup").waitFor();
+    await page.getByLabel("Connection", { exact: true }).selectOption({ index: 1 });
+    const cats = page.getByTestId("settings-categories");
+    await cats.locator('[data-category="contacts"][data-level="exportable"]').waitFor();
+    assert.equal(await cats.locator('[data-category="notes"]').getAttribute("data-level"), "unavailable");
+    assert.equal(await cats.locator('[data-category="sms"]').getAttribute("data-level"), "unverified");
+    assert.equal(await cats.locator('[data-category="profiles"]').getAttribute("data-level"), "manual-only");
+    assert((await page.getByTestId("settings-statement").innerText()).includes("Not a backup of the phone"));
+    const exportButton = page.getByRole("button", { name: "Export selected" });
+    assert(await exportButton.isDisabled(), "export needs a selection and consent");
+    await cats.locator('[data-category="contacts"] input[type="checkbox"]').check();
+    await page.getByLabel(/I own this phone/).check();
+    await exportButton.click();
+    await page.getByTestId("settings-backups").locator("li").first().waitFor();
+    await page.getByRole("button", { name: /Preview restore: Contacts/ }).click();
+    await page.getByTestId("restore-preview").waitFor();
+    await page.getByLabel(/Write this one store/).check();
+    await page.getByRole("button", { name: "Restore", exact: true }).click();
+    await page.locator('[data-testid="restore-result"][data-level="restored-with-readback"]').waitFor();
+    assert(await overflow(page), "overflow in settings backup");
+    await page.close();
+
+    // 2b4. Verified Essentials (Application kits page).
+    page = await open("en", 1366, "#apps/kits");
+    await page.locator("#essentials").waitFor();
+    await page.locator('[data-testid="essentials-items"] [data-item="xplore"][data-eligible="true"]').waitFor();
+    assert((await page.getByTestId("essentials-order").innerText()).includes("xplore"));
+    await page.locator('[data-essentials="n95-classic"]').click();
+    await page.locator('[data-testid="essentials-na"]').waitFor();
+    assert((await page.getByTestId("essentials-na").innerText()).includes("does not target"), "N95 profile is refused for the E52");
+    await page.locator("#essentials select").selectOption("nokia-n95");
+    await page.locator('[data-testid="essentials-items"] [data-item="gps-tracker"][data-eligible="true"]').waitFor();
+    assert.equal(await page.locator('[data-item="opera-mini"]').count(), 0);
+    await page.getByRole("button", { name: "Save as a collection" }).click();
+    await page.getByTestId("essentials-saved").waitFor();
+    assert(await overflow(page), "overflow in essentials");
+    await page.close();
+
+    // 2b5. Prepare for Nokia (Media page): convert a picture for the E52 screen, export, copy through the Safety Net.
+    page = await open("en", 1366, "#phone/media");
+    await page.locator("#media-prep").waitFor();
+    assert((await page.getByTestId("media-statement").innerText().catch(() => "")) !== undefined);
+    await page.locator("#media-prep").getByLabel("Media file").setInputFiles(path.join(tmp, "pic.png"));
+    await page.getByTestId("media-source").waitFor();
+    assert((await page.getByTestId("media-source").innerText()).includes("image"));
+    await page.locator("#media-prep select").nth(1).selectOption({ index: 0 });
+    await page.getByRole("button", { name: "Convert", exact: true }).click();
+    await page.locator('[data-testid="media-job"][data-state="done"]').waitFor();
+    assert((await page.getByTestId("media-statement").innerText()).includes("theoretical"), "presets are stated as theoretical");
+    assert((await page.getByTestId("media-job").innerText()).includes("not-tested"), "hardware status is stated");
+    assert.equal(await page.locator('[data-outcome="exported"]').innerText(), "Exported: no");
+    await page.getByRole("button", { name: "Export file and report" }).click();
+    await page.locator('[data-outcome="exported"]:has-text("yes")').waitFor();
+    assert((await page.locator('[data-outcome="transferred"]').innerText()).includes("no"), "export is not a transfer");
+    assert((await page.locator('[data-outcome="played-on-device"]').innerText()).includes("not-tested"));
+    await page.getByLabel("Connection", { exact: true }).first().selectOption({ index: 1 });
+    await page.getByRole("button", { name: "Plan safe copy to the phone" }).click();
+    await page.getByTestId("safety-plan").waitFor();
+    assert(await overflow(page), "overflow in media prep");
     await page.close();
 
     // 2c. Reborn wizard for an identified N95: import -> pin -> backup statement -> consents -> copy -> user-reported install.

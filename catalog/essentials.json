@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "reviewed": "2026-11-05",
+  "note": "Profiles reuse the existing catalog cards and pinned artifacts; nothing is duplicated. An application is offered only when it has a pinned, validated artifact and is not excluded for the chosen model. Static compatibility is never hardware verification.",
+  "guide_2026": {
+    "en": [
+      "Many 2026 services need TLS 1.2+: prepare the TLS components first (Revive → Network and certificates) and check the phone clock.",
+      "Some applications need a companion server you run yourself; they are marked below. Nothing is proxied through third parties.",
+      "Unavailable online services (old store, update servers) will not come back by installing an app: see Restore services.",
+      "For offline use, pick the Offline profile; it needs no network at all."
+    ],
+    "ru": [
+      "Многим сервисам в 2026 году нужен TLS 1.2+: сначала подготовьте TLS-компоненты (Revive → Сеть и сертификаты) и проверьте часы телефона.",
+      "Некоторым приложениям нужен собственный companion-сервер; они помечены ниже. Через сторонних посредников ничего не проксируется.",
+      "Недоступные онлайн-сервисы (старый магазин, серверы обновлений) установкой приложения не вернуть: см. «Восстановить сервисы».",
+      "Для работы офлайн выберите профиль «Офлайн»: сеть ему не нужна."
+    ]
+  },
+  "profiles": [
+    {"id": "communication", "title": {"en": "Communication", "ru": "Связь"}, "models": ["nokia-e52", "nokia-e72", "nokia-n95", "nokia-n95-8gb"],
+     "apps": ["mpgram", "vk4me", "aikon", "meshcore"]},
+    {"id": "internet", "title": {"en": "Internet", "ru": "Интернет"}, "models": ["nokia-e52", "nokia-e72", "nokia-n95", "nokia-n95-8gb"],
+     "apps": ["s2putty", "github-j2me", "bluewap", "opera-mini"]},
+    {"id": "offline", "title": {"en": "Offline", "ru": "Офлайн"}, "models": ["nokia-e52", "nokia-e72", "nokia-n95", "nokia-n95-8gb"],
+     "apps": ["xplore", "mdreader", "passgen", "game-2048", "fplay"]},
+    {"id": "media", "title": {"en": "Media", "ru": "Медиа"}, "models": ["nokia-e52", "nokia-e72", "nokia-n95", "nokia-n95-8gb"],
+     "apps": ["fplay", "jellyfin-s60-en", "internet-radio"]},
+    {"id": "tools", "title": {"en": "Files and tools", "ru": "Файлы и инструменты"}, "models": ["nokia-e52", "nokia-e72", "nokia-n95", "nokia-n95-8gb"],
+     "apps": ["xplore", "fshell", "pys60", "ip-calculator", "passgen"]},
+    {"id": "n95-classic", "title": {"en": "N95 Classic / FP1", "ru": "N95 Classic / FP1"}, "models": ["nokia-n95", "nokia-n95-8gb"],
+     "apps": ["xplore", "s60maps", "gps-tracker", "s2putty", "scummvm"]}
+  ]
+}
