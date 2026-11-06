@@ -79,10 +79,12 @@ export function Modal({
   children,
 }: PropsWithChildren<{ title: string; onClose: () => void }>) {
   const ref = useRef<HTMLDialogElement>(null),
+    closeButton = useRef<HTMLButtonElement>(null),
     { t } = usePreferences();
   useEffect(() => {
     const node = ref.current;
     node?.showModal();
+    closeButton.current?.focus();
     return () => node?.close();
   }, []);
   return (
@@ -97,7 +99,7 @@ export function Modal({
     >
       <div className="card-head">
         <h2>{title}</h2>
-        <button className="btn ghost" autoFocus onClick={onClose}>
+        <button ref={closeButton} className="btn ghost" onClick={onClose}>
           {t('Close', 'Закрыть')}
         </button>
       </div>

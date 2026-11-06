@@ -137,10 +137,13 @@ export function ConfirmDialog({
   error?: unknown;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const cancelButton = useRef<HTMLButtonElement>(null);
   const { t } = usePreferences();
   useEffect(() => {
     const dialog = ref.current;
     dialog?.showModal();
+    // The safe choice is focused explicitly, after the dialog's own focusing steps have run.
+    cancelButton.current?.focus();
     return () => dialog?.close();
   }, []);
   return (
@@ -156,7 +159,7 @@ export function ConfirmDialog({
       <p>{message}</p>
       <ErrorMessage error={error} />
       <div className="form-row">
-        <button disabled={busy} onClick={onCancel} className="btn secondary" autoFocus>
+        <button ref={cancelButton} disabled={busy} onClick={onCancel} className="btn secondary">
           {t('Cancel', 'Отмена')}
         </button>
         <button disabled={busy || Boolean(error)} onClick={onConfirm} className="btn primary">

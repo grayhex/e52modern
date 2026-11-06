@@ -160,7 +160,7 @@ Compose limits container logs to 3 × 10 MiB. Behind a corporate proxy, pass the
 
 ## Frontend build
 
-Docker builds React 19 + strict TypeScript with Node 24 in a separate stage, then
+Docker builds React 19 + strict TypeScript with Node 26 (LTS) in a separate stage, then
 copies the static assets into the Python runtime. No Node service or extra port is
 needed. `/` opens React; `/classic` is the transition rollback entry. Set
 `SYMPORT_FRONTEND=classic` in `.env` and recreate Workbench to select the previous

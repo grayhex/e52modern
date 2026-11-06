@@ -34,7 +34,7 @@ retained for comparison and regression tests; new features belong in `frontend/`
 * **Иконки** — `lucide-react`. Уведомления о лицензиях (`THIRD_PARTY_NOTICES.txt`) формируются из `package-lock.json` для всех
   production-зависимостей.
 * Новые страницы: Firmware & ROM Explorer, Зависимости и совместимость, Комплекты приложений, Установочные пакеты, заготовки «В разработке».
-* Node: файловая библиотека объявляет `engines.node >=24`; клиент, Docker и CI используют Node 24 LTS.
+* Node: файловая библиотека объявляет `engines.node >=24`; клиент, Docker и CI используют Node 26 LTS.
 
 ## Architecture
 
@@ -92,7 +92,7 @@ successful boot of user firmware.
 
 ## Develop, build and deploy
 
-Node 24+, Python setup from [DEVELOPMENT.md](DEVELOPMENT.md):
+Node 24+ (CI и Docker — Node 26 LTS), Python setup from [DEVELOPMENT.md](DEVELOPMENT.md):
 
 ```bash
 npm ci --prefix frontend
