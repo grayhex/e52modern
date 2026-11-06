@@ -22,8 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - run: pip install ruff
       - name: Ruff (symport, tests)
@@ -39,8 +39,8 @@ jobs:
       matrix:
         python: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with: { python-version: "${{ matrix.python }}", cache: pip, cache-dependency-path: pyproject.toml }
       - run: tools/ci/apt-install.sh g++ ffmpeg
       - run: pip install -e '.[dev]'
@@ -51,8 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - run: tools/ci/apt-install.sh g++ ffmpeg
       - run: pip install -e '.[dev]'
@@ -79,7 +79,7 @@ jobs:
           test $? -eq 3
       - name: Compatibility matrix
         run: symport report matrix build/reports --report build/reports/matrix.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: symport-theme-${{ github.sha }}
@@ -98,8 +98,8 @@ jobs:
     needs: [lint, tests]
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - name: Host toolchain required by the SDK (ARM-capable clang, lld, cmake)
         run: tools/ci/apt-install.sh clang lld cmake
@@ -110,7 +110,7 @@ jobs:
           pip install --only-binary=:all: "pydantic>=2.12,<3" "fastapi>=0.115,<1" "httpx>=0.28,<1" "msgpack>=1,<2" "pygments>=2.18,<3"
       - name: Build the SDK's E32 probe, package it, cross-check parsers
         run: tools/sdk/verify-real-sdk.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: symport-real-sdk-${{ github.sha }}
@@ -121,15 +121,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate Docker Compose configuration
         run: |
           docker compose config -q
           docker compose -f compose.deploy.yaml config -q
           SYMPORT_HTTP_PORT=8778 docker compose -f compose.deploy.yaml config -q
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
       - name: Build Docker workbench image (layer cache shared with the other image jobs)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           load: true
@@ -199,7 +199,7 @@ jobs:
           docker network connect symport-lab-smoke_default symport-lab-runtime-ui
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_emulator_runtime_ui.cjs
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_react_runtime_ui.cjs
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: mgo-real-runtime-without-rom
@@ -212,7 +212,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate browser script and Compose
         run: |
           node --check symport/web_assets/manager.js
@@ -229,9 +229,9 @@ jobs:
           SYMPORT_HTTP_PORT=8777 docker compose config --quiet
           SYMPORT_PHONE_DIRECTORY=/tmp docker compose -f compose.yaml -f compose.phone.yaml config --quiet
           docker compose --profile emulator config --quiet
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
       - name: Build Device Manager image (layer cache shared with the other image jobs)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           load: true
@@ -253,7 +253,7 @@ jobs:
           docker run --rm --network none symport-device-manager:ci python tools/check_ringtone_container.py
       - name: P1 persistent-container API and native compiler checks
         run: python tools/check_p1_container.py --image symport-device-manager:ci
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: p1-container-report
@@ -264,10 +264,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Audio processing dependency
         run: tools/ci/apt-install.sh ffmpeg
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - run: pip install -e '.[dev]'
       - uses: ./.github/actions/browser-tools
@@ -281,7 +281,7 @@ jobs:
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_ringtone_ui.cjs
       - name: Browser pairing and outbound Windows Bridge integration
         run: NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_bridge_ui.cjs
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: phone-workspace-screenshots
