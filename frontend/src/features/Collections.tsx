@@ -20,7 +20,7 @@ const statuses: Record<string, [string, string]> = {
 export default function Collections() {
   const api = useApi(),
     cache = useQueryClient(),
-    { t, device, setDevice } = usePreferences(),
+    { t, device, setDevice, mode } = usePreferences(),
     devices = useDevices();
   const state = useQuery({
       queryKey: ['collections'],
@@ -396,12 +396,14 @@ export default function Collections() {
                                 .map((r) => `${String(r.name)} ${String(r.min_version ?? '')}`)
                                 .join(' · ')}
                             </p>
-                            <a
-                              className="text-link"
-                              href={`#apps/dependencies?${new URLSearchParams({ source: 'catalog', reference: row.id, profile })}`}
-                            >
-                              {t('Review package dependencies', 'Проверить зависимости пакета')} →
-                            </a>
+                            {mode === 'developer' && (
+                              <a
+                                className="text-link"
+                                href={`#apps/dependencies?${new URLSearchParams({ source: 'catalog', reference: row.id, profile })}`}
+                              >
+                                {t('Review package dependencies', 'Проверить зависимости пакета')} →
+                              </a>
+                            )}
                           </>
                         )}
                         {row.status === 'manual' &&

@@ -85,3 +85,24 @@ def test_ci_apt_helper_is_valid_and_used_after_checkout():
                 assert "sudo apt-get" not in run, f"{name}:{job_name} installs packages without the helper"
                 if "tools/ci/apt-install.sh" in run:
                     assert checked_out, f"{name}:{job_name} calls the helper before checkout"
+
+
+def test_ui_mode_defaults_to_user_and_developer_only_when_asked(monkeypatch):
+    from symport.web import ui_default_mode
+
+    monkeypatch.delenv("SYMPORT_UI_MODE", raising=False)
+    assert ui_default_mode() == "user"
+    for value in ("", "user", "admin", "1"):
+        monkeypatch.setenv("SYMPORT_UI_MODE", value)
+        assert ui_default_mode() == "user"
+    for value in ("developer", " Developer "):
+        monkeypatch.setenv("SYMPORT_UI_MODE", value)
+        assert ui_default_mode() == "developer"
+
+
+def test_index_exposes_the_default_mode_placeholder_and_compose_passes_it_through():
+    assert 'name="symport-default-mode" content="__UI_MODE__"' in (ROOT / "frontend" / "index.html").read_text(
+        encoding="utf-8"
+    )
+    for name in ("compose.yaml", "compose.deploy.yaml"):
+        assert "SYMPORT_UI_MODE" in (ROOT / name).read_text(encoding="utf-8")

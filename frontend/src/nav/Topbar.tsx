@@ -1,4 +1,4 @@
-import { ChevronRight, Menu } from 'lucide-react';
+import { ChevronRight, Code2, Menu } from 'lucide-react';
 import { usePreferences } from '../state/app';
 import { findGroup, findItem } from './routes';
 
@@ -13,7 +13,7 @@ export default function Topbar({
   menuOpen: boolean;
   onMenu: () => void;
 }) {
-  const { t } = usePreferences();
+  const { t, mode } = usePreferences();
   const item = findItem(route);
   const group = findGroup(route);
   const first = group?.items[0];
@@ -50,6 +50,11 @@ export default function Topbar({
           )}
         </ol>
       </nav>
+      {mode === 'developer' && (
+        <span className="mode-badge" data-testid="mode-badge">
+          <Code2 size={13} aria-hidden="true" /> {t('Developer mode', 'Режим разработчика')}
+        </span>
+      )}
     </header>
   );
 }

@@ -6,7 +6,8 @@ import { useCapabilityGuard } from './api/queries';
 import Topbar from './nav/Topbar';
 import Planned from './nav/Planned';
 import { plannedSpecs } from './features/PlannedPages';
-import { resolveHash } from './nav/routes';
+import DeveloperOnly from './nav/DeveloperOnly';
+import { isDeveloperRoute, resolveHash } from './nav/routes';
 import { isBoolean, isStringArray, useStored } from './nav/storage';
 import { useMedia } from './nav/useMedia';
 const Dashboard = lazy(() => import('./features/Dashboard'));
@@ -121,6 +122,8 @@ export default function App() {
 }
 
 function RouteView({ route }: { route: string }) {
+  const { mode } = usePreferences();
+  if (isDeveloperRoute(route) && mode !== 'developer') return <DeveloperOnly route={route} />;
   const planned = plannedSpecs[route];
   if (planned) return <Planned spec={planned} />;
   switch (route) {

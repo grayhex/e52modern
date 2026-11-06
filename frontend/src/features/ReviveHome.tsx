@@ -4,6 +4,8 @@ import { useApi, usePreferences } from '../state/app';
 import { ErrorMessage } from '../components/ui';
 import { SectionPanel, StatusIndicator } from '../components/kit';
 import { homeSchema } from '../api/revive';
+import { isDeveloperRoute } from '../nav/routes';
+import { profileRoute } from './reviveNav';
 
 const KIND: Record<string, [string, string]> = {
   tls: ['TLS components', 'TLS-компоненты'],
@@ -25,7 +27,7 @@ export default function ReviveHome({
   onOpen: (profile: string) => void;
 }) {
   const api = useApi();
-  const { t } = usePreferences();
+  const { t, mode } = usePreferences();
   const home = useQuery({
     queryKey: ['revive', device, 'home', manual],
     queryFn: () => api.request('/api/revive', { action: 'home', device, manual }, homeSchema),
@@ -34,7 +36,12 @@ export default function ReviveHome({
   });
   if (home.error) return <ErrorMessage error={home.error} />;
   if (!home.data) return null;
-  const data = home.data;
+  const data = {
+    ...home.data,
+    recommendations: home.data.recommendations.filter(
+      (r) => mode === 'developer' || !isDeveloperRoute(profileRoute(r.action)),
+    ),
+  };
   return (
     <SectionPanel title={t('Suggestions and history', 'Рекомендации и история')} id="revive-home">
       <h3>

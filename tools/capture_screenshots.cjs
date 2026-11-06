@@ -72,6 +72,8 @@ async function journal(page) {
     await go("apps/catalog");
     await page.locator(".catalog-app").first().waitFor();
     await shot(page, "catalog.png");
+    const mode = (name) => page.locator(`.mode-switch button[data-mode="${name}"]`).click();
+    await mode("developer"); // firmware and dependency pages belong to developer mode
     await go("tools/firmware");
     const firmware = page.locator("#page-tools-firmware");
     await firmware.locator("input[type=file]").first().setInputFiles(path.join(tmp, "fw-a.zip"));
@@ -88,6 +90,7 @@ async function journal(page) {
     await deps.locator("button.primary").first().click();
     await deps.getByText(/Qt/).first().waitFor();
     await shot(page, "dependencies.png");
+    await mode("user"); // everything else is shown the way a user sees it
     await go("revive/home");
     await page.getByText("Прочитано с устройства").first().waitFor();
     await shot(page, "revive.png", { clip: { x: 0, y: 0, width: 1280, height: 1100 } });

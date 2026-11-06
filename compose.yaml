@@ -21,6 +21,8 @@ services:
       - mgo-symbian-auth:/symbian-auth:ro
     environment:
       SYMPORT_FRONTEND: ${SYMPORT_FRONTEND:-react}
+      # Interface mode of a fresh browser: user (default) or developer. Each user's own choice is remembered.
+      SYMPORT_UI_MODE: ${SYMPORT_UI_MODE:-}
       SYMPORT_HTTP_PORT: ${SYMPORT_HTTP_PORT:-8765}
       SYMPORT_PUBLIC_ORIGIN: ${SYMPORT_PUBLIC_ORIGIN:-}
       SYMPORT_CONNECTIONS_FILE: ${SYMPORT_CONNECTIONS_FILE:-}

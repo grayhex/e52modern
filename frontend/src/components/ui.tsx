@@ -3,6 +3,11 @@ import type { Device } from '../api/contracts';
 import { useDevices } from '../api/queries';
 import { usePreferences } from '../state/app';
 import { STATUS_TEXT, blockedReason, unverifiedReason } from '../api/capabilities';
+/** Content that belongs to developer mode only (links to firmware, certificate, emulator and dependency tools). */
+export function DevOnly({ children }: PropsWithChildren) {
+  const { mode } = usePreferences();
+  return mode === 'developer' ? <>{children}</> : null;
+}
 export function Card({ children, className = '' }: PropsWithChildren<{ className?: string }>) {
   return <section className={`card ${className}`}>{children}</section>;
 }

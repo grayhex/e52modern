@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi, usePreferences } from '../state/app';
 import { themeStudioSchema, themeProjectSchema, type ThemeProject } from '../api/p1';
 import { fileSchema, objectSchema, type jsonSchema } from '../api/workspace';
-import { Card, ErrorMessage } from '../components/ui';
+import { Card, ErrorMessage, DevOnly } from '../components/ui';
 import { Field, Download, JsonReport } from '../components/workspace';
 import { encode, bytes } from '../utils/files';
 import { packageLink } from '../utils/packages';
@@ -405,24 +405,28 @@ function Editor({ id, onDelete }: { id: string; onDelete: () => void }) {
           </button>
           {built && (
             <>
-              <a
-                className="btn secondary"
-                href={packageLink(
-                  'tools/certificates',
-                  'theme-studio',
-                  id,
-                  'theme',
-                  project.profile,
-                )}
-              >
-                {t('Inspect & transfer to Nokia', 'Проверить и передать на Nokia')}
-              </a>
-              <a
-                className="btn secondary"
-                href={packageLink('dev/lab', 'theme-studio', id, 'theme', project.profile)}
-              >
-                {t('Test theme in emulator', 'Испытать тему в эмуляторе')}
-              </a>
+              <DevOnly>
+                <a
+                  className="btn secondary"
+                  href={packageLink(
+                    'tools/certificates',
+                    'theme-studio',
+                    id,
+                    'theme',
+                    project.profile,
+                  )}
+                >
+                  {t('Inspect & transfer to Nokia', 'Проверить и передать на Nokia')}
+                </a>
+              </DevOnly>
+              <DevOnly>
+                <a
+                  className="btn secondary"
+                  href={packageLink('dev/lab', 'theme-studio', id, 'theme', project.profile)}
+                >
+                  {t('Test theme in emulator', 'Испытать тему в эмуляторе')}
+                </a>
+              </DevOnly>
             </>
           )}
           <button

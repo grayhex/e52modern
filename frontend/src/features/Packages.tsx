@@ -3,7 +3,7 @@ import { PageHeader } from '../components/kit';
 import { useWorkspace } from '../hooks/useWorkspace';
 import { usePreferences } from '../state/app';
 import { packageLink } from '../utils/packages';
-import { Card, ErrorMessage } from '../components/ui';
+import { Card, ErrorMessage, DevOnly } from '../components/ui';
 import { bytes } from '../utils/files';
 
 /** Locally built or published packages, with the next steps for each one. */
@@ -76,18 +76,22 @@ function PackageTable({
                     <Download size={14} aria-hidden="true" /> {t('Download', 'Скачать')}
                   </a>
                 )}
-                <a
-                  className="btn ghost"
-                  href={packageLink('tools/certificates', source, item.id, item.kind ?? 'app')}
-                >
-                  <ShieldCheck size={14} aria-hidden="true" /> {t('Certificates', 'Сертификаты')}
-                </a>
-                <a
-                  className="btn ghost"
-                  href={packageLink('apps/dependencies', source, item.id, item.kind ?? 'app')}
-                >
-                  <Network size={14} aria-hidden="true" /> {t('Dependencies', 'Зависимости')}
-                </a>
+                <DevOnly>
+                  <a
+                    className="btn ghost"
+                    href={packageLink('tools/certificates', source, item.id, item.kind ?? 'app')}
+                  >
+                    <ShieldCheck size={14} aria-hidden="true" /> {t('Certificates', 'Сертификаты')}
+                  </a>
+                </DevOnly>
+                <DevOnly>
+                  <a
+                    className="btn ghost"
+                    href={packageLink('apps/dependencies', source, item.id, item.kind ?? 'app')}
+                  >
+                    <Network size={14} aria-hidden="true" /> {t('Dependencies', 'Зависимости')}
+                  </a>
+                </DevOnly>
               </td>
             </tr>
           ))}

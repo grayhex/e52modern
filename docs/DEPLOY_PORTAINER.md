@@ -64,6 +64,7 @@ docker compose -f compose.deploy.yaml ps        # healthy через ~20 с
 | `SYMPORT_PUBLIC_ORIGIN` | пусто | точный HTTPS-адрес прокси |
 | `SYMPORT_DEVICE_ROOTS` | `{}` | явно подключённые папки телефона/карты, например `{"phone":"/phone"}` |
 | `SYMPORT_PULL_POLICY` | `missing` | `always` — тянуть образ при каждом запуске |
+| `SYMPORT_UI_MODE` | пусто (`user`) | `developer` — свежий браузер стартует в режиме разработчика (выбор пользователя важнее) |
 | `SYMPORT_GAMMU_CONFIG`, `SYMPORT_BRIDGE_*` | пусто | Gammu и PC Bridge ([DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)) |
 
 Папка карты телефона: раскомментируйте в файле строку тома `- /volume1/phone:/phone:ro` (укажите свой путь, не корень хоста) и

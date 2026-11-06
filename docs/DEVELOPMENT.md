@@ -50,9 +50,12 @@ node tools/check_react_workspace.cjs # browser checks: see the list below
 
 Browser checks (Playwright + Chromium, run against the real Python server on synthetic data, one script each):
 `check_react_ui`, `check_react_workspace`, `check_p0_ui`, `check_connection_wizard`, `check_layout`,
-`check_p1_ui`, `check_n95_ui`, `check_n97_mini_ui`, `check_revive_ui` (recovery pages), plus the older
+`check_p1_ui`, `check_n95_ui`, `check_n97_mini_ui`, `check_revive_ui` (recovery pages), `check_modes` (user/developer mode), plus the older
 `check_web_ui`, `check_app_catalog`, `check_emulator_lab`, `check_security_workspace`, `check_device_workspace`,
 `check_ringtone_ui`, `check_bridge_ui`. Build the frontend first (`npm run build --prefix frontend`).
+
+The interface starts in user mode, which hides the developer pages; checks that walk every page are run with
+`SYMPORT_UI_MODE=developer` (CI sets it per group), while `tools/check_modes.cjs` covers the user/developer switch itself.
 
 `node tools/capture_screenshots.cjs` regenerates `docs/screenshots/` after a visual change.
 
@@ -61,7 +64,7 @@ Browser checks (Playwright + Chromium, run against the real Python server on syn
 | Workflow | Jobs |
 |---|---|
 | `ci.yml` | `lint`, `tests` (Python 3.11–3.14, xdist), `theme`, `real-sdk` (main and manual runs only, non-gating), `workbench` and `device-manager-container` (Docker image with a shared layer cache), `phone-workspace-browser` |
-| `frontend.yml` | `frontend` (lint, format, vitest, production build, build artifact) then `e2e` in three parallel groups (`core`, `devices`, `revive`) that reuse the build |
+| `frontend.yml` | `frontend` (lint, format, vitest, production build, build artifact) then `e2e` in four parallel groups (`core`, `devices`, `revive`, `modes`) that reuse the build |
 | `windows-bridge.yml` | portable EXE and installer on Windows; release on `bridge-v*` tags |
 | `publish-image.yml` | multi-architecture image to GHCR on `main` and `vX.Y.Z` tags, after a smoke test of the running container |
 
