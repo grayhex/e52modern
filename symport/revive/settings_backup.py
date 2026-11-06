@@ -30,7 +30,7 @@ CATEGORIES = [
     {'id': 'calendar', 'op': 'calendar.read', 'domain': 'calendar', 'restore': True, 'sensitive': False, 'schema': 'symport.personal.calendar/1'},
     {'id': 'tasks', 'op': 'tasks.read', 'domain': 'tasks', 'restore': True, 'sensitive': False, 'schema': 'symport.personal.tasks/1'},
     {'id': 'sms', 'op': 'sms.read', 'domain': 'sms', 'restore': False, 'sensitive': True, 'schema': 'symport.personal.sms/1'},
-    {'id': 'notes', 'level': 'unavailable', 'reason': {'en': 'No read API through this transport; needs the Device Agent (#38), which is not implemented.', 'ru': 'Нет API чтения через этот транспорт; нужен Device Agent (#38), он не реализован.'}},
+    {'id': 'notes', 'level': 'unavailable', 'reason': {'en': 'No read API through this transport; needs the Device Agent, which is not available yet.', 'ru': 'Нет API чтения через этот транспорт; нужен Device Agent, он пока недоступен.'}},
     {'id': 'profiles', 'level': 'manual-only', 'reason': {'en': 'Profile settings are not readable here: write them down on the phone (Profiles) and re-enter them after a restore.', 'ru': 'Настройки профилей отсюда не читаются: запишите их на телефоне («Профили») и введите заново после восстановления.'}},
     {'id': 'app-settings', 'level': 'unavailable', 'reason': {'en': 'Application settings live in protected stores with no permitted read API.', 'ru': 'Настройки приложений лежат в защищённых хранилищах без разрешённого API чтения.'}},
     {'id': 'system-databases', 'level': 'unavailable', 'reason': {'en': 'System databases are never copied blindly into or out of protected paths.', 'ru': 'Системные базы никогда не копируются вслепую в защищённые пути и из них.'}},

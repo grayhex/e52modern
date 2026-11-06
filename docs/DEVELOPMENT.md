@@ -41,14 +41,33 @@ state ownership, static build and rollback entry.
 ```bash
 npm run typecheck --prefix frontend
 npm run lint --prefix frontend
+npm run format:check --prefix frontend
 npm test --prefix frontend
-node tools/check_react_workspace.cjs
-pytest
+pytest -n auto                       # pytest-xdist; the suite is safe to run in parallel
 ruff check .
-node --check symport/web_assets/device-workspace.js
-node tools/check_device_workspace.cjs
-node tools/check_security_workspace.cjs
+node tools/check_react_workspace.cjs # browser checks: see the list below
 ```
+
+Browser checks (Playwright + Chromium, run against the real Python server on synthetic data, one script each):
+`check_react_ui`, `check_react_workspace`, `check_p0_ui`, `check_connection_wizard`, `check_layout`,
+`check_p1_ui`, `check_n95_ui`, `check_n97_mini_ui`, `check_revive_ui` (recovery pages), plus the older
+`check_web_ui`, `check_app_catalog`, `check_emulator_lab`, `check_security_workspace`, `check_device_workspace`,
+`check_ringtone_ui`, `check_bridge_ui`. Build the frontend first (`npm run build --prefix frontend`).
+
+`node tools/capture_screenshots.cjs` regenerates `docs/screenshots/` after a visual change.
+
+### CI layout
+
+| Workflow | Jobs |
+|---|---|
+| `ci.yml` | `lint`, `tests` (Python 3.11–3.13, xdist), `theme`, `real-sdk` (main and manual runs only, non-gating), `workbench` and `device-manager-container` (Docker image with a shared layer cache), `phone-workspace-browser` |
+| `frontend.yml` | `frontend` (lint, format, vitest, production build, build artifact) then `e2e` in three parallel groups (`core`, `devices`, `revive`) that reuse the build |
+| `windows-bridge.yml` | portable EXE and installer on Windows; release on `bridge-v*` tags |
+| `publish-image.yml` | multi-architecture image to GHCR on `main` and `vX.Y.Z` tags, after a smoke test of the running container |
+
+Pushes run on `main` and tags; every other branch is checked through its pull request, and a newer push cancels the
+older run. Python and npm caches, a cached Playwright/Chromium (`.github/actions/browser-tools`) and the Docker layer
+cache keep a typical run short. `dependabot.yml` proposes monthly updates for Actions, npm, pip and the base images.
 
 Browser checks require Playwright/Chromium and an editable Python install. Optional
 `SYMPORT_PYTHON` and `SYMPORT_BROWSER_EXECUTABLE` select the interpreter/browser. Test
@@ -58,9 +77,8 @@ enrolled directory. Unknown phone identity is not filled in to make a screenshot
 
 CI checks Python 3.11–3.13, lint, JavaScript syntax, Compose configuration, Docker startup,
 python-gammu API availability, phone/media browser workflows, theme toolchain/reproducibility,
-real SDK packages and the existing MGO/EKA2L1 integration without proprietary ROM. A passing
-mock run demonstrates API orchestration, privacy and safety checks, not physical E52 compatibility.
-The current transport matrix and hardware-validation boundary are in DEVICE_WORKSPACE.md.
+real SDK packages and the existing MGO/EKA2L1 integration without proprietary ROM. What the automatic checks
+do and do not prove about a physical phone is described once, in [STATUS.md](STATUS.md).
 
 ## Further documentation
 

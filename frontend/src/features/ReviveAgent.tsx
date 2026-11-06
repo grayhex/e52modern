@@ -3,6 +3,7 @@ import { useApi, usePreferences } from '../state/app';
 import { ErrorMessage } from '../components/ui';
 import { SectionPanel, StatusIndicator, type Tone } from '../components/kit';
 import { agentStateSchema } from '../api/revive';
+import { st } from './statements';
 
 const TONE: Record<string, Tone> = {
   'not-installed': 'off',
@@ -20,7 +21,7 @@ const TEXT: Record<string, [string, string]> = {
 /** Optional Device Agent: protocol, permissions and levels. No agent binary exists in this build. */
 export default function ReviveAgent() {
   const api = useApi();
-  const { t } = usePreferences();
+  const { t, language } = usePreferences();
   const state = useQuery({
     queryKey: ['revive', '', 'agent'],
     queryFn: () => api.request('/api/revive', { action: 'agent-state' }, agentStateSchema),
@@ -47,7 +48,7 @@ export default function ReviveAgent() {
             : s.agent_binary}
         </span>
       </p>
-      <p className="k-note-line">{s.statement}</p>
+      <p className="k-note-line">{st(language, s.statement)}</p>
       <p className="k-note-line" data-testid="agent-levels">
         {t('Levels', 'Уровни')}: {s.levels.join(' → ')}
       </p>

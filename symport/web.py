@@ -337,15 +337,17 @@ class Workbench:
                 report = None
             status = ("success" if result.returncode == 0 else
                       "unsupported" if result.returncode == 3 else "failed")
-            with self.lock:
-                job.update(status=status, exit_code=result.returncode, report=report,
-                           output=(result.stderr + "\n" + result.stdout)[-16000:])
             if report is not None:
+                # The report file exists before the job leaves "running", so a client that sees a
+                # finished job can always read its report.
                 output = self.repo / "build" / "symport" / "web-reports"
                 output.mkdir(parents=True, exist_ok=True)
                 (output / (job["id"] + ".json")).write_text(
                     json.dumps(report, ensure_ascii=False, indent=2) + "\n",
                     encoding="utf-8")
+            with self.lock:
+                job.update(status=status, exit_code=result.returncode, report=report,
+                           output=(result.stderr + "\n" + result.stdout)[-16000:])
         except (OSError, subprocess.TimeoutExpired) as exc:
             with self.lock:
                 job.update(status="failed", exit_code=1, output=str(exc))

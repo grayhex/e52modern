@@ -1,9 +1,24 @@
 # SymPort Revive
 
-**Tools → SymPort Revive** is one recovery centre: *inspect the device → see a plan → prepare safely →
+The **Recovery** menu group is one recovery area: *inspect the device → see a plan → prepare safely →
 verify the result*. It reads the connection through the existing `DeviceManager` (Windows Bridge,
 Gammu, OBEX, mounted drive). There is no second transport and no new write path. API:
 `POST /api/revive` (`symport/revive/`).
+
+## Pages
+
+| Menu page | Route | Content |
+|---|---|---|
+| Recovery centre | `#revive/home` | what was observed, typed-by-you fields, suggestions and history, links to the wizards |
+| Network & TLS | `#revive/network` | readiness plan, TLS applicability matrix, pinned components, diagnostics, Safety Net |
+| Application kit | `#revive/kit` | readiness plan for copying a verified kit |
+| Online services | `#revive/services` | legacy endpoints registry, substitute checks, before/after records |
+| Reborn for N95 (β) | `#revive/reborn` | Reborn Hybrid CFW alpha wizard |
+| Add-ons & patches | `#revive/addons` | add-on decisions, Patch Manager inventory |
+| After installation | `#revive/post-check` | baseline and comparison, Device Agent status |
+
+The old `#tools/revive` address redirects to the recovery centre. Every page except the centre shows the same
+one-line device strip (model · RM · firmware) taken from the connection.
 
 ## What is shown, and from where
 

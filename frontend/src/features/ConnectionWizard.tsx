@@ -284,8 +284,8 @@ export default function ConnectionWizard() {
           </dl>
           <p className="note">
             {t(
-              'Limits: Mass Storage is the memory card only. A verified read does not prove a write; the first write is confirmed and verified by read-back. SIS copying is not installation — confirm it on the phone. Not tested on a physical E52 yet.',
-              'Ограничения: Mass Storage — только карта памяти. Подтверждённое чтение не доказывает запись; первая запись подтверждается и проверяется обратным чтением. Копирование SIS — не установка: подтвердите её на телефоне. На физическом E52 ещё не проверялось.',
+              'Limits: Mass Storage is the memory card only. A verified read does not prove a write; the first write is confirmed and verified by read-back. SIS copying is not installation — confirm it on the phone.',
+              'Ограничения: Mass Storage — только карта памяти. Подтверждённое чтение не доказывает запись; первая запись подтверждается и проверяется обратным чтением. Копирование SIS — не установка: подтвердите её на телефоне.',
             )}
           </p>
           <CapabilityMatrix device={selected} />

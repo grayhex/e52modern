@@ -146,6 +146,18 @@ Audio sources, preview and exports are temporary, private and automatically expi
 Use **Download MP3** to retain a ringtone before updating/restarting. Phone PIM
 backups and emulator firmware/results keep their existing persistent storage.
 
+## Image build
+
+The `Dockerfile` orders layers from the least to the most frequently changed one: system packages (apt cache
+mounts) → Python dependencies, read from `pyproject.toml` by `tools/docker/requirements.py` → the vendored Nokia
+Skin Compiler and `bmconv` → frontend → the application code. Editing a Python or TypeScript file therefore
+rebuilds only the last layers. BuildKit is required (`docker buildx` or Docker 23+).
+
+The image runs as user `10001`, has a built-in `HEALTHCHECK` (`/api/state`), and carries OCI labels; pass
+`--build-arg VERSION=… --build-arg REVISION=…` (Compose: `SYMPORT_VERSION`, `SYMPORT_REVISION`) to stamp them.
+Compose limits container logs to 3 × 10 MiB. Behind a corporate proxy, pass the CA bundle with
+`--secret id=proxy_ca,src=/path/ca.pem`. Proxmox: [DEPLOY_PROXMOX.md](DEPLOY_PROXMOX.md).
+
 ## Frontend build
 
 Docker builds React 19 + strict TypeScript with Node 24 in a separate stage, then

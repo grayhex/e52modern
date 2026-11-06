@@ -5,11 +5,12 @@ import { useModels } from '../api/queries';
 import { ErrorMessage } from '../components/ui';
 import { SectionPanel, StatusIndicator } from '../components/kit';
 import { essentialsListSchema, essentialsSchema, simpleSchema } from '../api/revive';
+import { st } from './statements';
 
-/** Verified Essentials: per-model profiles over existing catalog cards; static compatibility, never hardware claims. */
+/** Verified Essentials: per-model profiles over existing catalog cards. */
 export default function Essentials() {
   const api = useApi();
-  const { t } = usePreferences();
+  const { t, language } = usePreferences();
   const models = useModels();
   const [profile, setProfile] = useState('offline');
   const [model, setModel] = useState('nokia-e52');
@@ -78,14 +79,12 @@ export default function Essentials() {
                   </strong>
                   <small>
                     {i.eligible
-                      ? `${t('licence', 'лицензия')}: ${i.licence ?? '?'} · ${t('network', 'сеть')}: ${i.network ?? '?'} · ${t('hardware', 'железо')}: ${i.evidence?.hardware} · ${t('installation', 'установка')}: ${i.evidence?.installation}`
+                      ? `${t('licence', 'лицензия')}: ${i.licence ?? '?'} · ${t('network', 'сеть')}: ${i.network ?? '?'}`
                       : i.reasons.join(' · ')}
                   </small>
                 </span>
                 <StatusIndicator tone={i.eligible ? 'info' : 'off'}>
-                  {i.eligible
-                    ? t('static-compatible', 'статически совместимо')
-                    : t('not offered', 'не предлагается')}
+                  {i.eligible ? t('Compatible', 'Подходит') : t('Not offered', 'Не предлагается')}
                 </StatusIndicator>
               </li>
             ))}
@@ -94,7 +93,7 @@ export default function Essentials() {
             {t('Install order', 'Порядок установки')}: {result.data.order.join(' → ') || '—'} ·{' '}
             {Math.round(result.data.bytes / 1024)} KiB
           </p>
-          <p className="k-note-line">{result.data.statement}</p>
+          <p className="k-note-line">{st(language, result.data.statement)}</p>
           <button
             type="button"
             className="k-btn k-btn--primary"

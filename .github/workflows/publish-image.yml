@@ -47,6 +47,9 @@ jobs:
           load: true
           tags: symport-smoke:${{ strategy.job-index }}
           provenance: false
+          build-args: |
+            VERSION=${{ github.ref_name }}
+            REVISION=${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.platform }}
           cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
       - name: Smoke test the running container
@@ -81,6 +84,9 @@ jobs:
           context: .
           platforms: ${{ matrix.platform }}
           provenance: false
+          build-args: |
+            VERSION=${{ github.ref_name }}
+            REVISION=${{ github.sha }}
           outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=${{ matrix.platform }}
       - name: Export digest

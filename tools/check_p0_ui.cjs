@@ -122,6 +122,7 @@ const server = spawn(python, ["-m", "symport.web", "--repo", root, "--port", Str
     await page.evaluate(() => { location.hash = "#apps/kits"; });
     const kits = page.locator("#page-apps-kits");
     await kits.getByRole("heading", { name: "Application kits" }).waitFor();
+    await kits.locator("summary").filter({ hasText: "Kit with required runtimes" }).click();
     await kits.getByLabel("Package (up to 32 MiB)", { exact: true }).setInputFiles(path.join(root, "demo-app.sis"));
     await kits.getByRole("button", { name: "Build kit" }).click();
     await kits.getByText("Incomplete", { exact: true }).waitFor();

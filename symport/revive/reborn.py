@@ -324,9 +324,9 @@ class RebornWizard:
         if overlap:
             tls = self._tls_state(facts)
             blocking.append({'code': 'tls-stack-overlap', 'satisfied_by': 'acknowledgement', 'text': message(
-                'The package contains ' + ', '.join(overlap) + ', which the separate TLS stack (#34) also owns. TLS component state on this phone: '
+                'The package contains ' + ', '.join(overlap) + ', which the separate TLS stack also owns. TLS component state on this phone: '
                 + ', '.join(f'{k}={v}' for k, v in tls.items()) + '. Installing both can replace one with the other.',
-                'Пакет содержит ' + ', '.join(overlap) + ', которыми владеет и отдельный TLS-стек (#34). Состояние TLS-компонентов на этом телефоне: '
+                'Пакет содержит ' + ', '.join(overlap) + ', которыми владеет и отдельный TLS-стек. Состояние TLS-компонентов на этом телефоне: '
                 + ', '.join(f'{k}={v}' for k, v in tls.items()) + '. Установка обоих может заменить один другим.')})
         if high:
             blocking.append({'code': 'high-risk-components', 'satisfied_by': 'acknowledgement', 'text': message(

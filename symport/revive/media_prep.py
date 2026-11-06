@@ -176,7 +176,7 @@ class MediaPrep:
         for kind, table in PRESETS.items():
             out[kind] = [{'id': k, 'title': v['title'], **THEORETICAL, 'ext': v['ext']} for k, v in table.items()]
         return {'model': model, 'screen': screen, 'screen_modes': reg.get('screen_modes') or [], 'presets': out,
-                'statement': 'Every preset is theoretical for this model: none has been verified on hardware.'}
+                'statement': 'Presets follow the model screen and generic S60 limits; check the result on the phone.'}
 
     def upload(self, data):
         self.cleanup()

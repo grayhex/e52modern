@@ -6,6 +6,7 @@ import { ErrorMessage } from '../components/ui';
 import { SectionPanel, StatusIndicator, type Tone } from '../components/kit';
 import ReviveSafety from './ReviveSafety';
 import { addonPlanSchema, addonsStateSchema, safetyPlanSchema, simpleSchema } from '../api/revive';
+import { st } from './statements';
 
 const DECISION: Record<string, [string, string, Tone]> = {
   blocked: ['Blocked', 'Заблокировано', 'bad'],
@@ -39,7 +40,7 @@ export default function ReviveAddons({
 }) {
   const api = useApi();
   const cache = useQueryClient();
-  const { t } = usePreferences();
+  const { t, language } = usePreferences();
   const [planned, setPlanned] = useState<{ id: string; text: string } | null>(null);
   const [planId, setPlanId] = useState('');
   const [sure, setSure] = useState(false);
@@ -76,7 +77,7 @@ export default function ReviveAddons({
   const s = state.data;
   return (
     <SectionPanel title={t('Add-ons and patches', 'Дополнения и патчи')} id="revive-addons">
-      <p className="k-note-line">{s.statement}</p>
+      <p className="k-note-line">{st(language, s.statement)}</p>
       <div className="k-toolbar">
         {Object.entries(s.categories)
           .filter(([, c]) => c.closed_by_default)

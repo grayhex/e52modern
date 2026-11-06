@@ -5,6 +5,7 @@ import { useApi, usePreferences } from '../state/app';
 import { ErrorMessage } from '../components/ui';
 import { SectionPanel, StatusIndicator, type Tone } from '../components/kit';
 import { servicesDiagnoseSchema, servicesStateSchema, simpleSchema } from '../api/revive';
+import { st } from './statements';
 
 const TONE: Record<string, Tone> = {
   available: 'ok',
@@ -29,7 +30,7 @@ export default function ReviveServices({
 }) {
   const api = useApi();
   const cache = useQueryClient();
-  const { t } = usePreferences();
+  const { t, language } = usePreferences();
   const [pick, setPick] = useState('reborn-homepage');
   const [before, setBefore] = useState('');
   const [after, setAfter] = useState('');
@@ -71,7 +72,7 @@ export default function ReviveServices({
   const diagFor = (id: string) => diag.data?.results.find((r) => r.id === id);
   return (
     <SectionPanel title={t('Restore services', 'Восстановить сервисы')} id="revive-services">
-      <p className="k-note-line">{s.statement}</p>
+      <p className="k-note-line">{st(language, s.statement)}</p>
       <h3>
         {mine
           ? t(`Status for ${mine.name}`, `Статус для ${mine.name}`)
@@ -161,7 +162,7 @@ export default function ReviveServices({
       {diag.error && <ErrorMessage error={diag.error} />}
       {diag.data && (
         <p role="status" data-testid="services-diag">
-          {t('Ran on the', 'Выполнено на')} {diag.data.ran_on}. {diag.data.statement}
+          {t('Ran on the', 'Выполнено на')} {diag.data.ran_on}. {st(language, diag.data.statement)}
         </p>
       )}
       <p className="k-note-line">
