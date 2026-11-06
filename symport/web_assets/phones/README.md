@@ -36,3 +36,6 @@ with transparent PNG/lossless WebP exports. [References, geometry and export](N8
 a staggered, asymmetric key field. The key layout is simplified; it is neither a manufacturer image nor a photograph.
 The LCD is blank and decorative. The SVG has no embedded raster or external resource. Re-export with
 `node tools/assets/render_phones.cjs nokia-7610`. See [NOKIA_7610.md](../../../docs/NOKIA_7610.md).
+
+`nokia-7610.svg`: black/ruby-red original 7610, reference-based photorealistic body, asymmetric
+keypad, transparent PNG/WebP. [Reference and export](7610-ARTWORK.md).

@@ -72,7 +72,7 @@ async function dashboard(device: Record<string, unknown>) {
 describe('Nokia 7610 is its own S60 2nd Edition model', () => {
   it('is registered with its own artwork, geometry and platform, and no theme support', () => {
     expect(p7610).toBeTruthy();
-    expect(p7610?.image).toBe('/phones/nokia-7610.png');
+    expect(p7610?.image).toBe('/phones/nokia-7610.webp');
     expect(p7610?.screen).toEqual({ width: 176, height: 208, orientation: 'portrait' });
     expect(p7610?.s60).toBe('2nd');
     expect(p7610?.symbian).toBe('7.0s');
