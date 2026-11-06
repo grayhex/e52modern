@@ -354,7 +354,6 @@ function ModeSwitch({ railed, tip }: { railed: boolean; tip: TipFactory }) {
         data-mode="user"
         onClick={() => setMode('user')}
       >
-        <User size={15} aria-hidden="true" />
         {t('User', 'Пользователь')}
       </button>
       <button
@@ -363,7 +362,6 @@ function ModeSwitch({ railed, tip }: { railed: boolean; tip: TipFactory }) {
         data-mode="developer"
         onClick={() => setMode('developer')}
       >
-        <Code2 size={15} aria-hidden="true" />
         {t('Developer', 'Разработчик')}
       </button>
     </div>

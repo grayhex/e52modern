@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1860" viewBox="0 0 900 1860" role="img" aria-labelledby="title desc">
+<title id="title">Nokia 7610 — original vector handset illustration</title>
+<desc id="desc">Stylised front view of the original Nokia 7610 (Symbian OS 7.0s / S60 2nd Edition, 2004): metallic frame, black face, 176x208 portrait display, asymmetric staggered key field. Drawn for SymPort; not a manufacturer image, not live device data. The LCD is blank and decorative.</desc>
+<defs>
+ <clipPath id="handset-outline"><path d="M150 110 H750 Q852 110 852 212 V1560 Q852 1750 668 1750 H238 Q48 1750 48 1560 V212 Q48 110 150 110 Z"/></clipPath>
+ <linearGradient id="frame" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#f4f6f8"/><stop offset=".22" stop-color="#b7bec6"/><stop offset=".5" stop-color="#e9edf0"/><stop offset=".78" stop-color="#8b939c"/><stop offset="1" stop-color="#c9cfd5"/>
+ </linearGradient>
+ <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#23262b"/><stop offset=".45" stop-color="#15171a"/><stop offset="1" stop-color="#0c0d0f"/>
+ </linearGradient>
+ <linearGradient id="key-face" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#4a4f57"/><stop offset=".55" stop-color="#2e3238"/><stop offset="1" stop-color="#1d2024"/>
+ </linearGradient>
+ <linearGradient id="key-call" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3e8a52"/><stop offset="1" stop-color="#1f5a31"/></linearGradient>
+ <linearGradient id="key-end" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b24545"/><stop offset="1" stop-color="#6e1f1f"/></linearGradient>
+ <linearGradient id="lcd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c3ccc2"/><stop offset="1" stop-color="#a7b3a6"/></linearGradient>
+ <radialGradient id="ring" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#5a606a"/><stop offset="1" stop-color="#1f2226"/></radialGradient>
+ <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+ <style>
+  .key{fill:url(#key-face);stroke:#8f979f;stroke-width:3}
+  .key-call{fill:url(#key-call);stroke:#9ccaa8;stroke-width:3}
+  .key-end{fill:url(#key-end);stroke:#d79a9a;stroke-width:3}
+  .legend{fill:#eef1f4;font-family:Arial,Helvetica,sans-serif;font-weight:700;text-anchor:middle}
+  .legend-sub{fill:#b8c0c8;font-family:Arial,Helvetica,sans-serif;text-anchor:middle}
+ </style>
+</defs>
+
+<g id="handset" clip-path="url(#handset-outline)">
+ <!-- metallic frame and black face -->
+ <path id="body" d="M150 110 H750 Q852 110 852 212 V1560 Q852 1750 668 1750 H238 Q48 1750 48 1560 V212 Q48 110 150 110 Z" fill="url(#frame)"/>
+ <path id="face" d="M168 138 H732 Q824 138 824 230 V1548 Q824 1722 656 1722 H246 Q76 1722 76 1548 V230 Q76 138 168 138 Z" fill="url(#face)"/>
+ <path id="sheen" d="M168 138 H732 Q824 138 824 230 V760 H76 V230 Q76 138 168 138 Z" fill="url(#sheen)"/>
+ <!-- asymmetric lower facet: the key field sits on a sculpted plate that sweeps from the left edge to the right -->
+ <path id="key-plate" d="M76 960 Q430 880 824 950 V1548 Q824 1722 656 1722 H246 Q76 1722 76 1548 Z" fill="#101215" stroke="#3b4048" stroke-width="3"/>
+</g>
+
+<g id="top">
+ <rect id="earpiece" x="360" y="178" width="180" height="16" rx="8" fill="#050607" stroke="#5a606a" stroke-width="2"/>
+ <text id="brand" x="450" y="232" font-family="Arial,Helvetica,sans-serif" font-size="34" font-weight="700" letter-spacing="9" text-anchor="middle" fill="#c9cfd5">NOKIA</text>
+</g>
+
+<g id="display">
+ <rect id="bezel" x="172" y="252" width="556" height="634" rx="26" fill="#07080a" stroke="#6b727b" stroke-width="3"/>
+ <!-- 176:208 portrait window, blank LCD (decorative, not a theme preview or live data) -->
+ <rect id="lcd" x="210" y="284" width="480" height="567" rx="10" fill="url(#lcd)"/>
+ <rect id="lcd-glare" x="210" y="284" width="480" height="140" rx="10" fill="#fff" opacity=".12"/>
+</g>
+
+<g id="navigation">
+ <g transform="translate(450 1020)">
+  <circle r="104" fill="url(#ring)" stroke="#8f979f" stroke-width="3"/>
+  <circle r="46" fill="url(#key-face)" stroke="#b4bbc2" stroke-width="3"/>
+  <path d="M0 -84 l16 22 h-32 z M0 84 l16 -22 h-32 z M-84 0 l22 -16 v32 z M84 0 l-22 -16 v32 z" fill="#d9dee3"/>
+ </g>
+ <g transform="rotate(-8 250 982)"><rect x="164" y="940" width="170" height="86" rx="30" class="key"/></g>
+ <g transform="rotate(8 650 982)"><rect x="566" y="940" width="170" height="86" rx="30" class="key"/></g>
+ <path d="M196 988 h54" stroke="#d9dee3" stroke-width="7" stroke-linecap="round"/><path d="M650 982 h54" stroke="#d9dee3" stroke-width="7" stroke-linecap="round"/>
+ <g transform="rotate(-8 250 1090)"><rect x="150" y="1048" width="190" height="84" rx="30" class="key-call"/></g>
+ <g transform="rotate(8 650 1090)"><rect x="560" y="1048" width="190" height="84" rx="30" class="key-end"/></g>
+ <path d="M222 1086 q28 -22 56 0 l-8 14 q-20 -14 -40 0 z" fill="#eaf6ee" transform="rotate(-8 250 1090)"/>
+ <path d="M622 1092 q28 22 56 0 l-8 -14 q-20 14 -40 0 z" fill="#fbeaea" transform="rotate(8 650 1090)"/>
+</g>
+
+<g id="keypad">
+ <g transform="translate(209 1230) skewX(-9) translate(-209 -1230)"><rect x="120" y="1180" width="178" height="100" rx="30" class="key"/></g><g><text x="209" y="1244" class="legend" font-size="44">1</text></g><g transform="translate(424 1230) skewX(0) translate(-424 -1230)"><rect x="335" y="1180" width="178" height="100" rx="30" class="key"/></g><g><text x="424" y="1232" class="legend" font-size="44">2</text><text x="424" y="1268" class="legend-sub" font-size="20">abc</text></g><g transform="translate(639 1230) skewX(9) translate(-639 -1230)"><rect x="550" y="1180" width="178" height="100" rx="30" class="key"/></g><g><text x="639" y="1232" class="legend" font-size="44">3</text><text x="639" y="1268" class="legend-sub" font-size="20">def</text></g><g transform="translate(249 1352) skewX(-9) translate(-249 -1352)"><rect x="160" y="1302" width="178" height="100" rx="30" class="key"/></g><g><text x="249" y="1354" class="legend" font-size="44">4</text><text x="249" y="1390" class="legend-sub" font-size="20">ghi</text></g><g transform="translate(464 1352) skewX(0) translate(-464 -1352)"><rect x="375" y="1302" width="178" height="100" rx="30" class="key"/></g><g><text x="464" y="1354" class="legend" font-size="44">5</text><text x="464" y="1390" class="legend-sub" font-size="20">jkl</text></g><g transform="translate(679 1352) skewX(9) translate(-679 -1352)"><rect x="590" y="1302" width="178" height="100" rx="30" class="key"/></g><g><text x="679" y="1354" class="legend" font-size="44">6</text><text x="679" y="1390" class="legend-sub" font-size="20">mno</text></g><g transform="translate(221 1474) skewX(-9) translate(-221 -1474)"><rect x="132" y="1424" width="178" height="100" rx="30" class="key"/></g><g><text x="221" y="1476" class="legend" font-size="44">7</text><text x="221" y="1512" class="legend-sub" font-size="20">pqrs</text></g><g transform="translate(436 1474) skewX(0) translate(-436 -1474)"><rect x="347" y="1424" width="178" height="100" rx="30" class="key"/></g><g><text x="436" y="1476" class="legend" font-size="44">8</text><text x="436" y="1512" class="legend-sub" font-size="20">tuv</text></g><g transform="translate(651 1474) skewX(9) translate(-651 -1474)"><rect x="562" y="1424" width="178" height="100" rx="30" class="key"/></g><g><text x="651" y="1476" class="legend" font-size="44">9</text><text x="651" y="1512" class="legend-sub" font-size="20">wxyz</text></g><g transform="translate(261 1596) skewX(-9) translate(-261 -1596)"><rect x="172" y="1546" width="178" height="100" rx="30" class="key"/></g><g><text x="261" y="1598" class="legend" font-size="44">*</text><text x="261" y="1634" class="legend-sub" font-size="20">+</text></g><g transform="translate(476 1596) skewX(0) translate(-476 -1596)"><rect x="387" y="1546" width="178" height="100" rx="30" class="key"/></g><g><text x="476" y="1598" class="legend" font-size="44">0</text><text x="476" y="1634" class="legend-sub" font-size="20">space</text></g><g transform="translate(691 1596) skewX(9) translate(-691 -1596)"><rect x="602" y="1546" width="178" height="100" rx="30" class="key"/></g><g><text x="691" y="1610" class="legend" font-size="44">#</text></g>
+</g>
+</svg>

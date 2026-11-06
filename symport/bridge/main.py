@@ -245,6 +245,7 @@ def self_test(report: Path | None):
     assert identify('N8-00', rm='RM-596')['id'] == 'nokia-n8'
     assert identify('E7-00', rm='RM-626')['id'] == 'nokia-e7'
     assert identify('E7')['symbian'] is None
+    assert identify('Nokia 7610')['id'] == 'nokia-7610' and identify('Nokia 7610 Supernova') is None
 
     with tempfile.TemporaryDirectory(prefix="symport-bridge-check-") as tmp:
         root = Path(tmp)

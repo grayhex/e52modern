@@ -166,7 +166,8 @@ class Inspector:
                     report['capabilities'] += binary.get('capabilities') or []
                     if binary.get('restricted_capabilities'):
                         issues.append('restricted-capabilities')
-                    if binary['kernel'] == 'eka1' or (model_id and binary['cpu'] in ('x86', 'mcore', 'armv6')):
+                    legacy = (resolved_model or {}).get('platform_family') == 's60v2'
+                    if not legacy and (binary['kernel'] == 'eka1' or (model_id and binary['cpu'] in ('x86', 'mcore', 'armv6'))):
                         issues.append('unsupported-os')
         except ValueError as exc:
             report['limitations'].append(str(exc))
@@ -212,6 +213,10 @@ class Inspector:
         report['compatibility'] = 'incompatible' if 'unsupported-os' in issues or signatures['status'] == 'invalid' else 'unknown'
         if report['binaries'] and firmware and report['dependency_analysis']['verdict'] == 'satisfied-static' and all(b['compatibility'] == 'compatible' for b in report['binaries']) and not report['issues']:
             report['compatibility'] = 'compatible'
+        if (resolved_model or {}).get('platform_family') == 's60v2':
+            # S60 2nd Edition (Symbian 7.0s): no verified rules, so the answer is never "compatible" nor derived from 3rd/5th rules.
+            report['compatibility'] = 'unknown'
+            report['limitations'].append('S60 2nd Edition (Symbian 7.0s): SymPort has no verified rules for this platform; the static result stays unknown.')
         report['compatibility_scope'] = 'static only; installation, certificate trust and runtime are not established'
         report['recommendations'] = {code: ERRORS.get(code, ['Check the phone clock against the real date/time and obtain a current certificate.']) for code in report['issues']}
         self.root.mkdir(parents=True, exist_ok=True, mode=0o700)

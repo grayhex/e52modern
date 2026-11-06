@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 S60_MODELS = {
+    "7610": "2nd",
     "N8": "Symbian^3",
     "E7": "Symbian^3",
     "E51": "3rd FP1",
@@ -61,14 +62,16 @@ def documented_model(value: str) -> dict | None:
         "manufacturer": "Nokia",
         "model": model,
         "s60": edition,
-        "edition": "symbian3" if edition == "Symbian^3" else "5th" if edition == "5th" else "3rd",
+        "edition": EDITION_KEY.get(edition, "3rd"),
         "source": "documented-model-profile",
         "measured": False,
     }
 
 
-# Symbian OS release implied by the documented S60 edition (S60 3rd Edition ... 5th Edition).
-SYMBIAN_BY_EDITION = {"3rd": "9.1", "3rd FP1": "9.2", "3rd FP2": "9.3", "5th": "9.4"}
+# Symbian OS release implied by the documented S60 edition (S60 2nd Edition ... 5th Edition).
+SYMBIAN_BY_EDITION = {"2nd": "7.0s", "3rd": "9.1", "3rd FP1": "9.2", "3rd FP2": "9.3", "5th": "9.4"}
+# Platform generation of a documented edition; "2nd" is a different, older platform than 3rd/5th.
+EDITION_KEY = {"2nd": "2nd", "5th": "5th", "Symbian^3": "symbian3"}
 REGISTRY_FILE = Path(__file__).with_name("device_models.json")
 _FIELDS = {
     "id",
@@ -102,6 +105,7 @@ _FIELDS = {
     "os_releases",
     "strict_rms",
     "image_views",
+    "not_aliases",
 }
 
 

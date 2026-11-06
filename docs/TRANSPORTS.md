@@ -272,3 +272,20 @@ No independently verified N8/E7 protocol/driver trace was available; no new prot
 The normal confirmations, read-back, no-overwrite, scoped fingerprints and protected paths apply.
 Writes to system/private/resource folders are blocked on enrolled volumes as well as OBEX staging.
 **N8/E7 physical devices: not-tested.** See [connection steps and test matrix](NOKIA_N8_E7.md).
+
+## Nokia 7610: S60 2nd Edition
+
+The original Nokia 7610 (Symbian OS 7.0s, not the Series 40 "7610 Supernova") reuses the existing adapters: the
+enrollment edition `2nd` is accepted next to `3rd`, `5th` and `symbian3`, and **grants no capability**. Model identity
+comes from the registry (`documented-model-profile`, never measured); everything else comes from the connection.
+
+* Mounted RS-MMC / USB volume: files only. The Pop-Port cable does not guarantee a volume; without one, file functions
+  stay unavailable.
+* Bluetooth OBEX FTP: listing; download and writing stay unverified until confirmed. OBEX OPP: push only (no listing,
+  download or store reads).
+* Gammu: an identity read is not PIM access. Contacts, SMS and calendar are enabled one store at a time after a
+  successful read; Gnapplet (a Gammu applet for Series 60) is a possible dependency of PIM access and is reported as a
+  capability status, never assumed. Gnapplet on the 7610 itself is not verified here.
+* Host candidate ≠ phone identity ≠ supported transport.
+
+Physical 7610: **not-tested**. Details, limits and the hardware checklist: [NOKIA_7610.md](NOKIA_7610.md).

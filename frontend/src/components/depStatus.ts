@@ -62,6 +62,10 @@ export const issueText: Record<string, [string, string]> = {
     'None of the declared platforms matches the selected phone.',
     'Ни одна объявленная платформа не подходит выбранному телефону.',
   ],
+  'legacy-platform-not-assessed': [
+    'S60 2nd Edition (Symbian 7.0s) is not assessed: SymPort has no verified rules for it.',
+    'S60 2nd Edition (Symbian 7.0s) не оценивается: у SymPort нет проверенных правил для этой платформы.',
+  ],
   'dependency-unverified': [
     'A declared dependency is not supplied; it is NOT assumed installed.',
     'Объявленная зависимость не предоставлена; она НЕ считается установленной.',

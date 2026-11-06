@@ -488,6 +488,48 @@
           "ru": "Клавиатура раскрыта"
         }
       ]
+    },
+    {
+      "id": "nokia-7610",
+      "model": "7610",
+      "name": "Nokia 7610",
+      "name_ru": "Nokia 7610",
+      "family": "Series 60 2nd Edition",
+      "image": "/phones/nokia-7610.png",
+      "screen": {
+        "width": 176,
+        "height": 208,
+        "orientation": "portrait"
+      },
+      "s60": "2nd",
+      "symbian": "7.0s",
+      "platform_family": "s60v2",
+      "input": "keypad-asymmetric",
+      "storage": "internal-8mb-and-rs-mmc-unmounted",
+      "platform_uids": [],
+      "profile": "profiles/nokia-7610.toml",
+      "toolchain_profile": "nokia-7610",
+      "rms": [],
+      "aliases": [
+        "7610"
+      ],
+      "exact_aliases": true,
+      "not_aliases": [
+        "SUPERNOVA"
+      ],
+      "source": "https://en.wikipedia.org/wiki/Nokia_7610",
+      "fact_status": "documented",
+      "measured": false,
+      "hardware": "not-tested",
+      "selectable": true,
+      "target_model": "Nokia 7610",
+      "theme_studio": {
+        "status": "unsupported",
+        "reason": {
+          "en": "Themes for S60 2nd Edition (Symbian 7.0s) are not supported: this editor only builds S60 3rd resources.",
+          "ru": "Темы для S60 2nd Edition (Symbian 7.0s) не поддерживаются: редактор собирает только ресурсы S60 3rd."
+        }
+      }
     }
   ]
 }

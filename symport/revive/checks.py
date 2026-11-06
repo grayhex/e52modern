@@ -124,6 +124,11 @@ def evaluate(facts: dict, profile_id: str) -> dict:
             f'Symbian^3 family; reported release: {current or "unknown"}. Model/firmware number alone does not prove Belle.',
             f'Семейство Symbian^3; версия ОС: {current or "не сообщена"}. Модель/номер прошивки не подтверждают Belle.',
             'observed' if current else 'documented', str(row.get('os_source') or 'registry'))
+    elif prof.get('platform_family') == 's60v2':
+        out['platform'] = check('platform', 'unsupported',
+            'S60 2nd Edition (Symbian 7.0s) is an older platform: the recovery wizards are built for S60 3rd Edition and later.',
+            'S60 2nd Edition (Symbian 7.0s) — более старая платформа: мастера восстановления рассчитаны на S60 3rd Edition и новее.',
+            'documented', 'registry')
     elif profile_id == 'reborn-n95' and prof['s60'] != '3rd FP1':
         out['platform'] = check('platform', 'unsupported', 'Reborn for N95 needs S60 3rd Edition FP1.',
                                 'Reborn для N95 требует S60 3rd Edition FP1.', 'documented', 'registry')
