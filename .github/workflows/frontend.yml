@@ -50,7 +50,7 @@ jobs:
             checks: check_react_ui check_react_workspace check_p0_ui check_connection_wizard check_layout
           - group: devices
             ui-mode: developer
-            checks: check_p1_ui check_n95_ui check_n97_mini_ui
+            checks: check_p1_ui check_n95_ui check_n97_mini_ui check_n8_e7_ui
           - group: revive
             ui-mode: developer
             checks: check_revive_ui

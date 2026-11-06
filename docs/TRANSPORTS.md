@@ -256,3 +256,19 @@ fingerprints; native PIM previews and observed write proofs cannot follow a chan
 Both the internal mass memory and microSD must be observed/enrolled separately; neither exposes
 phone identity, `C:` or PIM automatically. **Mini hardware: not-tested.**
 [Connection matrix, limitations and physical test checklist](NOKIA_N97_MINI.md).
+
+## Nokia N8 / E7: Symbian^3 family
+
+Shared registry/Bridge 0.3.2 recognizes N8-00 / RM-596 and E7-00 / RM-626 without confusing E7/E72.
+The `symbian3` enrollment edition reuses existing Gammu/OBEX adapters; it grants no capabilities.
+OS release is unknown until separately sourced. Model identity never implies Anna/Belle.
+
+The baseline path is an actual Nokia USB Mass Storage volume: N8 internal memory and optional
+microSD are separately observed; E7 internal memory is not described as a card. Suite mode needs
+Nokia drivers and an available endpoint; a busy Suite port or unsupported native store remains an
+error/reason. AT identity is not PIM access. Bluetooth OPP/FTP requires actual service evidence.
+No independently verified N8/E7 protocol/driver trace was available; no new protocol was invented.
+
+The normal confirmations, read-back, no-overwrite, scoped fingerprints and protected paths apply.
+Writes to system/private/resource folders are blocked on enrolled volumes as well as OBEX staging.
+**N8/E7 physical devices: not-tested.** See [connection steps and test matrix](NOKIA_N8_E7.md).
