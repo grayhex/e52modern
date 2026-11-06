@@ -168,6 +168,11 @@ def _selector(data: dict) -> str:
     return selector
 
 
+def ui_default_mode() -> str:
+    """Interface mode a fresh browser starts in: 'developer' only when the operator asks for it."""
+    return "developer" if os.getenv("SYMPORT_UI_MODE", "").strip().lower() == "developer" else "user"
+
+
 class Workbench:
     def __init__(self, repo: Path):
         self.repo = repo
@@ -449,6 +454,7 @@ def make_handler(state: Workbench):
                 body = target.read_bytes()
                 if relative == 'index.html':
                     body = body.replace(b'__SESSION_TOKEN__',state.token.encode())
+                    body = body.replace(b'__UI_MODE__', ui_default_mode().encode())
                 return self._send(body,'image/webp' if target.suffix.lower()=='.webp' else mimetypes.guess_type(str(target))[0] or 'application/octet-stream',session=relative=='index.html')
             static = {
                 "/": ("index.html", "text/html; charset=utf-8"),

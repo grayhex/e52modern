@@ -14,7 +14,7 @@ import {
   type CatalogApp,
 } from '../api/catalog';
 import { objectSchema, text, type payload as PayloadType } from '../api/workspace';
-import { Card, DeviceSelect, ErrorMessage } from '../components/ui';
+import { Card, DeviceSelect, ErrorMessage, DevOnly } from '../components/ui';
 import { Field, Modal, JsonReport } from '../components/workspace';
 
 export default function Catalog() {
@@ -230,30 +230,34 @@ export default function Catalog() {
               <button className="k-btn k-btn--small k-btn--primary" onClick={() => setDetail(app)}>
                 {t('Details', 'Подробнее')}
               </button>
-              <a
-                className="text-link"
-                href={packageLink(
-                  'dev/lab',
-                  app.delivery === 'automatic' ? 'catalog' : 'upload',
-                  app.id,
-                  'app',
-                  profile,
-                )}
-              >
-                {t('Test in emulator', 'Проверить в эмуляторе')}
-              </a>
-              <a
-                className="text-link"
-                href={packageLink(
-                  'tools/certificates',
-                  app.delivery === 'automatic' ? 'catalog' : 'upload',
-                  app.id,
-                  'app',
-                  profile,
-                )}
-              >
-                {t('Inspect', 'Анализ')}
-              </a>
+              <DevOnly>
+                <a
+                  className="text-link"
+                  href={packageLink(
+                    'dev/lab',
+                    app.delivery === 'automatic' ? 'catalog' : 'upload',
+                    app.id,
+                    'app',
+                    profile,
+                  )}
+                >
+                  {t('Test in emulator', 'Проверить в эмуляторе')}
+                </a>
+              </DevOnly>
+              <DevOnly>
+                <a
+                  className="text-link"
+                  href={packageLink(
+                    'tools/certificates',
+                    app.delivery === 'automatic' ? 'catalog' : 'upload',
+                    app.id,
+                    'app',
+                    profile,
+                  )}
+                >
+                  {t('Inspect', 'Анализ')}
+                </a>
+              </DevOnly>
               {app.delivery === 'manual' && app.manual_url?.startsWith('https://') && (
                 <a className="text-link" href={app.manual_url} target="_blank" rel="noreferrer">
                   {t('Author source', 'Источник автора')} ↗
@@ -503,9 +507,11 @@ function CatalogExtras({ app }: { app: CatalogApp }) {
               </li>
             ))}
           </ul>
-          <a className="text-link" href={packageLink('apps/dependencies', 'catalog', app.id)}>
-            {t('Check dependencies →', 'Проверить зависимости →')}
-          </a>
+          <DevOnly>
+            <a className="text-link" href={packageLink('apps/dependencies', 'catalog', app.id)}>
+              {t('Check dependencies →', 'Проверить зависимости →')}
+            </a>
+          </DevOnly>
         </div>
       )}
       {conflicts.length > 0 && (

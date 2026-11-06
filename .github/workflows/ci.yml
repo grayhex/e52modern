@@ -195,7 +195,7 @@ jobs:
           trap 'docker logs symport-lab-runtime-ui || true; docker rm -f symport-lab-runtime-ui || true; docker compose -p symport-lab-smoke --profile emulator logs mgo-symbian || true; docker compose -p symport-lab-smoke --profile emulator down -v || true' EXIT
           docker compose -p symport-lab-smoke --profile emulator up -d mgo-symbian
           docker compose -p symport-lab-smoke run --rm -T --no-deps workbench python tools/check_mgo_runtime.py | tee build/reports/mgo-runtime.json
-          docker run --rm -d --name symport-lab-runtime-ui --network symport-lab-smoke_emulator -p 127.0.0.1:8775:8775 -v symport-lab-smoke_mgo-symbian-auth:/symbian-auth:ro -e SYMPORT_MGO_URL=http://mgo-symbian:8766 -e SYMPORT_MGO_TOKEN_FILE=/symbian-auth/agent-token --cap-drop ALL --security-opt no-new-privileges e52modern-workbench:local python -m symport.web --host 0.0.0.0 --port 8775
+          docker run --rm -d --name symport-lab-runtime-ui --network symport-lab-smoke_emulator -p 127.0.0.1:8775:8775 -v symport-lab-smoke_mgo-symbian-auth:/symbian-auth:ro -e SYMPORT_MGO_URL=http://mgo-symbian:8766 -e SYMPORT_MGO_TOKEN_FILE=/symbian-auth/agent-token -e SYMPORT_UI_MODE=developer --cap-drop ALL --security-opt no-new-privileges e52modern-workbench:local python -m symport.web --host 0.0.0.0 --port 8775
           docker network connect symport-lab-smoke_default symport-lab-runtime-ui
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_emulator_runtime_ui.cjs
           NODE_PATH="$RUNNER_TEMP/symport-browser/node_modules" node tools/check_react_runtime_ui.cjs

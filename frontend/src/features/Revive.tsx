@@ -27,6 +27,7 @@ import ReviveHome from './ReviveHome';
 import ReviveReborn from './ReviveReborn';
 import ReviveServices from './ReviveServices';
 import ReviveTls from './ReviveTls';
+import { isDeveloperRoute } from '../nav/routes';
 import { goRevive } from './reviveNav';
 import { st } from './statements';
 import {
@@ -379,7 +380,7 @@ function useManual() {
 export default function Revive({ section = 'home' }: { section?: ReviveSection }) {
   const api = useApi();
   const cache = useQueryClient();
-  const { t, device, setDevice } = usePreferences();
+  const { t, device, setDevice, mode } = usePreferences();
   const profile = section === 'home' ? 'network-certs' : SECTION_PROFILE[section];
   const [manual, setManual] = useManual();
   const [draft, setDraft] = useState(manual);
@@ -484,18 +485,20 @@ export default function Revive({ section = 'home' }: { section?: ReviveSection }
         <>
           <SectionPanel title={t('Preparation wizards', 'Мастера подготовки')}>
             <div className="rv-profiles" role="group" aria-label={t('Wizards', 'Мастера')}>
-              {(Object.keys(SECTION_PROFILE) as Exclude<ReviveSection, 'home'>[]).map((id) => {
-                const Icon = SECTION_ICON[id];
-                const [en, ru, descEn, descRu] = SECTION_TITLE[id];
-                return (
-                  <a key={id} className="rv-profile" href={`#revive/${id}`} data-wizard={id}>
-                    <strong>
-                      <Icon size={16} aria-hidden="true" /> {t(en, ru)}
-                    </strong>
-                    <span>{t(descEn, descRu)}</span>
-                  </a>
-                );
-              })}
+              {(Object.keys(SECTION_PROFILE) as Exclude<ReviveSection, 'home'>[])
+                .filter((id) => mode === 'developer' || !isDeveloperRoute(`revive/${id}`))
+                .map((id) => {
+                  const Icon = SECTION_ICON[id];
+                  const [en, ru, descEn, descRu] = SECTION_TITLE[id];
+                  return (
+                    <a key={id} className="rv-profile" href={`#revive/${id}`} data-wizard={id}>
+                      <strong>
+                        <Icon size={16} aria-hidden="true" /> {t(en, ru)}
+                      </strong>
+                      <span>{t(descEn, descRu)}</span>
+                    </a>
+                  );
+                })}
             </div>
           </SectionPanel>
           <ReviveHome device={device} manual={manual} onOpen={goRevive} />

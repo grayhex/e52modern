@@ -8,7 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { useApi, usePreferences } from '../state/app';
 import { objectSchema, packageSchema, payload, text, strings } from '../api/workspace';
-import { Card, DeviceSelect, ErrorMessage, Reading } from '../components/ui';
+import { Card, DeviceSelect, ErrorMessage, Reading, DevOnly } from '../components/ui';
 import { Field, JsonReport } from '../components/workspace';
 
 import { useDevices } from '../api/queries';
@@ -165,15 +165,19 @@ export default function Workbench({
                 >
                   {t('Download', 'Скачать')}
                 </a>
-                <a className="btn ghost" href={packageLink('dev/lab', 'library', p.id, 'theme')}>
-                  {t('Test in emulator', 'Проверить в эмуляторе')}
-                </a>
-                <a
-                  className="btn ghost"
-                  href={packageLink('tools/certificates', 'library', p.id, 'theme')}
-                >
-                  {t('Inspect', 'Анализ')}
-                </a>
+                <DevOnly>
+                  <a className="btn ghost" href={packageLink('dev/lab', 'library', p.id, 'theme')}>
+                    {t('Test in emulator', 'Проверить в эмуляторе')}
+                  </a>
+                </DevOnly>
+                <DevOnly>
+                  <a
+                    className="btn ghost"
+                    href={packageLink('tools/certificates', 'library', p.id, 'theme')}
+                  >
+                    {t('Inspect', 'Анализ')}
+                  </a>
+                </DevOnly>
                 <button
                   className="btn secondary"
                   disabled={!device}
@@ -448,15 +452,19 @@ export default function Workbench({
               >
                 {t('Download', 'Скачать')}
               </a>
-              <a
-                className="btn ghost"
-                href={packageLink('tools/certificates', 'build', p.id, p.kind)}
-              >
-                {t('Inspect', 'Анализ')}
-              </a>
-              <a className="btn ghost" href={packageLink('dev/lab', 'build', p.id, p.kind)}>
-                {t('Test in emulator', 'Проверить в эмуляторе')}
-              </a>
+              <DevOnly>
+                <a
+                  className="btn ghost"
+                  href={packageLink('tools/certificates', 'build', p.id, p.kind)}
+                >
+                  {t('Inspect', 'Анализ')}
+                </a>
+              </DevOnly>
+              <DevOnly>
+                <a className="btn ghost" href={packageLink('dev/lab', 'build', p.id, p.kind)}>
+                  {t('Test in emulator', 'Проверить в эмуляторе')}
+                </a>
+              </DevOnly>
             </div>
           ))}
         </Card>

@@ -43,12 +43,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Most checks walk every page, so they start the interface in developer mode (SYMPORT_UI_MODE);
+          # check_modes tests the real first start in user mode and sets the mode itself.
           - group: core
+            ui-mode: developer
             checks: check_react_ui check_react_workspace check_p0_ui check_connection_wizard check_layout
           - group: devices
+            ui-mode: developer
             checks: check_p1_ui check_n95_ui check_n97_mini_ui
           - group: revive
+            ui-mode: developer
             checks: check_revive_ui
+          - group: modes
+            ui-mode: ""
+            checks: check_modes
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
@@ -62,6 +70,8 @@ jobs:
       - uses: ./.github/actions/browser-tools
       - run: tools/s60/build.sh
       - name: Browser checks
+        env:
+          SYMPORT_UI_MODE: ${{ matrix.ui-mode }}
         run: |
           for check in ${{ matrix.checks }}; do
             echo "::group::$check"

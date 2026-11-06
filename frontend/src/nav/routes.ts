@@ -47,6 +47,8 @@ export type NavItem = {
   /** `planned` pages are honest placeholders: no working feature is simulated. */
   status: 'ready' | 'planned';
   experimental?: boolean;
+  /** Shown only in developer mode: development, firmware and experimental tools. */
+  dev?: boolean;
 };
 export type NavGroup = { id: string; icon: LucideIcon; en: string; ru: string; items: NavItem[] };
 
@@ -125,6 +127,7 @@ export const groups: NavGroup[] = [
       },
       {
         id: 'apps/dependencies',
+        dev: true,
         icon: Workflow,
         en: 'Dependencies',
         ru: 'Зависимости',
@@ -211,6 +214,7 @@ export const groups: NavGroup[] = [
       },
       {
         id: 'revive/reborn',
+        dev: true,
         icon: Usb,
         en: 'Reborn for N95',
         ru: 'Reborn для N95',
@@ -219,6 +223,7 @@ export const groups: NavGroup[] = [
       },
       {
         id: 'revive/addons',
+        dev: true,
         icon: PackagePlus,
         en: 'Add-ons & patches',
         ru: 'Дополнения и патчи',
@@ -248,6 +253,7 @@ export const groups: NavGroup[] = [
       },
       {
         id: 'tools/certificates',
+        dev: true,
         icon: FileBadge,
         en: 'Certificate Inspector',
         ru: 'Certificate Inspector',
@@ -255,6 +261,7 @@ export const groups: NavGroup[] = [
       },
       {
         id: 'tools/firmware',
+        dev: true,
         icon: Cpu,
         en: 'Firmware & ROM Explorer',
         ru: 'Firmware & ROM Explorer',
@@ -262,6 +269,7 @@ export const groups: NavGroup[] = [
       },
       {
         id: 'tools/cfw',
+        dev: true,
         icon: FileSearch,
         en: 'Custom firmware',
         ru: 'Кастомные прошивки',
@@ -269,6 +277,7 @@ export const groups: NavGroup[] = [
       },
       {
         id: 'tools/jailbreak',
+        dev: true,
         icon: LockOpen,
         en: 'Jailbreak Manager',
         ru: 'Jailbreak Manager',
@@ -290,10 +299,25 @@ export const groups: NavGroup[] = [
     en: 'Development & emulation',
     ru: 'Разработка и эмуляция',
     items: [
-      { id: 'dev/lab', icon: MonitorPlay, en: 'Emulator Lab', ru: 'Emulator Lab', status: 'ready' },
-      { id: 'dev/sdk', icon: Hammer, en: 'SDK & build', ru: 'SDK и сборка', status: 'ready' },
+      {
+        id: 'dev/lab',
+        dev: true,
+        icon: MonitorPlay,
+        en: 'Emulator Lab',
+        ru: 'Emulator Lab',
+        status: 'ready',
+      },
+      {
+        id: 'dev/sdk',
+        dev: true,
+        icon: Hammer,
+        en: 'SDK & build',
+        ru: 'SDK и сборка',
+        status: 'ready',
+      },
       {
         id: 'dev/app-tests',
+        dev: true,
         icon: FlaskConical,
         en: 'Application testing',
         ru: 'Тестирование приложений',
@@ -301,6 +325,7 @@ export const groups: NavGroup[] = [
       },
       {
         id: 'dev/theme-tests',
+        dev: true,
         icon: TestTube,
         en: 'Theme testing',
         ru: 'Тестирование тем',
@@ -373,4 +398,19 @@ export function findItem(route: string) {
 }
 export function findGroup(route: string) {
   return groups.find((group) => route.startsWith(group.id + '/'));
+}
+
+export type UiMode = 'user' | 'developer';
+
+/** The menu for a mode: developer-only pages and groups that would be empty are left out. */
+export function visibleGroups(mode: UiMode): NavGroup[] {
+  if (mode === 'developer') return groups;
+  return groups
+    .map((group) => ({ ...group, items: group.items.filter((item) => !item.dev) }))
+    .filter((group) => group.items.length > 0);
+}
+
+/** True for pages that belong to developer mode (they are still reachable by link, behind a prompt). */
+export function isDeveloperRoute(route: string) {
+  return Boolean(findItem(route)?.dev);
 }

@@ -4,6 +4,7 @@ import { FileBrowser, FileBrowserProvider } from '@harryy/react-file-browser';
 import { useApi, usePreferences } from '../state/app';
 import { createPhoneAdapter, toDevicePath, type PhoneFileCapabilities } from '../api/phoneFiles';
 import { packageLink } from '../utils/packages';
+import { DevOnly } from './ui';
 
 /** The phone's files in react-file-browser; `path` is the browser path ("/" = the connection's root). */
 export default function PhoneFileBrowser({
@@ -56,13 +57,15 @@ export default function PhoneFileBrowser({
           }}
           renderItemMeta={(item) =>
             item.kind === 'file' && /\.sisx?$/i.test(item.name) ? (
-              <a
-                className="underline"
-                href={`${packageLink('tools/certificates', 'device', '')}&${new URLSearchParams({ device, path: toDevicePath(item.path) })}`}
-                onClick={(event) => event.stopPropagation()}
-              >
-                {t('Inspect package', 'Проверить пакет')}
-              </a>
+              <DevOnly>
+                <a
+                  className="underline"
+                  href={`${packageLink('tools/certificates', 'device', '')}&${new URLSearchParams({ device, path: toDevicePath(item.path) })}`}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  {t('Inspect package', 'Проверить пакет')}
+                </a>
+              </DevOnly>
             ) : null
           }
         />

@@ -16,6 +16,9 @@ type Preferences = {
   setContactIndex: (value: ContactIndex | null) => void;
   language: 'ru' | 'en';
   theme: 'system' | 'light' | 'dark';
+  /** User mode (default): everyday phone functions. Developer mode adds firmware, SDK and experimental tools. */
+  mode: 'user' | 'developer';
+  setMode: (value: 'user' | 'developer') => void;
   device: string;
   setDevice: (id: string) => void;
   setLanguage: (value: 'ru' | 'en') => void;
@@ -49,6 +52,15 @@ export function PreferencesProvider({ children }: PropsWithChildren) {
   });
   // A saved 'dark'/'system' choice is ignored while dark mode is disabled (and kept for later).
   const theme: Preferences['theme'] = DARK_THEME_ENABLED ? chosenTheme : 'light';
+  const [mode, setModeState] = useState<Preferences['mode']>(() => {
+    const value = saved('symport-mode');
+    if (value === 'developer' || value === 'user') return value;
+    // Deployments may start in developer mode (SYMPORT_UI_MODE); the user's own choice always wins.
+    const fallback = document
+      .querySelector<HTMLMetaElement>('meta[name="symport-default-mode"]')
+      ?.content.trim();
+    return fallback === 'developer' ? 'developer' : 'user';
+  });
   const [device, setDeviceState] = useState('');
   const [contactIndex, setContactIndex] = useState<ContactIndex | null>(null);
   useEffect(() => {
@@ -69,6 +81,11 @@ export function PreferencesProvider({ children }: PropsWithChildren) {
       value={{
         language,
         theme,
+        mode,
+        setMode: (value) => {
+          setModeState(value);
+          persist('symport-mode', value);
+        },
         device,
         setDevice: (id) => {
           if (id !== device) setContactIndex(null);

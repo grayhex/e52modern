@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
 import {
   ChevronDown,
+  Code2,
   Languages,
   Layers,
   Moon,
@@ -10,11 +11,12 @@ import {
   Smartphone,
   Sun,
   SunMoon,
+  User,
   X,
 } from 'lucide-react';
 import { DARK_THEME_ENABLED, usePreferences } from '../state/app';
 import { useDevices } from '../api/queries';
-import { findGroup, groups, type NavItem } from './routes';
+import { findGroup, visibleGroups, type NavItem } from './routes';
 
 const base = import.meta.env.BASE_URL;
 
@@ -33,7 +35,8 @@ type Tip = { label: string; top: number } | null;
 
 export default function Sidebar(props: SidebarProps) {
   const { route, compact, mobile, open, onClose, openGroups, onGroups } = props;
-  const { t } = usePreferences();
+  const { t, mode } = usePreferences();
+  const menu = visibleGroups(mode);
   const [tip, setTip] = useState<Tip>(null);
   const root = useRef<HTMLElement>(null);
   const railed = compact && !mobile;
@@ -124,8 +127,9 @@ export default function Sidebar(props: SidebarProps) {
             )}
           </div>
           <PhoneCard railed={railed} tip={tipHandlers} />
+          <ModeSwitch railed={railed} tip={tipHandlers} />
           <nav className="sidebar-menu" aria-label={t('Sections', 'Разделы')}>
-            {groups.map((group) => {
+            {menu.map((group) => {
               const expanded = railed || openGroups.includes(group.id);
               const regionId = `nav-region-${group.id}`;
               const GroupIcon = group.icon;
@@ -312,6 +316,57 @@ function PhoneCard({ railed, tip }: { railed: boolean; tip: TipFactory }) {
         </span>
       )}
     </a>
+  );
+}
+
+/** User mode (default) shows the everyday functions; developer mode adds firmware, SDK and experimental tools. */
+function ModeSwitch({ railed, tip }: { railed: boolean; tip: TipFactory }) {
+  const { t, mode, setMode } = usePreferences();
+  const developer = mode === 'developer';
+  if (railed)
+    return (
+      <div className="mode-switch mode-switch--rail">
+        <button
+          type="button"
+          className="icon-button"
+          aria-pressed={developer}
+          aria-label={t('Developer mode', 'Режим разработчика')}
+          onClick={() => setMode(developer ? 'user' : 'developer')}
+          {...tip(
+            developer
+              ? t('Developer mode: on', 'Режим разработчика: включён')
+              : t('Developer mode: off', 'Режим разработчика: выключен'),
+          )}
+        >
+          {developer ? (
+            <Code2 size={18} aria-hidden="true" />
+          ) : (
+            <User size={18} aria-hidden="true" />
+          )}
+        </button>
+      </div>
+    );
+  return (
+    <div className="mode-switch" role="group" aria-label={t('Interface mode', 'Режим интерфейса')}>
+      <button
+        type="button"
+        aria-pressed={!developer}
+        data-mode="user"
+        onClick={() => setMode('user')}
+      >
+        <User size={15} aria-hidden="true" />
+        {t('User', 'Пользователь')}
+      </button>
+      <button
+        type="button"
+        aria-pressed={developer}
+        data-mode="developer"
+        onClick={() => setMode('developer')}
+      >
+        <Code2 size={15} aria-hidden="true" />
+        {t('Developer', 'Разработчик')}
+      </button>
+    </div>
   );
 }
 

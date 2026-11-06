@@ -7,6 +7,10 @@ const PROFILE_PAGE: Record<string, string> = {
   addons: 'addons',
   'post-check': 'post-check',
 };
+/** Route of the page that hosts a wizard profile. */
+export function profileRoute(profile: string) {
+  return `revive/${PROFILE_PAGE[profile] ?? 'home'}`;
+}
 export function goRevive(profile: string) {
-  location.hash = `revive/${PROFILE_PAGE[profile] ?? 'home'}`;
+  location.hash = profileRoute(profile);
 }

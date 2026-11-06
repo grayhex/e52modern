@@ -880,3 +880,69 @@ a.k-btn {
 .rv-more[open] > summary {
   margin-bottom: var(--k-3);
 }
+
+/* User / developer mode switch in the sidebar. */
+.mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin: 0 var(--k-2) var(--k-3);
+  padding: 2px;
+  border: 1px solid var(--nokia-border);
+  border-radius: var(--nokia-radius-control);
+  background: var(--nokia-surface-alt);
+}
+.mode-switch button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 0 var(--k-2);
+  border: 0;
+  border-radius: calc(var(--nokia-radius-control) - 2px);
+  background: transparent;
+  color: var(--nokia-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.mode-switch button:hover {
+  color: var(--nokia-text);
+}
+.mode-switch button[aria-pressed='true'] {
+  background: var(--nokia-surface);
+  color: var(--nokia-brand);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
+}
+.mode-switch button:focus-visible {
+  outline: 2px solid var(--nokia-brand);
+  outline-offset: 1px;
+}
+.mode-switch--rail {
+  display: flex;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  margin: 0 0 var(--k-2);
+}
+.mode-switch--rail button[aria-pressed='true'] {
+  color: var(--nokia-brand);
+}
+.mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--nokia-brand-border);
+  border-radius: 999px;
+  background: var(--nokia-brand-soft);
+  color: var(--nokia-brand);
+  font-size: 12px;
+  font-weight: 600;
+}
