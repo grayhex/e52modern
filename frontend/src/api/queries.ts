@@ -72,7 +72,11 @@ export function useProfiles() {
     .filter((m) => m.toolchain_profile)
     .map((m) => ({
       value: m.toolchain_profile ?? '',
-      label: [m.name, m.screen && `${m.screen.width}×${m.screen.height}`, `S60 ${m.s60}`]
+      label: [
+        m.name,
+        m.screen && `${m.screen.width}×${m.screen.height}`,
+        m.s60.startsWith('Symbian') ? m.s60 : `S60 ${m.s60}`,
+      ]
         .filter(Boolean)
         .join(' · '),
       model: m,

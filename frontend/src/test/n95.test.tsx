@@ -15,6 +15,8 @@ describe('N95 model registry and previews', () => {
       'nokia-n95',
       'nokia-n95-8gb',
       'nokia-n97-mini',
+      'nokia-n8',
+      'nokia-e7',
     ]);
     expect(profileById('nokia-n95')?.image).not.toBe(profileById('nokia-n95-8gb')?.image);
     expect(profileById('nokia-n95-family')?.selectable).toBe(false);

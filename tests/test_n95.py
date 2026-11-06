@@ -148,7 +148,7 @@ def test_catalog_migration_preserves_e52_and_does_not_verify_n95():
     for key, value in original.items():
         assert entry[key] == value
     for key in selectable_profiles():
-        assert entry["model_compatibility"][key]["status"] == "not-tested"
+        assert entry["model_compatibility"][key]["status"] == ("unsupported" if key in ('nokia-n8','nokia-e7') else "not-tested")
     entry = copy.deepcopy(entry)
     entry.update(compatibility="verified-on-e52", e52_evidence=["https://example.com/e52-report"])
     assert assessment(entry, "nokia-e52")["status"] == "verified"

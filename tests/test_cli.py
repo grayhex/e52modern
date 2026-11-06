@@ -52,7 +52,7 @@ def test_profile_commands():
     assert d["data"]["profiles"][0]["id"] == "nokia-e52"
     d = js(sp("profile", "show", "nokia-e52", "--json", check=0))
     assert d["data"]["profile"]["facts"]["firmware.version"]["status"] == "unknown"
-    r = sp("profile", "show", "nokia-n8", "--json")
+    r = sp("profile", "show", "nokia-unregistered", "--json")
     assert r.returncode == 2 and "unknown device profile" in r.stdout
 
 

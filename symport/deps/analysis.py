@@ -28,7 +28,7 @@ def _version(v):
 
 def _norm_target(target) -> dict:
     target = target if isinstance(target, dict) else {}
-    return {k: str(target.get(k, ""))[:120] for k in ("model", "rm", "firmware", "os")}
+    return {k: str(target.get(k) or "")[:120] for k in ("model", "rm", "firmware", "os")}
 
 
 def device_profile(target: dict) -> str | None:
@@ -88,13 +88,18 @@ def analyze_package(raw: bytes, *, name: str = "package.sis", target=None, firmw
 
     # --- platform / target-device IDs ---------------------------------------------------------
     platforms = []
-    accepted = rt.DEVICE_PLATFORMS.get(profile or "", {})
+    from symport.phone.platforms import platform_state
+    from symport.phone.registry import registry
+    spec = registry().get(profile, {})
+    accepted, uncertain, os_mismatch = platform_state(spec, target['os'])
     for item in info["dependencies"]["items"]:
         if item["kind"] != "target-device":
             continue
         known = rt.platform(item["uid"])
         if item["uid"] in accepted:
             relation, basis = "accepted-by-target", accepted[item["uid"]]
+        elif item["uid"] in uncertain:
+            relation, basis = "release-unverified", "OS release is unknown; model does not prove Belle"
         elif known:
             relation, basis = ("not-accepted-by-target" if profile else "target-unknown"), "known-platform"
         else:
@@ -115,16 +120,14 @@ def analyze_package(raw: bytes, *, name: str = "package.sis", target=None, firmw
         issues.append("platform-target-unknown")
     elif any(p["relation"] == "accepted-by-target" for p in platforms):
         platform_verdict = "supported-static"
-    elif any(p["relation"] in ("unknown-platform-id", "product-version-unknown") for p in platforms):
+    elif any(p["relation"] in ("unknown-platform-id", "product-version-unknown", "release-unverified") for p in platforms):
         platform_verdict = "unknown"
         issues.append("platform-target-unknown")
     else:
         platform_verdict = "unsupported"
         issues.append("platform-unsupported")
 
-    from symport.phone.registry import registry
-    documented_os = registry().get(profile, {}).get('symbian')
-    if documented_os and target['os'] and target['os'] != documented_os:
+    if os_mismatch:
         issues.append('target-os-mismatch')
         platform_verdict = 'unsupported'
 
@@ -232,8 +235,10 @@ def analyze_package(raw: bytes, *, name: str = "package.sis", target=None, firmw
                              "dlls": runtime_imports.get(family, []), "distribution": spec["distribution"]})
 
     for binary in binaries:
-        if profile and binary.get('cpu') in ('x86', 'mcore', 'armv6'):
+        if profile and binary.get('cpu') in ('x86', 'mcore'):
             issues.append('binary-abi-unsupported')
+        if profile and binary.get('cpu') == 'armv6':
+            issues.append('binary-abi-unknown' if spec.get('platform_family') == 'symbian3' else 'binary-abi-unsupported')
         if profile and binary.get('kernel') == 'eka1':
             issues.append('binary-kernel-unsupported')
         if profile and (str(binary.get('cpu', '')).startswith('unknown') or str(binary.get('kernel', '')).startswith('unknown')):

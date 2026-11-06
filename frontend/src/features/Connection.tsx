@@ -58,6 +58,31 @@ export default function Connection() {
   return (
     <>
       <PageHeader title={t('Connection', 'Подключение')} />
+      <Card>
+        <details>
+          <summary>{t('USB modes on Nokia N8 / E7', 'Режимы USB на Nokia N8 / E7')}</summary>
+          <ol>
+            <li>
+              {t(
+                'On the phone open Settings → Connectivity → USB (names vary by OS release). Choose Mass storage for files, media and package copying; safely eject it when finished.',
+                'На телефоне откройте Параметры → Подключение → USB (названия зависят от ОС). Для файлов, медиа и пакетов выберите «Накопитель»; после работы безопасно извлеките том.',
+              )}
+            </li>
+            <li>
+              {t(
+                'N8 has internal mass memory and an optional microSD; E7 has internal mass memory. Only volumes actually discovered by the Bridge are available.',
+                'N8 имеет внутреннюю память и дополнительную microSD; E7 — внутреннюю память. Доступны только тома, действительно обнаруженные Bridge.',
+              )}
+            </li>
+            <li>
+              {t(
+                'Nokia Suite / Ovi Suite mode needs its Windows drivers. Close Nokia Suite before a Gammu probe if it holds the port. A modem/AT reply does not prove access to contacts, SMS, calendar or C:.',
+                'Режим Nokia Suite / Ovi Suite требует соответствующих драйверов Windows. Если Suite занимает порт, закройте его перед пробой Gammu. Ответ модема/AT не подтверждает доступ к контактам, SMS, календарю или C:.',
+              )}
+            </li>
+          </ol>
+        </details>
+      </Card>
       <ConnectionWizard />
       <Card>
         <h2>

@@ -244,7 +244,11 @@ function Overview() {
             profile
               ? [
                   profile.symbian && `Symbian ${profile.symbian}`,
-                  `S60 ${profile.s60}`,
+                  profile.s60.startsWith('Symbian') ? profile.s60 : `S60 ${profile.s60}`,
+                  profile.s60 === 'Symbian^3' &&
+                    !profile.symbian &&
+                    t('OS release not reported', 'Версия ОС не сообщена'),
+                  profile.input === 'touch' && t('Touch', 'Сенсорный экран'),
                   profile.input === 'touch-qwerty-slider' &&
                     t('Touch · slide-out QWERTY', 'Сенсорный экран · выдвижная QWERTY'),
                   profile.screen &&
@@ -293,7 +297,9 @@ function Overview() {
         <p className="k-note-line">
           {t('Screen modes', 'Режимы экрана')}:{' '}
           {profile.screen_modes.map((m) => `${m.width}×${m.height}`).join(' ↔ ')} ·{' '}
-          {t('landscape with keyboard open', 'альбомный при открытой клавиатуре')}
+          {profile.input === 'touch-qwerty-slider'
+            ? t('landscape with keyboard open', 'альбомный при открытой клавиатуре')
+            : t('rotation state is not reported', 'текущий поворот не сообщён')}
         </p>
       )}
       {metrics.length > 0 && (
@@ -406,7 +412,7 @@ function artwork(
 ): { image: React.ReactNode; illustration: boolean; caption?: React.ReactNode } {
   if (profile?.image)
     return {
-      image: <img src={asset(profile.image)} alt={profile.name} />,
+      image: <HandsetArtwork profile={profile} t={t} />,
       illustration: false,
     };
   if (profile)
@@ -421,6 +427,45 @@ function artwork(
       ),
     };
   return { image: <Chooser models={models} t={t} />, illustration: true };
+}
+
+function HandsetArtwork({
+  profile,
+  t,
+}: {
+  profile: NonNullable<Device['model_profile']>;
+  t: (en: string, ru: string) => string;
+}) {
+  const [view, setView] = useState(0);
+  const selected = profile.image_views?.[view];
+  return (
+    <>
+      <img src={asset(selected?.image ?? profile.image ?? '')} alt={profile.name} />
+      {profile.image_views && (
+        <div>
+          <div className="k-toolbar" aria-label={t('Product view', 'Ракурс корпуса')}>
+            {profile.image_views.map((item, index) => (
+              <button
+                key={item.image}
+                type="button"
+                className="k-btn"
+                aria-pressed={index === view}
+                onClick={() => setView(index)}
+              >
+                {t(item.en, item.ru)}
+              </button>
+            ))}
+          </div>
+          <small>
+            {t(
+              'Product illustration; slider state is not read from the phone.',
+              'Иллюстрация корпуса; положение слайдера не считывается с телефона.',
+            )}
+          </small>
+        </div>
+      )}
+    </>
+  );
 }
 
 /** Unidentified model: choose among *registered* phones' artwork, clearly an illustration. */
@@ -682,7 +727,7 @@ function StoragePanel({
         {linked.candidates.length > 0 && (
           <label className="k-field">
             <span className="k-meta">
-              {t('Link a memory card volume', 'Связать с томом карты памяти')}
+              {t('Link a phone storage volume', 'Связать с томом памяти телефона')}
             </span>
             <select
               value={linked.isLinked ? (linked.volume?.id ?? '') : ''}

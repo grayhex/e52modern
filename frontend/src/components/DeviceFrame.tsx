@@ -4,7 +4,7 @@ import { profileById } from './deviceProfiles';
 /** The same source geometry drives every phone preview, without per-model CSS offsets. */
 export function DeviceFrame({ profile, children }: { profile: string; children: ReactNode }) {
   const p = profileById(profile);
-  if (!p?.image || !p.artwork) return null;
+  if (!p?.image || !p.artwork || p.theme_studio.status === 'unsupported') return null;
   const a = p.artwork,
     s = a.screen;
   return (

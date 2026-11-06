@@ -64,9 +64,15 @@ def identify(value: str, *, rm=None, product_code=None):
     family = is_n95 or bool(n95_candidates)
     if len(candidates) == 1:
         key = next(iter(candidates))
+        if key in codes and key not in names:
+            from .models import S60_MODELS
+            if any(name_matches(value, model) and model != registry()[key]['model'] for model in S60_MODELS):
+                return None  # A sourced RM must not override a contradictory known model family.
         # An unknown RM on an identified N95 is conflicting evidence, not confirmation.
         if family and observed_rm and not observed_rm.issubset(set(registry()[key]["rms"])):
             key = "nokia-n95-family"
+        elif registry()[key].get("strict_rms") and observed_rm and not observed_rm.issubset(set(registry()[key]["rms"])):
+            return None
     elif family and all(c.startswith("nokia-n95") for c in candidates):
         key = "nokia-n95-family"
     else:

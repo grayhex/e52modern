@@ -328,6 +328,166 @@
           "ru": "Темы для S60 5th Edition пока не поддерживаются. Этот редактор собирает только ресурсы S60 3rd."
         }
       }
+    },
+    {
+      "id": "nokia-n8",
+      "model": "N8",
+      "name": "Nokia N8-00",
+      "name_ru": "Nokia N8-00",
+      "family": "Nseries",
+      "image": "/phones/nokia-n8.webp",
+      "artwork": {
+        "width": 1064,
+        "height": 1576,
+        "screen": {
+          "x": 249,
+          "y": 282,
+          "width": 567,
+          "height": 1008
+        }
+      },
+      "screen": {
+        "width": 360,
+        "height": 640,
+        "orientation": "portrait"
+      },
+      "screen_modes": [
+        {
+          "width": 360,
+          "height": 640,
+          "orientation": "portrait"
+        },
+        {
+          "width": 640,
+          "height": 360,
+          "orientation": "landscape"
+        }
+      ],
+      "s60": "Symbian^3",
+      "symbian": null,
+      "platform_family": "symbian3",
+      "os_releases": [
+        "^3",
+        "Anna",
+        "Belle",
+        "Belle Refresh"
+      ],
+      "input": "touch",
+      "storage": "internal-16gb-and-removable-microsd-unmounted",
+      "platform_uids": [
+        537013869
+      ],
+      "native_platform_uid": 537013869,
+      "profile": "profiles/nokia-n8.toml",
+      "toolchain_profile": "nokia-n8",
+      "rms": [
+        "RM-596"
+      ],
+      "aliases": [
+        "N8",
+        "N8-00"
+      ],
+      "exact_aliases": true,
+      "strict_rms": true,
+      "source": "https://github.com/grayhex/s60modern/issues/68",
+      "fact_status": "documented",
+      "measured": false,
+      "hardware": "not-tested",
+      "selectable": true,
+      "target_model": "Nokia N8-00",
+      "theme_studio": {
+        "status": "unsupported",
+        "reason": {
+          "en": "Themes for Symbian^3 / Anna / Belle are not supported by this S60 3rd theme compiler.",
+          "ru": "Темы Symbian^3 / Anna / Belle не поддерживаются компилятором тем S60 3rd."
+        }
+      }
+    },
+    {
+      "id": "nokia-e7",
+      "model": "E7",
+      "name": "Nokia E7-00",
+      "name_ru": "Nokia E7-00",
+      "family": "Eseries",
+      "image": "/phones/nokia-e7.webp",
+      "artwork": {
+        "width": 927,
+        "height": 1814,
+        "screen": {
+          "x": 141,
+          "y": 340,
+          "width": 648,
+          "height": 1152
+        }
+      },
+      "screen": {
+        "width": 360,
+        "height": 640,
+        "orientation": "portrait"
+      },
+      "screen_modes": [
+        {
+          "width": 360,
+          "height": 640,
+          "orientation": "portrait"
+        },
+        {
+          "width": 640,
+          "height": 360,
+          "orientation": "landscape"
+        }
+      ],
+      "s60": "Symbian^3",
+      "symbian": null,
+      "platform_family": "symbian3",
+      "os_releases": [
+        "^3",
+        "Anna",
+        "Belle",
+        "Belle Refresh"
+      ],
+      "input": "touch-qwerty-slider",
+      "storage": "internal-16gb-unmounted",
+      "platform_uids": [
+        537013869
+      ],
+      "native_platform_uid": 537013869,
+      "profile": "profiles/nokia-e7.toml",
+      "toolchain_profile": "nokia-e7",
+      "rms": [
+        "RM-626"
+      ],
+      "aliases": [
+        "E7",
+        "E7-00"
+      ],
+      "exact_aliases": true,
+      "strict_rms": true,
+      "source": "https://github.com/grayhex/s60modern/issues/68",
+      "fact_status": "documented",
+      "measured": false,
+      "hardware": "not-tested",
+      "selectable": true,
+      "target_model": "Nokia E7-00",
+      "theme_studio": {
+        "status": "unsupported",
+        "reason": {
+          "en": "Themes for Symbian^3 / Anna / Belle are not supported by this S60 3rd theme compiler.",
+          "ru": "Темы Symbian^3 / Anna / Belle не поддерживаются компилятором тем S60 3rd."
+        }
+      },
+      "image_views": [
+        {
+          "image": "/phones/nokia-e7.webp",
+          "en": "Closed",
+          "ru": "Закрыт"
+        },
+        {
+          "image": "/phones/nokia-e7-open.webp",
+          "en": "Keyboard open",
+          "ru": "Клавиатура раскрыта"
+        }
+      ]
     }
   ]
 }

@@ -133,7 +133,9 @@ describe('dashboard is one page for every registered model', () => {
     expect(structure(e72).text).toContain('320×240 (альбомная)');
     cleanup();
     const e99 = await render_([phone(registry[2] as never)], 'Nokia E99');
-    expect(structure(e99).text).toContain('Symbian 9.4 · S60 5th · 360×640 (книжная)');
+    expect(structure(e99).text).toContain(
+      'Symbian 9.4 · S60 5th · Сенсорный экран · 360×640 (книжная)',
+    );
   });
 
   it('labels a documented model that has no registered artwork instead of inventing a picture', async () => {

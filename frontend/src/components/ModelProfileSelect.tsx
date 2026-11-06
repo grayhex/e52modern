@@ -11,8 +11,9 @@ export function ModelProfileSelect({
 }) {
   const { t } = usePreferences();
   const selected =
-    deviceProfiles.find((p) => p.target_model === target.model && p.symbian === target.os)?.id ??
-    '';
+    deviceProfiles.find(
+      (p) => p.target_model === target.model && (p.s60 === 'Symbian^3' || p.symbian === target.os),
+    )?.id ?? '';
   return (
     <Field label={t('Model profile', 'Профиль модели')}>
       <select value={selected} onChange={(e) => onTarget(targetForProfile(e.target.value))}>

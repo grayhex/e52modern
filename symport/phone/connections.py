@@ -34,10 +34,10 @@ def load_profiles(filename: str | None) -> list[dict]:
         if (
             item.get("manufacturer") != "Nokia"
             or item.get("platform") != "S60"
-            or item.get("edition") not in ("3rd", "5th")
+            or item.get("edition") not in ("3rd", "5th", "symbian3")
         ):
             raise ValueError(
-                "Only explicitly enrolled Nokia S60 3rd/5th Edition profiles are supported"
+                "Only explicitly enrolled Nokia S60 3rd/5th or Symbian^3 profiles are supported"
             )
         name = item.get("name", item["id"])
         if not isinstance(name, str) or not 1 <= len(name) <= 80 or any(ord(c) < 32 for c in name):
